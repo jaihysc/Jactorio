@@ -356,11 +356,11 @@ namespace jactorio::game
                 EXPECT_EQ(coord.y, 6);
                 onDeserializeCalled = true;
 
-                chunkTileLayer = &tile;
+                chunkTile = &tile;
             }
 
-            mutable bool onDeserializeCalled  = false;
-            mutable ChunkTile* chunkTileLayer = nullptr;
+            mutable bool onDeserializeCalled = false;
+            mutable ChunkTile* chunkTile     = nullptr;
         };
 
         world_.EmplaceChunk({0, 0});
@@ -372,7 +372,7 @@ namespace jactorio::game
         world_.DeserializePostProcess();
 
         EXPECT_TRUE(mock_obj.onDeserializeCalled);
-        EXPECT_EQ(mock_obj.chunkTileLayer, tile);
+        EXPECT_EQ(mock_obj.chunkTile, tile);
     }
 
     TEST_F(WorldDeserialize, DeserializeLogicChunks) {

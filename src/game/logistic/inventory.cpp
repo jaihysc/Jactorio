@@ -422,18 +422,18 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
     if (origin_stack.Empty()) {
         assert(target_stack.item->stackSize > 0); // Invalid itemstack stacksize
 
-        if (target_stack.Overloaded()) {
-            const auto stack_size = target_stack.item->stackSize;
+        if (!right_click) {
+            if (target_stack.Overloaded()) {
+                const auto stack_size = target_stack.item->stackSize;
 
-            target_stack.count -= stack_size;
-            origin_stack.count = stack_size;
+                target_stack.count -= stack_size;
+                origin_stack.count = stack_size;
 
-            origin_stack.item = target_stack.item;
-            return false;
+                origin_stack.item = target_stack.item;
+                return false;
+            }
         }
-
-        // Take half
-        if (right_click) {
+        else {
             auto get_take_amount = [&]() -> proto::Item::StackCount {
                 // Never exceed the stack size
                 if (target_stack.count > target_stack.item->stackSize * 2) {

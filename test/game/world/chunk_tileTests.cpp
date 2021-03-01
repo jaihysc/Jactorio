@@ -17,8 +17,7 @@ namespace jactorio::game
 
     TEST_F(ChunkTileTest, CopyTopLeft) {
         // Since orientation is right, width and height are swapped
-        proto_.SetWidth(2);
-        proto_.SetHeight(5);
+        proto_.SetDimension({2, 5});
 
         ChunkTile top_left;
         top_left.SetPrototype(Orientation::right, proto_);
@@ -38,8 +37,7 @@ namespace jactorio::game
 
     TEST_F(ChunkTileTest, CopyNonTopLeft) {
         // Since orientation is right, width and height are swapped
-        proto_.SetWidth(2);
-        proto_.SetHeight(5);
+        proto_.SetDimension({2, 5});
 
         ChunkTile top_left;
         ChunkTile tile;
@@ -54,29 +52,6 @@ namespace jactorio::game
         EXPECT_EQ(copy.GetDimension().height, 2);
 
         EXPECT_EQ(copy.GetTopLeft(), nullptr); // top left tile not copied
-    }
-
-    TEST_F(ChunkTileTest, CopyAssignTopLeft) {
-        ChunkTile top_left;
-        top_left.SetPrototype(Orientation::up, proto_);
-        top_left.MakeUniqueData<proto::ContainerEntityData>(20);
-
-        ChunkTile other;
-        other = top_left;
-
-        EXPECT_EQ(other.GetUniqueData<proto::ContainerEntityData>()->inventory.Size(), 20);
-    }
-
-    TEST_F(ChunkTileTest, MoveAssignNonTopLeft) {
-        ChunkTile top_left;
-        ChunkTile tile;
-        tile.SetPrototype(Orientation::up, proto_);
-        tile.SetupMultiTile(3, top_left);
-
-        ChunkTile other;
-        other = std::move(tile);
-
-        EXPECT_EQ(other.GetTopLeft(), &top_left);
     }
 
     TEST_F(ChunkTileTest, MoveTopLeft) {
@@ -247,8 +222,7 @@ namespace jactorio::game
 
     TEST_F(ChunkTileTest, GetDimensionsMultiTile) {
         proto::ContainerEntity container;
-        container.SetWidth(2);
-        container.SetHeight(3);
+        container.SetDimension({2, 3});
 
         ChunkTile first;
         first.SetPrototype(Orientation::right, &container);
@@ -329,8 +303,7 @@ namespace jactorio::game
         data::active_unique_data_manager = &unique;
 
         auto& container = proto.Make<proto::ContainerEntity>();
-        container.SetWidth(2); // Width and height are flipped since orientation is right
-        container.SetHeight(3);
+        container.SetDimension({2, 3}); // Width and height are flipped since orientation is right
 
         ChunkTile top_left;
         top_left.SetPrototype(Orientation::right, container);

@@ -75,23 +75,18 @@ namespace jactorio::game
     // ======================================================================
 
 
+    /// Moving from inventory position 0 to position 3
     TEST(Inventory, MoveStackToEmptySlot) {
-        // Moving from inventory position 0 to position 3
-
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
         // Position 3 should have the 50 items + item prototype after moving
-        inv[0].item  = &item;
-        inv[0].count = 50;
+        inv[0] = {&item, 50};
+        inv[3] = {nullptr, 0};
 
-        inv[3].item  = nullptr;
-        inv[3].count = 0;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, true);
+        EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, nullptr);
         EXPECT_EQ(inv[0].count, 0);
@@ -100,24 +95,19 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
+    /// Not exceeding the max stack size
+    /// moving 10 items:
+    /// position 3 already has 30 items, adding 10 from position 0 to equal 40.
     TEST(Inventory, MoveStackToPartialFilledSlotNonExceeding) {
-        // Moving from inventory position 0 to position 3. not exceeding the max stack size
-        // moving 10 items:
-        // position 3 already has 30 items, adding 10 from position 0 to equal 40.
-
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        inv[0].item  = &item;
-        inv[0].count = 10;
+        inv[0] = {&item, 10};
+        inv[3] = {&item, 30};
 
-        inv[3].item  = &item;
-        inv[3].count = 30;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, true);
+        EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, nullptr);
         EXPECT_EQ(inv[0].count, 0);
@@ -126,25 +116,20 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 40);
     }
 
+    /// EXCEEDING the max stack size
+    /// moving 30 items:
+    /// position 3 already has 30 items, meaning only 20 can be moved into it to reach the stack size of 50.
+    /// this leaves 10 in the original location (0) and 50 in the target location (3)
     TEST(Inventory, MoveStackToPartialFilledSlotExceeding) {
-        // Moving from inventory position 0 to position 3. EXCEEDING the max stack size
-        // moving 30 items:
-        // position 3 already has 30 items, meaning only 20 can be moved into it to reach the stack size of 50.
-        // this leaves 10 in the original location (0) and 50 in the target location (3)
-
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        inv[0].item  = &item;
-        inv[0].count = 30;
+        inv[0] = {&item, 30};
+        inv[3] = {&item, 30};
 
-        inv[3].item  = &item;
-        inv[3].count = 30;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, false);
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, &item);
         EXPECT_EQ(inv[0].count, 10);
@@ -153,10 +138,8 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
+    /// The item stacks are of different items, therefore only swapping positions
     TEST(Inventory, SwapItemStacks) {
-        // Moving from inventory position 0 to position 3
-        // The item stacks are of different items, therefore only swapping positions
-
         Inventory inv(10);
 
         proto::Item item;
@@ -166,11 +149,8 @@ namespace jactorio::game
         item2.stackSize = 100;
 
         // Position 3 should have the 50 items + item prototype after moving
-        inv[0].item  = &item;
-        inv[0].count = 50;
-
-        inv[3].item  = &item2;
-        inv[3].count = 10;
+        inv[0] = {&item, 50};
+        inv[3] = {&item2, 10};
 
         EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
@@ -181,21 +161,15 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
+    /// A slot is filtered, therefore no swap occurs
     TEST(Inventory, SwapItemStacksFilterd) {
-        // Moving from inventory position 0 to position 3
-        // slot 0 is filtered, therefore no swap occurs
-
         Inventory inv(10);
 
         const proto::Item item;
         const proto::Item item2;
 
-        inv[0].item   = &item;
-        inv[0].count  = 2;
-        inv[0].filter = &item;
-
-        inv[3].item  = &item2;
-        inv[3].count = 10;
+        inv[0] = {&item, 2, &item};
+        inv[3] = {&item2, 10};
 
         EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
@@ -210,8 +184,7 @@ namespace jactorio::game
 
 
         // 0 -> 3: Ok, 3 is empty
-        inv[3].item  = nullptr;
-        inv[3].count = 0;
+        inv[3] = {nullptr, 0};
 
         EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
@@ -236,23 +209,17 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].filter, nullptr);
     }
 
+    /// The target slot is full, origin slot has something. Swap the 2 items
     TEST(Inventory, MoveStackFullTargetSlot) {
-        // Moving from inventory position 0 to position 3.
-        // The target slot is full, origin slot has something
-        // swap the 2 items
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        inv[0].item  = &item;
-        inv[0].count = 18;
+        inv[0] = {&item, 18};
+        inv[3] = {&item, 50};
 
-        inv[3].item  = &item;
-        inv[3].count = 50;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, false);
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, &item);
         EXPECT_EQ(inv[0].count, 50);
@@ -261,20 +228,14 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 18);
     }
 
+    /// Moving nothing to nothing results in nothing!
     TEST(Inventory, MoveEmptySlotToEmptySlot) {
-        // Moving from inventory position 0 to position 3
-        // Moving nothing to nothing results in nothing!
-
         Inventory inv(10);
 
-        inv[0].item  = nullptr;
-        inv[0].count = 0;
+        inv[0] = {nullptr, 0};
+        inv[3] = {nullptr, 0};
 
-        inv[3].item  = nullptr;
-        inv[3].count = 0;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, true);
+        EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, nullptr);
         EXPECT_EQ(inv[0].count, 0);
@@ -283,26 +244,20 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 0);
     }
 
-    // Items somehow exceeding their item stacks
+    // Items exceeding their item stacks
 
+    /// The origin item is exceeding its stack size
+    /// Move out only the stack size into the empty slot
     TEST(Inventory, MoveExceedingStackToEmptySlot) {
-        // Moving from inventory position 0 to position 3.
-        // The origin item is somehow exceeding its stack size, perhaps a prototype update
-        // Move out only the stack size into the empty slot
-
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        inv[0].item  = &item;
-        inv[0].count = 9000;
+        inv[0] = {&item, 9000};
+        inv[3] = {nullptr, 0};
 
-        inv[3].item  = nullptr;
-        inv[3].count = 0;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, false);
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, &item);
         EXPECT_EQ(inv[0].count, 8950);
@@ -311,24 +266,18 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
+    /// The TARGET item is exceeding its stack size
+    /// Move out only the stack size into the empty origin slot
     TEST(Inventory, MoveEmptySlotToExceedingStack) {
-        // Moving from inventory position 0 to position 3.
-        // The TARGET item is somehow exceeding its stack size, perhaps a prototype update
-        // Move out only the stack size into the empty origin slot
-
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        inv[0].item  = nullptr;
-        inv[0].count = 0;
+        inv[0] = {nullptr, 0};
+        inv[3] = {&item, 9000};
 
-        inv[3].item  = &item;
-        inv[3].count = 9000;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, false);
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, &item);
         EXPECT_EQ(inv[0].count, 50);
@@ -337,24 +286,18 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 8950);
     }
 
+    /// The origin item is exceeding its stack size
+    /// Move out only 10 to reach the stack size in the target slot
     TEST(Inventory, MoveExceedingStackToPartialSlot) {
-        // Moving from inventory position 0 to position 3.
-        // The origin item is somehow exceeding its stack size, perhaps a prototype update
-        // Move out only 10 to reach the stack size in the target slot
-
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        inv[0].item  = &item;
-        inv[0].count = 9000;
+        inv[0] = {&item, 9000};
+        inv[3] = {&item, 40};
 
-        inv[3].item  = &item;
-        inv[3].count = 40;
-
-        const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-        EXPECT_EQ(result, false);
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
         EXPECT_EQ(inv[0].item, &item);
         EXPECT_EQ(inv[0].count, 8990);
@@ -366,174 +309,144 @@ namespace jactorio::game
     // ------------------------------------------------------
     // RIGHT click tests
     // ------------------------------------------------------
-    TEST(Inventory, MoveRclickEmptyOriginInv) {
-        // Moving from inventory position 0 to position 3.
-        // Origin inventory is empty, right clicking on an item takes half of it
-        // round down, unless there is only 1, where one is taken
 
+    /// Target has even number of items
+    TEST(Inventory, MoveRclickTargetTakeHalfEven) {
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
         // Case 1, even number
-        {
-            inv[0].item  = nullptr;
-            inv[0].count = 0;
+        inv[0] = {nullptr, 0};
+        inv[3] = {&item, 40};
 
-            inv[3].item  = &item;
-            inv[3].count = 40;
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
 
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, false);
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 20);
 
-            EXPECT_EQ(inv[0].item, &item);
-            EXPECT_EQ(inv[0].count, 20);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 20);
-        }
-        // Case 2, odd number
-        {
-            inv[0].item  = nullptr;
-            inv[0].count = 0;
-
-            inv[3].item  = &item;
-            inv[3].count = 39;
-
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, false);
-
-            EXPECT_EQ(inv[0].item, &item);
-            EXPECT_EQ(inv[0].count, 19);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 20);
-        }
-        // Case 3, 1 item
-        {
-            inv[0].item  = nullptr;
-            inv[0].count = 0;
-
-            inv[3].item  = &item;
-            inv[3].count = 1;
-
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, false);
-
-            EXPECT_EQ(inv[0].item, &item);
-            EXPECT_EQ(inv[0].count, 1);
-
-            EXPECT_EQ(inv[3].item, nullptr);
-            EXPECT_EQ(inv[3].count, 0);
-        }
-        // Case 4, Exceed stack size
-        {
-            inv[0].item  = nullptr;
-            inv[0].count = 0;
-
-            inv[3].item  = &item;
-            inv[3].count = 110;
-
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, false);
-
-            EXPECT_EQ(inv[0].item, &item);
-            EXPECT_EQ(inv[0].count, 50);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 60);
-        }
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 20);
     }
 
-    TEST(Inventory, MoveRclickEmptyTargetInv) {
-        // Moving from inventory position 0 to position 3.
-        // Target inventory is empty, right clicking drops 1 item off
-
+    /// Target stack has odd number of items
+    TEST(Inventory, MoveRclickTargetTakeHalfOdd) {
         Inventory inv(10);
 
         proto::Item item;
         item.stackSize = 50;
 
-        // Case 1, > 1 item
-        {
-            inv[0].item  = &item;
-            inv[0].count = 10;
+        // Case 2, odd number
+        inv[0] = {nullptr, 0};
+        inv[3] = {&item, 39};
 
-            inv[3].item  = nullptr;
-            inv[3].count = 0;
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
 
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, false);
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 19);
 
-            EXPECT_EQ(inv[0].item, &item);
-            EXPECT_EQ(inv[0].count, 9);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 1);
-        }
-        // Case 2, 1 item
-        {
-            inv[0].item  = &item;
-            inv[0].count = 1;
-
-            inv[3].item  = nullptr;
-            inv[3].count = 0;
-
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, true);
-
-            EXPECT_EQ(inv[0].item, nullptr);
-            EXPECT_EQ(inv[0].count, 0);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 1);
-        }
-        // Case 3, Target has 1 of the item
-        {
-            inv[0].item  = &item;
-            inv[0].count = 1;
-
-            inv[3].item  = &item;
-            inv[3].count = 1;
-
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, true);
-
-            EXPECT_EQ(inv[0].item, nullptr);
-            EXPECT_EQ(inv[0].count, 0);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 2);
-        }
-        // Case 4, target has > 1 of the item
-        {
-            inv[0].item  = &item;
-            inv[0].count = 10;
-
-            inv[3].item  = &item;
-            inv[3].count = 1;
-
-            const bool result = MoveItemstackToIndex(inv[0], inv[3], 1);
-            EXPECT_EQ(result, false);
-
-            EXPECT_EQ(inv[0].item, &item);
-            EXPECT_EQ(inv[0].count, 9);
-
-            EXPECT_EQ(inv[3].item, &item);
-            EXPECT_EQ(inv[3].count, 2);
-        }
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 20);
     }
 
+    /// Target stack only has 1 item
+    TEST(Inventory, MoveRclickTargetOnly1ToTake) {
+        Inventory inv(10);
 
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
+        proto::Item item;
+        item.stackSize = 50;
+
+        inv[0] = {nullptr, 0};
+        inv[3] = {&item, 1};
+
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 1);
+
+        EXPECT_EQ(inv[3].item, nullptr);
+        EXPECT_EQ(inv[3].count, 0);
+    }
+
+    /// Target stack exceeds stack size
+    TEST(Inventory, MoveRclickTargetExceedStack) {
+        Inventory inv(10);
+
+        proto::Item item;
+        item.stackSize = 50;
+
+        inv[0] = {nullptr, 0};
+        inv[3] = {&item, 110};
+
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 50);
+
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 60);
+    }
+
+    /// Target stack exceeds stack size, taking half is still within stack size
+    TEST(Inventory, MoveRclickTargetExceedStackHalfWithinStack) {
+        Inventory inv(10);
+
+        proto::Item item;
+        item.stackSize = 50;
+
+        inv[0] = {nullptr, 0};
+        inv[3] = {&item, 62};
+
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 31);
+
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 31);
+    }
+
+    /// Target stack empty, right clicking drops 1 item off
+    TEST(Inventory, MoveRclickEmptyTargetDrop1) {
+        Inventory inv(10);
+
+        proto::Item item;
+        item.stackSize = 50;
+
+        inv[0] = {&item, 10};
+        inv[3] = {nullptr, 0};
+
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 9);
+
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 1);
+    }
+
+    /// Target stack empty, right clicking drops 1 item off, origin stack is now empty
+    TEST(Inventory, MoveRclickEmptyTargetDrop1Has1) {
+        Inventory inv(10);
+
+        proto::Item item;
+        item.stackSize = 50;
+
+        inv[0] = {&item, 1};
+        inv[3] = {nullptr, 0};
+
+        EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 1));
+
+        EXPECT_EQ(inv[0].item, nullptr);
+        EXPECT_EQ(inv[0].count, 0);
+
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 1);
+    }
+
+    // ======================================================================
+
     TEST(Inventory, Sort) {
         proto::Item item;
         item.stackSize = 50;
@@ -544,30 +457,16 @@ namespace jactorio::game
         Inventory inv{40};
 
         // Item 1
-        inv[0].item  = &item;
-        inv[0].count = 10;
-
-        inv[10].item  = &item;
-        inv[10].count = 25;
-
-        inv[20].item  = &item;
-        inv[20].count = 25;
-
-        inv[13].item  = &item;
-        inv[13].count = 20;
-
-        inv[14].item  = &item;
-        inv[14].count = 30;
+        inv[0]  = {&item, 10};
+        inv[10] = {&item, 25};
+        inv[20] = {&item, 25};
+        inv[13] = {&item, 20};
+        inv[14] = {&item, 30};
 
         // Item 2
-        inv[31].item  = &item_2;
-        inv[31].count = 4;
-
-        inv[32].item  = &item_2;
-        inv[32].count = 6;
-
-        inv[22].item  = &item_2;
-        inv[22].count = 1;
+        inv[31] = {&item_2, 4};
+        inv[32] = {&item_2, 6};
+        inv[22] = {&item_2, 1};
 
 
         // Sorted inventory should be as follows
@@ -586,6 +485,10 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 10);
         EXPECT_EQ(inv[4].item, &item_2);
         EXPECT_EQ(inv[4].count, 1);
+
+        for (std::size_t i = 5; i < inv.Size(); ++i) {
+            EXPECT_TRUE(inv[i].Empty());
+        }
     }
 
     TEST(Inventory, SortFull) {
@@ -594,8 +497,7 @@ namespace jactorio::game
 
         Inventory inv{30};
         for (auto& i : inv) {
-            i.item  = &item;
-            i.count = 50;
+            i = {&item, 50};
         }
 
         inv.Sort();
@@ -635,7 +537,6 @@ namespace jactorio::game
     /// Should find the first empty slot and add the item there
     /// Slots, 0, 1 Will be with another item
     /// Should place in slot 2
-
     TEST(Inventory, AddStackToEmptySlot) {
         Inventory inv(10);
 
@@ -643,10 +544,8 @@ namespace jactorio::game
         const proto::Item item2;
 
         // Another item
-        inv[0].item  = &item;
-        inv[0].count = 10;
-        inv[1].item  = &item;
-        inv[1].count = 21;
+        inv[0] = {&item, 10};
+        inv[1] = {&item, 21};
 
         auto add_item = ItemStack{&item2, 20};
         EXPECT_TRUE(inv.CanAdd(add_item).first);
@@ -680,19 +579,14 @@ namespace jactorio::game
         proto::Item item_we_add_to;
         item_we_add_to.stackSize = 50;
 
-        inv[0].item  = &another_item;
-        inv[0].count = 10;
+        inv[0] = {&another_item, 10};
 
         // Will fill up first 2, then dump the remaining in 3
-        inv[1].item  = &item_we_add_to;
-        inv[1].count = 40;
-        inv[2].item  = &item_we_add_to;
-        inv[2].count = 40;
+        inv[1] = {&item_we_add_to, 40};
+        inv[2] = {&item_we_add_to, 40};
+        inv[3] = {&item_we_add_to, 20};
 
-        inv[3].item  = &item_we_add_to;
-        inv[3].count = 20;
-
-        auto add_item = ItemStack{&item_we_add_to, 50};
+        ItemStack add_item{&item_we_add_to, 50};
         EXPECT_TRUE(inv.CanAdd(add_item).first);
         EXPECT_TRUE(inv.AddSub(add_item));
 
@@ -716,7 +610,6 @@ namespace jactorio::game
         EXPECT_EQ(inv[4].count, 0);
     }
 
-    ///
     /// Slots 1 is full, inv size is 1, will return false
     TEST(Inventory, AddStackNoAvailableSlots) {
         Inventory inv(1);
@@ -724,10 +617,9 @@ namespace jactorio::game
         const proto::Item item;
         const proto::Item item2;
 
-        inv[0].item  = &item;
-        inv[0].count = 10;
+        inv[0] = {&item, 10};
 
-        auto add_item = ItemStack{&item2, 20};
+        ItemStack add_item{&item2, 20};
         EXPECT_FALSE(inv.CanAdd(add_item).first);
         EXPECT_FALSE(inv.AddSub(add_item));
 
@@ -738,7 +630,6 @@ namespace jactorio::game
         EXPECT_EQ(inv[0].count, 10);
     }
 
-    ///
     /// Item must match filter, otherwise it cannot be at the slot with the filter
     TEST(Inventory, AddStackFiltered) {
         proto::Item filtered_item;
@@ -800,14 +691,19 @@ namespace jactorio::game
         proto::Item item;
         inv[20] = {&item, 5};
         inv[23] = {&item, 5};
+        inv[24] = {&item, 1};
 
         EXPECT_TRUE(inv.Remove(item, 10));
 
-        // Inventory should be empty
-        for (auto& i : inv) {
-            EXPECT_EQ(i.item, nullptr);
-            // EXPECT_EQ(i.second, 0);
+        for (std::size_t i = 0; i < inv.Size(); ++i) {
+            if (i == 24) {
+                continue;
+            }
+            EXPECT_TRUE(inv[i].Empty());
         }
+
+        EXPECT_EQ(inv[24].item, &item);
+        EXPECT_EQ(inv[24].count, 1);
     }
 
     TEST(Inventory, RemoveNotEnough) {

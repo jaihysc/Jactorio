@@ -184,6 +184,9 @@ namespace jactorio::game
 
         EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, &entity_));
         EXPECT_FALSE(world_.Place({9, 9}, Orientation::up, &entity_));
+
+        ValidateEmpty({9, 9}, {3, 1});
+        ValidatePlaced({9, 10}, entity_, dimension);
     }
 
 
@@ -229,6 +232,6 @@ namespace jactorio::game
         EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, &entity_));
         EXPECT_TRUE(world_.Place({9, 13}, Orientation::up, nullptr));
 
-        ValidateEmpty({9, 13}, dimension);
+        ValidateEmpty({9, 10}, dimension);
     }
 } // namespace jactorio::game

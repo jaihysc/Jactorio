@@ -96,7 +96,7 @@ namespace jactorio::proto
         // Grouping
 
         std::vector<game::ChunkTile*>& GetConveyors(const ChunkCoord& chunk_coords) {
-            return world_.GetChunkC({chunk_coords.x, chunk_coords.y})->GetLogicGroup(game::LogicGroup::conveyor);
+            return world_.GetChunkC(chunk_coords)->GetLogicGroup(game::LogicGroup::conveyor);
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
