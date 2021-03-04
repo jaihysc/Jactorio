@@ -190,7 +190,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& params) co
 }
 
 bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const {
-    assert(params.itemStack.item != nullptr);
+    assert(!params.itemStack.Empty());
     assert(params.itemStack.count > 0);
 
     auto& machine_data = static_cast<proto::AssemblyMachineData&>(params.uniqueData);

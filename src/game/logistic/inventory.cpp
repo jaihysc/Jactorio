@@ -66,6 +66,8 @@ void game::ItemStack::Delete(const proto::Item::StackCount amount) noexcept {
 }
 
 bool game::ItemStack::DropOne(ItemStack& stack) noexcept {
+    assert(!stack.Empty());
+
     item = stack.item;
     count++;
 
@@ -215,6 +217,8 @@ void game::Inventory::Sort() {
 std::pair<bool, size_t> game::Inventory::CanAdd(const ItemStack& stack) const {
     J_INVENTORY_VERIFY(guard);
 
+    assert(!stack.Empty());
+
     // Amount left which needs to be added
     auto remaining_add = stack.count;
     for (size_t i = 0; i < inv_.size(); ++i) {
@@ -243,6 +247,8 @@ std::pair<bool, size_t> game::Inventory::CanAdd(const ItemStack& stack) const {
 
 proto::Item::StackCount game::Inventory::Add(const ItemStack& stack) {
     J_INVENTORY_VERIFY(guard);
+
+    assert(!stack.Empty());
 
     // Amount left which needs to be added
     auto remaining_add = stack.count;
@@ -290,7 +296,7 @@ const proto::Item* game::Inventory::First() const {
     J_INVENTORY_VERIFY(guard);
 
     for (const auto& stack : inv_) {
-        if (stack.item != nullptr) {
+        if (!stack.Empty()) {
             assert(stack.count != 0);
             return stack.item.Get();
         }
@@ -341,13 +347,8 @@ void game::Inventory::Verify() const {
 
 
 bool MoveSameItem(game::ItemStack& origin_stack, game::ItemStack& target_stack, const bool right_click) {
-    assert(origin_stack.item != nullptr); // Invalid itemstack
-    assert(target_stack.item != nullptr); // Invalid itemstack
-    assert(origin_stack.count != 0);      // Invalid itemstack
-    assert(target_stack.count != 0);      // Invalid itemstack
-
-    assert(origin_stack.item->stackSize > 0); // Invalid itemstack stacksize
-    assert(target_stack.item->stackSize > 0); // Invalid itemstack stacksize
+    assert(!origin_stack.Empty());
+    assert(!target_stack.Empty());
 
     if (!right_click) {
         // Not exceeding max stack size
@@ -383,8 +384,8 @@ bool MoveSameItem(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
 }
 
 bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, const bool right_click) {
-    // At most one will be a nullptr
-    assert(!(origin_stack.item == nullptr && target_stack.item == nullptr));
+    // At most one will be a empty
+    assert(!(origin_stack.Empty() && target_stack.Empty()));
 
     // Origin item exceeding stack size
     if (target_stack.Empty()) {

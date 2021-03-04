@@ -432,7 +432,7 @@ void game::Player::Inventory::HandleClick(const data::PrototypeManager& proto,
     // Selection mode can only be set upon first item selection
     if (!hasItemSelected_) {
         // Clicking empty slot
-        if (inv[index].item == nullptr)
+        if (inv[index].Empty())
             return;
 
         hasItemSelected_   = true;
