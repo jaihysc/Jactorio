@@ -246,7 +246,7 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
         return false;
 
     // Do not take item away from player unless item was successfully placed
-    if (!world.Place(coord, orientation, entity_ptr))
+    if (!world.Place(coord, orientation, *entity_ptr))
         // Failed to place because an entity already exists
         return false;
 
@@ -377,7 +377,7 @@ void game::Player::Placement::TryPickup(game::World& world,
             // Call events
             entity_proto->OnRemove(world, logic, tl_coord, TileLayer::entity);
 
-            const bool result = world.Place(tl_coord, entity_tile->GetOrientation(), nullptr);
+            const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
             assert(result); // false indicates failed to remove entity
 
             UpdateNeighboringEntities(world, logic, tl_coord, entity_tile->GetOrientation(), entity_proto);

@@ -119,28 +119,28 @@ namespace jactorio::game
 
 
     TEST_F(WorldPlacementTest, PlaceEntity1x1Valid) {
-        EXPECT_TRUE(world_.Place({0, 0}, Orientation::up, &entity_));
+        EXPECT_TRUE(world_.Place({0, 0}, Orientation::up, entity_));
 
         ValidatePlaced({0, 0}, entity_);
     }
 
     TEST_F(WorldPlacementTest, PlaceEntity1x1Invalid) {
         // Invalid, placing on a base tile which is water
-        EXPECT_FALSE(world_.Place({1, 0}, Orientation::up, &entity_));
+        EXPECT_FALSE(world_.Place({1, 0}, Orientation::up, entity_));
 
         ValidateEmpty({1, 0});
     }
 
 
     TEST_F(WorldPlacementTest, RemoveEntity1x1Valid) {
-        EXPECT_TRUE(world_.Place({10, 9}, Orientation::up, &entity_));
-        EXPECT_TRUE(world_.Place({10, 9}, Orientation::up, nullptr));
+        EXPECT_TRUE(world_.Place({10, 9}, Orientation::up, entity_));
+        EXPECT_TRUE(world_.Remove({10, 9}, Orientation::up));
 
         ValidateEmpty({10, 9});
     }
 
     TEST_F(WorldPlacementTest, RemoveNonExistentEntity1x1) {
-        EXPECT_FALSE(world_.Place({11, 9}, Orientation::up, nullptr));
+        EXPECT_FALSE(world_.Remove({11, 9}, Orientation::up));
         ValidateEmpty({11, 9});
     }
 
@@ -151,7 +151,7 @@ namespace jactorio::game
         const proto::FWorldObject::Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
-        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, &entity_));
+        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity_));
 
         ValidatePlaced({5, 5}, entity_, dimension);
     }
@@ -161,7 +161,7 @@ namespace jactorio::game
         entity_.SetDimension(dimension);
 
         // x = 4 is invalid tile
-        EXPECT_FALSE(world_.Place({4, 5}, Orientation::up, &entity_));
+        EXPECT_FALSE(world_.Place({4, 5}, Orientation::up, entity_));
 
         ValidateEmpty({4, 5}, dimension);
     }
@@ -171,7 +171,7 @@ namespace jactorio::game
         entity_.SetDimension(dimension);
 
         // y = 1 is invalid tile
-        EXPECT_FALSE(world_.Place({9, 2}, Orientation::up, &entity_));
+        EXPECT_FALSE(world_.Place({9, 2}, Orientation::up, entity_));
 
         ValidateEmpty({9, 2}, dimension);
     }
@@ -182,8 +182,8 @@ namespace jactorio::game
         const proto::FWorldObject::Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
-        EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, &entity_));
-        EXPECT_FALSE(world_.Place({9, 9}, Orientation::up, &entity_));
+        EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity_));
+        EXPECT_FALSE(world_.Place({9, 9}, Orientation::up, entity_));
 
         ValidateEmpty({9, 9}, {3, 1});
         ValidatePlaced({9, 10}, entity_, dimension);
@@ -194,8 +194,8 @@ namespace jactorio::game
         const proto::FWorldObject::Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
-        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, &entity_));
-        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, nullptr));
+        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity_));
+        EXPECT_TRUE(world_.Remove({5, 5}, Orientation::up));
 
         ValidateEmpty({5, 5}, dimension);
     }
@@ -206,8 +206,8 @@ namespace jactorio::game
         const proto::FWorldObject::Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
-        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, &entity_));
-        EXPECT_TRUE(world_.Place({7, 5}, Orientation::up, nullptr));
+        EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity_));
+        EXPECT_TRUE(world_.Remove({7, 5}, Orientation::up));
 
         ValidateEmpty({5, 5}, dimension);
     }
@@ -219,7 +219,7 @@ namespace jactorio::game
         const proto::FWorldObject::Dimension dimension(3, 4);
         entity_.SetDimension(dimension);
 
-        EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, &entity_));
+        EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity_));
 
         ValidatePlaced({9, 10}, entity_, dimension);
     }
@@ -229,8 +229,8 @@ namespace jactorio::game
         entity_.SetDimension(dimension);
 
 
-        EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, &entity_));
-        EXPECT_TRUE(world_.Place({9, 13}, Orientation::up, nullptr));
+        EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity_));
+        EXPECT_TRUE(world_.Remove({9, 13}, Orientation::up));
 
         ValidateEmpty({9, 10}, dimension);
     }

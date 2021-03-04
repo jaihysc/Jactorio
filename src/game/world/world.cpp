@@ -156,7 +156,7 @@ const game::ChunkTile* game::World::GetTile(WorldCoord coord, const TileLayer tl
 // ======================================================================
 // Placement
 
-bool game::World::PlaceLocationValid(const WorldCoord& coord, const Position2<uint8_t> dimensions) const {
+bool game::World::PlaceLocationValid(const WorldCoord& coord, const proto::FWorldObject::Dimension dimensions) const {
     for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
         for (int offset_x = 0; offset_x < dimensions.x; ++offset_x) {
 
@@ -176,54 +176,28 @@ bool game::World::PlaceLocationValid(const WorldCoord& coord, const Position2<ui
     return true;
 }
 
-bool game::World::Place(const WorldCoord& coord, const Orientation orien, const proto::Entity* entity) {
+bool game::World::Place(const WorldCoord& coord, const Orientation orien, const proto::Entity& entity) {
     constexpr auto place_layer = TileLayer::entity;
 
     auto* provided_tile = GetTile(coord, place_layer);
     assert(provided_tile != nullptr);
 
-    // entity is nullptr indicates removing an entity
-    if (entity == nullptr) {
-        const auto* t_entity = provided_tile->GetPrototype<proto::Entity>();
+    const auto dimension = entity.GetDimension(orien);
 
-        if (t_entity == nullptr) // Already removed
-            return false;
-
-        // Find top left corner
-        const auto tl_coord = coord.Incremented(*provided_tile);
-
-        const Position2<uint8_t> dimensions = {t_entity->GetWidth(orien), t_entity->GetHeight(orien)};
-
-        // Remove
-        for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
-            for (int offset_x = 0; offset_x < dimensions.x; ++offset_x) {
-                auto* tile = GetTile({tl_coord.x + offset_x, tl_coord.y + offset_y}, place_layer);
-                assert(tile != nullptr);
-
-                tile->Clear();
-            }
-        }
-
-        return true;
-    }
-
-    // Place
-    const Position2<uint8_t> dimensions = {entity->GetWidth(orien), entity->GetHeight(orien)};
-
-    if (!PlaceLocationValid(coord, dimensions))
+    if (!PlaceLocationValid(coord, dimension))
         return false;
 
     // The top left is handled differently
     provided_tile->SetPrototype(orien, entity);
 
-    if (dimensions.x != 1 || dimensions.y != 1) {
+    if (dimension.x != 1 || dimension.y != 1) {
         // Multi tile
 
         MultiTileData::ValueT entity_index = 1;
         int offset_x                       = 1;
 
-        for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
-            for (; offset_x < dimensions.x; ++offset_x) {
+        for (int offset_y = 0; offset_y < dimension.y; ++offset_y) {
+            for (; offset_x < dimension.x; ++offset_x) {
                 auto* tile = GetTile({coord.x + offset_x, coord.y + offset_y}, place_layer);
                 assert(tile != nullptr);
 
@@ -231,6 +205,32 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
                 tile->SetupMultiTile(entity_index++, *provided_tile);
             }
             offset_x = 0;
+        }
+    }
+
+    return true;
+}
+
+bool game::World::Remove(const WorldCoord& coord, const Orientation orien) {
+    constexpr auto remove_layer = TileLayer::entity;
+
+    auto* provided_tile = GetTile(coord, remove_layer);
+    assert(provided_tile != nullptr);
+
+    const auto* t_entity = provided_tile->GetPrototype<proto::Entity>();
+
+    if (t_entity == nullptr) // Already removed
+        return false;
+
+    // Remove starting from top left corner
+    const auto tl_coord = coord.Incremented(*provided_tile);
+
+    for (int offset_y = 0; offset_y < t_entity->GetHeight(orien); ++offset_y) {
+        for (int offset_x = 0; offset_x < t_entity->GetWidth(orien); ++offset_x) {
+            auto* tile = GetTile({tl_coord.x + offset_x, tl_coord.y + offset_y}, remove_layer);
+            assert(tile != nullptr);
+
+            tile->Clear();
         }
     }
 
