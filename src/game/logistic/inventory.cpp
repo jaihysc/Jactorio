@@ -274,19 +274,6 @@ proto::Item::StackCount game::Inventory::Add(const ItemStack& stack) {
     return remaining_add;
 }
 
-bool game::Inventory::AddSub(ItemStack& stack) {
-    J_INVENTORY_VERIFY(guard);
-
-    const auto remainder = Add(stack);
-    if (remainder == 0) {
-        stack.Clear();
-        return true;
-    }
-
-    stack.count = remainder;
-    return false;
-}
-
 uint32_t game::Inventory::Count(const proto::Item& item) const {
     J_INVENTORY_VERIFY(guard);
 

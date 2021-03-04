@@ -547,11 +547,9 @@ namespace jactorio::game
         inv[0] = {&item, 10};
         inv[1] = {&item, 21};
 
-        auto add_item = ItemStack{&item2, 20};
+        ItemStack add_item{&item2, 20};
         EXPECT_TRUE(inv.CanAdd(add_item).first);
-        EXPECT_TRUE(inv.AddSub(add_item));
-
-        EXPECT_EQ(add_item.count, 0);
+        EXPECT_EQ(inv.Add(add_item), 0);
 
         // Did not modify existing items
         EXPECT_EQ(inv[0].item, &item);
@@ -588,9 +586,7 @@ namespace jactorio::game
 
         ItemStack add_item{&item_we_add_to, 50};
         EXPECT_TRUE(inv.CanAdd(add_item).first);
-        EXPECT_TRUE(inv.AddSub(add_item));
-
-        EXPECT_EQ(add_item.count, 0);
+        EXPECT_EQ(inv.Add(add_item), 0);
 
         // Did not modify other items
         EXPECT_EQ(inv[0].item, &another_item);
@@ -621,9 +617,7 @@ namespace jactorio::game
 
         ItemStack add_item{&item2, 20};
         EXPECT_FALSE(inv.CanAdd(add_item).first);
-        EXPECT_FALSE(inv.AddSub(add_item));
-
-        EXPECT_EQ(add_item.count, 20);
+        EXPECT_EQ(inv.Add(add_item), 20);
 
         // Did not modify existing items
         EXPECT_EQ(inv[0].item, &item);

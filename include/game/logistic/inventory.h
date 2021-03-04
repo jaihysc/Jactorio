@@ -122,17 +122,11 @@ namespace jactorio::game
         /// \return true if succeeded, first index which can be added at
         J_NODISCARD std::pair<bool, size_t> CanAdd(const ItemStack& stack) const;
 
-        ///
         /// Adds stack to current inventory
+        /// Adds to the inventory left to right, top to bottom | Fill slots of same type if it encounters them
         /// \return Number of items which were NOT added
         proto::Item::StackCount Add(const ItemStack& stack);
 
-        ///
-        /// Adds stack to the current inventory, subtracting added amount from stack
-        ///
-        /// Adds to the inventory left to right, top to bottom | Fill slots of same type if it encounters them
-        /// \return false if failed, amount left in stack is remaining amount
-        bool AddSub(ItemStack& stack);
 
         ///
         /// Gets count of item in inventory
