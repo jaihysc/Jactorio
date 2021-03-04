@@ -50,7 +50,9 @@ namespace jactorio::proto
             return this;
         }
 
-        ///
+        J_NODISCARD Dimension GetDimension(const Orientation orientation) const noexcept {
+            return {GetWidth(orientation), GetHeight(orientation)};
+        }
         /// Calls SetWidth and SetHeight
         FWorldObject* SetDimension(const Dimension& dimension) {
             SetWidth(dimension.x);
