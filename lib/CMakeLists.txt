@@ -34,11 +34,16 @@ validate_dependency(backward-cpp)
 validate_dependency(cereal)
 
 
+# Configurate libraries
+
 # SDL, fixes unresolved symbols to memset, memcpy, __chkstk when using /GL (Whole program optimization)
 # Build in Debug just decided to fail one day, so these link targets are only added in when using /GL
 if (MSVC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	list(APPEND EXTRA_LIBS vcruntime msvcrt)
 endif()
+
+# Fixes duplicate glewd warning
+set(glew-cmake_BUILD_SHARED OFF)
 
 
 # Ones which need to be built
