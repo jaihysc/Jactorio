@@ -197,20 +197,6 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(ChunkTileTest, IsNonTopLeft) {
-        {
-            ChunkTile tile;
-            EXPECT_FALSE(tile.IsNonTopLeft());
-        }
-
-        {
-            ChunkTile top_left;
-            ChunkTile tile;
-            tile.SetupMultiTile(1, top_left);
-            EXPECT_TRUE(tile.IsNonTopLeft());
-        }
-    }
-
     TEST_F(ChunkTileTest, GetDimensions) {
         const ChunkTile first;
         const auto dimens = first.GetDimension();

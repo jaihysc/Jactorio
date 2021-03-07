@@ -108,7 +108,6 @@ namespace jactorio::game
         J_NODISCARD bool IsTopLeft() const noexcept; // Destructor use safe
         J_NODISCARD bool IsMultiTile() const noexcept;
         J_NODISCARD bool IsMultiTileTopLeft() const noexcept;
-        J_NODISCARD bool IsNonTopLeft() const noexcept;
 
         /// Looks at prototype to determine dimensions, 1x1 if no prototype
         /// \return Dimensions of multi-tile, or 1x1 if single tile
@@ -333,7 +332,7 @@ namespace jactorio::game
 
     template <typename T>
     T* ChunkTile::GetUniqueData() noexcept {
-        if (IsNonTopLeft()) {
+        if (!IsTopLeft()) {
             auto* tl_layer = AsNonTopLeft().topLeft;
             assert(tl_layer != nullptr);
 

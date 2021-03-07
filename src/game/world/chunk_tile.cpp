@@ -87,11 +87,6 @@ bool game::ChunkTile::IsMultiTileTopLeft() const noexcept {
     return IsMultiTile() && IsTopLeft();
 }
 
-bool game::ChunkTile::IsNonTopLeft() const noexcept {
-    return GetMultiTileIndex() != 0;
-}
-
-
 proto::FWorldObject::Dimension game::ChunkTile::GetDimension() const noexcept {
     if (GetPrototype() == nullptr) {
         return {1, 1};
@@ -107,7 +102,7 @@ void game::ChunkTile::SetupMultiTile(const TileDistanceT multi_tile_index, Chunk
 
     common_.multiTileIndex = multi_tile_index;
 
-    assert(IsNonTopLeft());
+    assert(!IsTopLeft());
     assert(&top_left != this);
     AsNonTopLeft().topLeft = &top_left;
 }
@@ -125,7 +120,7 @@ const game::ChunkTile* game::ChunkTile::GetTopLeft() const noexcept {
     if (IsTopLeft())
         return this;
 
-    assert(IsNonTopLeft());
+    assert(!IsTopLeft());
     return AsNonTopLeft().topLeft;
 }
 
@@ -158,12 +153,12 @@ const game::ChunkTile::TopLeft& game::ChunkTile::AsTopLeft() const noexcept {
 }
 
 game::ChunkTile::NonTopLeft& game::ChunkTile::AsNonTopLeft() noexcept {
-    assert(IsNonTopLeft());
+    assert(!IsTopLeft());
     return data_.nonTopLeft;
 }
 
 const game::ChunkTile::NonTopLeft& game::ChunkTile::AsNonTopLeft() const noexcept {
-    assert(IsNonTopLeft());
+    assert(!IsTopLeft());
     return data_.nonTopLeft;
 }
 
