@@ -59,10 +59,8 @@ namespace jactorio::game
         /// \remark Ensure stack has enough to delete
         void Delete(proto::Item::StackCount amount) noexcept;
 
-        ///
-        /// Attempts to drop one item from provided stack to current item stack
-        /// \return true if stack is empty
-        bool DropOne(ItemStack& stack) noexcept;
+        /// Attempts to drop specified amount of item from current stack into provided stack
+        void Drop(ItemStack& target_stack, proto::Item::StackCount amount) noexcept;
 
         ///
         /// \return true if provided ItemStack holds the selection cursor from the player

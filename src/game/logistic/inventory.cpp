@@ -84,20 +84,14 @@ void game::ItemStack::Delete(const proto::Item::StackCount amount) noexcept {
     }
 }
 
-bool game::ItemStack::DropOne(ItemStack& stack) noexcept {
-    assert(!stack.Empty());
+void game::ItemStack::Drop(ItemStack& target_stack, const proto::Item::StackCount amount) noexcept {
+    assert(!Empty());
 
-    item = stack.item;
-    count++;
+    target_stack.item = item;
+    target_stack.count += amount;
+    assert(target_stack.count <= item->stackSize);
 
-    // Empty?
-    stack.count--;
-    if (stack.count == 0) {
-        stack.item = nullptr;
-        return true;
-    }
-
-    return false;
+    Delete(amount);
 }
 
 bool game::ItemStack::IsCursor() const noexcept {
@@ -370,6 +364,11 @@ bool MoveSameItem(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
     assert(!target_stack.Empty());
 
     if (!right_click) {
+        if (target_stack.Full()) {
+            std::swap(target_stack, origin_stack);
+            return false;
+        }
+
         // Not exceeding max stack size
         if (target_stack.FreeCount() >= origin_stack.count) {
             target_stack.count += origin_stack.count;
@@ -378,25 +377,16 @@ bool MoveSameItem(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
             return true;
         }
 
-        // Swap places if same type, and target is full
-        if (target_stack.Full()) {
-            std::swap(target_stack, origin_stack);
-            return false;
-        }
-
         // Target stack does not have enough space to fit origin stack
-        // Move origin to reach the max stack size in the target
-        const auto free_count = target_stack.FreeCount();
-        origin_stack.count -= free_count;
-        target_stack.count += free_count;
-
+        origin_stack.Drop(target_stack, target_stack.FreeCount());
         return false;
     }
 
 
     // Drop 1 to target on right click
     if (right_click && !target_stack.Full()) {
-        return target_stack.DropOne(origin_stack);
+        origin_stack.Drop(target_stack, 1);
+        return origin_stack.Empty();
     }
 
     return false;
@@ -417,12 +407,7 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
         }
 
         if (origin_stack.Overloaded()) {
-            const auto stack_size = origin_stack.item->stackSize;
-
-            origin_stack.count -= stack_size;
-            target_stack.count = stack_size;
-
-            target_stack.item = origin_stack.item;
+            origin_stack.Drop(target_stack, origin_stack.item->stackSize);
             return false;
         }
 
@@ -431,7 +416,8 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
             return true;
         }
         // Right click
-        return target_stack.DropOne(origin_stack);
+        origin_stack.Drop(target_stack, 1);
+        return origin_stack.Empty();
     }
 
     if (origin_stack.Empty()) {
@@ -441,12 +427,7 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
 
         if (!right_click) {
             if (target_stack.Overloaded()) {
-                const auto stack_size = target_stack.item->stackSize;
-
-                target_stack.count -= stack_size;
-                origin_stack.count = stack_size;
-
-                origin_stack.item = target_stack.item;
+                target_stack.Drop(origin_stack, target_stack.item->stackSize);
                 return false;
             }
 
@@ -469,12 +450,7 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
             return target_stack.count / 2;
         };
 
-        const auto amount = get_take_amount();
-
-        origin_stack.item  = target_stack.item;
-        origin_stack.count = amount;
-
-        target_stack.Delete(amount);
+        target_stack.Drop(origin_stack, get_take_amount());
 
         return false;
     }
