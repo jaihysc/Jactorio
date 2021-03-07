@@ -193,8 +193,8 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
     if (dimension.x != 1 || dimension.y != 1) {
         // Multi tile
 
-        MultiTileData::ValueT entity_index = 1;
-        int offset_x                       = 1;
+        int entity_index = 1;
+        int offset_x     = 1;
 
         for (int offset_y = 0; offset_y < dimension.y; ++offset_y) {
             for (; offset_x < dimension.x; ++offset_x) {

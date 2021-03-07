@@ -13,24 +13,6 @@
 
 namespace jactorio::game
 {
-    struct MultiTileData
-    {
-        using ValueT = uint8_t;
-
-        /// Number of tiles the sprite should span
-        uint8_t span   = 1;
-        uint8_t height = 1;
-
-        friend bool operator==(const MultiTileData& lhs, const MultiTileData& rhs) {
-            return std::tie(lhs.span, lhs.height) == std::tie(rhs.span, rhs.height);
-        }
-
-        friend bool operator!=(const MultiTileData& lhs, const MultiTileData& rhs) {
-            return !(lhs == rhs);
-        }
-    };
-
-    ///
     /// A tile within a chunk
     class ChunkTile
     {
@@ -128,10 +110,9 @@ namespace jactorio::game
         J_NODISCARD bool IsMultiTileTopLeft() const noexcept;
         J_NODISCARD bool IsNonTopLeft() const noexcept;
 
-        ///
         /// Looks at prototype to determine dimensions, 1x1 if no prototype
         /// \return Dimensions of multi-tile, or 1x1 if single tile
-        J_NODISCARD MultiTileData GetDimension() const noexcept;
+        J_NODISCARD proto::FWorldObject::Dimension GetDimension() const noexcept;
 
 
         ///

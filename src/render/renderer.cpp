@@ -414,8 +414,8 @@ void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::C
     // Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
     // Total length of the sprite, to be split among the different tiles
-    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / SafeCast<float>(mt_data.span);
-    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / SafeCast<float>(mt_data.height);
+    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / SafeCast<float>(mt_data.x);
+    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / SafeCast<float>(mt_data.y);
 
     const double x_multiplier = tile.GetOffsetX();
     const double y_multiplier = tile.GetOffsetY();

@@ -210,7 +210,7 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
         ImGui::Text("Multi-tile index: %d", tile->GetMultiTileIndex());
 
         ImGui::Text("Orientation: %s", tile->GetOrientation().ToCstr());
-        ImGui::Text("Dimensions: %d, %d", tile->GetDimension().span, tile->GetDimension().height);
+        ImGui::Text("Dimensions: %d, %d", tile->GetDimension().x, tile->GetDimension().y);
 
         ImGui::Text("Prototype: %s", MemoryAddressToStr(tile->GetPrototype()).c_str());
         ImGui::Text("Unique data: %s", MemoryAddressToStr(tile->GetUniqueData()).c_str());

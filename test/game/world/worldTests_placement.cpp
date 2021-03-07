@@ -96,8 +96,8 @@ namespace jactorio::game
                     EXPECT_EQ(tile->GetMultiTileIndex(), entity_index++);
 
                     // Ensure tile width and height are properly set
-                    EXPECT_EQ(tile->GetDimension().span, dimension.x);
-                    EXPECT_EQ(tile->GetDimension().height, dimension.y);
+                    EXPECT_EQ(tile->GetDimension().x, dimension.x);
+                    EXPECT_EQ(tile->GetDimension().y, dimension.y);
                 }
             }
         }
