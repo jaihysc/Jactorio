@@ -28,7 +28,7 @@ void proto::Splitter::OnBuild(game::World& world,
     };
 
     build_conveyor(coord);
-    build_conveyor(GetNonTopLeftCoord(world, coord));
+    build_conveyor(GetNonTopLeftCoord(world, coord, tlayer));
 }
 
 void proto::Splitter::OnNeighborUpdate(game::World& world,
@@ -42,10 +42,10 @@ void proto::Splitter::OnNeighborUpdate(game::World& world,
 void proto::Splitter::OnRemove(game::World& world,
                                game::Logic& /*logic*/,
                                const WorldCoord& coord,
-                               game::TileLayer /*tlayer*/) const {
+                               const game::TileLayer tlayer) const {
 
     RemoveConveyor(world, coord, kSplitterLogicGroup);
-    RemoveConveyor(world, GetNonTopLeftCoord(world, coord), kSplitterLogicGroup);
+    RemoveConveyor(world, GetNonTopLeftCoord(world, coord, tlayer), kSplitterLogicGroup);
 }
 
 
@@ -70,10 +70,12 @@ void proto::Splitter::ValidatedPostLoad() {
 
 // ======================================================================
 
-WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord) {
+WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world,
+                                               const WorldCoord& coord,
+                                               const game::TileLayer tlayer) {
     // Get top left coord
 
-    const auto* tile = world.GetTile(coord, game::TileLayer::entity);
+    const auto* tile = world.GetTile(coord, tlayer);
     assert(tile != nullptr);
 
     const auto tl_coord = coord.Incremented(*tile);

@@ -52,7 +52,7 @@ namespace jactorio::proto
         ///
         /// Gets the coordinate of the non top left side of the splitter
         /// \remark Assumes current tile is part of a splitter
-        static WorldCoord GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord);
+        static WorldCoord GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord, game::TileLayer tlayer);
     };
 } // namespace jactorio::proto
 
