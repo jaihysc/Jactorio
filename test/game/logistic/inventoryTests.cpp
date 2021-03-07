@@ -6,13 +6,53 @@
 
 namespace jactorio::game
 {
-    TEST(ItemStack, MatchesFilter) {
+    TEST(ItemStack, Accepts) {
         proto::Item item_1;
         proto::Item item_2;
 
-        EXPECT_FALSE(ItemStack({&item_1, 1}).MatchesFilter({nullptr, 0, &item_2}));
-        EXPECT_TRUE(ItemStack({nullptr, 1}).MatchesFilter({nullptr, 0, &item_2}));
-        EXPECT_TRUE(ItemStack({&item_1, 1}).MatchesFilter({nullptr, 0, nullptr}));
+        //
+        EXPECT_FALSE(ItemStack({nullptr, 0}).Accepts({nullptr, 0}));
+
+        EXPECT_TRUE(ItemStack({nullptr, 0}).Accepts({&item_1, 1}));
+        EXPECT_FALSE(ItemStack({nullptr, 0}).Accepts({nullptr, 0, &item_1}));
+        EXPECT_TRUE(ItemStack({nullptr, 0}).Accepts({&item_1, 1, &item_1}));
+
+
+        //
+        EXPECT_FALSE(ItemStack({nullptr, 0, &item_1}).Accepts({nullptr, 0}));
+
+        EXPECT_TRUE(ItemStack({nullptr, 0, &item_1}).Accepts({&item_1, 1}));
+        EXPECT_TRUE(ItemStack({nullptr, 0, &item_1}).Accepts({&item_1, 1, &item_1}));
+        EXPECT_FALSE(ItemStack({nullptr, 0, &item_1}).Accepts({nullptr, 0, &item_1}));
+
+        EXPECT_FALSE(ItemStack({nullptr, 0, &item_1}).Accepts({&item_2, 1}));
+        EXPECT_FALSE(ItemStack({nullptr, 0, &item_1}).Accepts({&item_2, 1, &item_2}));
+        EXPECT_FALSE(ItemStack({nullptr, 0, &item_1}).Accepts({nullptr, 0, &item_2}));
+
+
+        //
+        EXPECT_FALSE(ItemStack({&item_1, 1}).Accepts({nullptr, 0}));
+
+
+        EXPECT_TRUE(ItemStack({&item_1, 1}).Accepts({&item_1, 1}));
+        EXPECT_FALSE(ItemStack({&item_1, 1}).Accepts({nullptr, 0, &item_1}));
+        EXPECT_TRUE(ItemStack({&item_1, 1}).Accepts({&item_1, 1, &item_1}));
+
+        EXPECT_FALSE(ItemStack({&item_1, 1}).Accepts({&item_2, 1}));
+        EXPECT_FALSE(ItemStack({&item_1, 1}).Accepts({nullptr, 0, &item_2}));
+        EXPECT_FALSE(ItemStack({&item_1, 1}).Accepts({&item_2, 1, &item_2}));
+
+
+        //
+        EXPECT_FALSE(ItemStack({&item_1, 1, &item_1}).Accepts({nullptr, 0}));
+
+        EXPECT_TRUE(ItemStack({&item_1, 1, &item_1}).Accepts({&item_1, 1}));
+        EXPECT_FALSE(ItemStack({&item_1, 1, &item_1}).Accepts({nullptr, 0, &item_1}));
+        EXPECT_TRUE(ItemStack({&item_1, 1, &item_1}).Accepts({&item_1, 0, &item_1}));
+
+        EXPECT_FALSE(ItemStack({&item_1, 1, &item_1}).Accepts({&item_2, 1}));
+        EXPECT_FALSE(ItemStack({&item_1, 1, &item_1}).Accepts({nullptr, 0, &item_2}));
+        EXPECT_FALSE(ItemStack({&item_1, 1, &item_1}).Accepts({&item_2, 0, &item_2}));
     }
 
     TEST(ItemStack, Empty) {
@@ -306,6 +346,25 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
+    /// First stack is filtered, cannot move second stack into first
+    TEST(Inventory, MoveTakeOriginFiltered) {
+        Inventory inv(10);
+
+        proto::Item item;
+        proto::Item item_2;
+
+        inv[0] = {nullptr, 0, &item_2};
+        inv[3] = {&item, 255};
+
+        EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 0));
+
+        EXPECT_EQ(inv[0].item, nullptr);
+        EXPECT_EQ(inv[0].count, 0);
+
+        EXPECT_EQ(inv[3].item, &item);
+        EXPECT_EQ(inv[3].count, 255);
+    }
+
     // ------------------------------------------------------
     // RIGHT click tests
     // ------------------------------------------------------
@@ -443,6 +502,24 @@ namespace jactorio::game
 
         EXPECT_EQ(inv[3].item, &item);
         EXPECT_EQ(inv[3].count, 1);
+    }
+
+    TEST(Inventory, MoveRclickDropIntoFiltered) {
+        Inventory inv(10);
+
+        proto::Item item;
+        proto::Item item_2;
+
+        inv[0] = {&item, 10};
+        inv[3] = {nullptr, 0, &item_2};
+
+        EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 1));
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 10);
+
+        EXPECT_EQ(inv[3].item, nullptr);
+        EXPECT_EQ(inv[3].count, 0);
     }
 
     // ======================================================================

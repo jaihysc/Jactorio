@@ -23,9 +23,28 @@ using namespace jactorio;
 #endif
 
 
-bool game::ItemStack::MatchesFilter(const ItemStack& other) const {
-    // This stack must match other stack if filter is set and this stack has an item prototype
-    return item == nullptr || other.filter == nullptr || item == other.filter;
+bool game::ItemStack::Accepts(const ItemStack& other) const {
+    assert(&other != this);
+
+    // No point accepting empty stacks
+    if (other.Empty()) {
+        return false;
+    }
+
+    assert(other.item != nullptr);
+    // Check other stack's item when matching filter, since other guaranteed to have item
+    // whereas filter may be nullptr
+
+    if (Empty()) {
+        if (filter == nullptr) {
+            return true;
+        }
+
+        return filter == other.item;
+    }
+
+    assert(item != nullptr);
+    return item == other.item;
 }
 
 void game::ItemStack::Clear() noexcept {
@@ -224,7 +243,7 @@ std::pair<bool, size_t> game::Inventory::CanAdd(const ItemStack& stack) const {
     for (size_t i = 0; i < inv_.size(); ++i) {
         const auto& target_stack = inv_[i];
 
-        if (!stack.MatchesFilter(target_stack)) {
+        if (!target_stack.Accepts(stack)) {
             continue;
         }
 
@@ -254,7 +273,7 @@ proto::Item::StackCount game::Inventory::Add(const ItemStack& stack) {
     auto remaining_add = stack.count;
 
     for (auto& inv_stack : inv_) {
-        if (!stack.MatchesFilter(inv_stack))
+        if (!inv_stack.Accepts(stack))
             continue;
 
         if (inv_stack.item == stack.item) {
@@ -387,9 +406,15 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
     // At most one will be a empty
     assert(!(origin_stack.Empty() && target_stack.Empty()));
 
-    // Origin item exceeding stack size
+    auto swap_contents = [](game::ItemStack& lhs, game::ItemStack& rhs) {
+        std::swap(lhs.item, rhs.item);
+        std::swap(lhs.count, rhs.count);
+    };
+
     if (target_stack.Empty()) {
-        assert(origin_stack.item->stackSize > 0); // Invalid itemstack stacksize
+        if (!target_stack.Accepts(origin_stack)) {
+            return false;
+        }
 
         if (origin_stack.Overloaded()) {
             const auto stack_size = origin_stack.item->stackSize;
@@ -401,14 +426,18 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
             return false;
         }
 
-        if (right_click) {
-            return target_stack.DropOne(origin_stack);
+        if (!right_click) {
+            swap_contents(origin_stack, target_stack);
+            return true;
         }
+        // Right click
+        return target_stack.DropOne(origin_stack);
     }
 
-    // Target item exceeding stack size
     if (origin_stack.Empty()) {
-        assert(target_stack.item->stackSize > 0); // Invalid itemstack stacksize
+        if (!origin_stack.Accepts(target_stack)) {
+            return true;
+        }
 
         if (!right_click) {
             if (target_stack.Overloaded()) {
@@ -420,46 +449,42 @@ bool MoveDiffType(game::ItemStack& origin_stack, game::ItemStack& target_stack, 
                 origin_stack.item = target_stack.item;
                 return false;
             }
-        }
-        else {
-            auto get_take_amount = [&]() -> proto::Item::StackCount {
-                // Never exceed the stack size
-                if (target_stack.count > target_stack.item->stackSize * 2) {
-                    return target_stack.item->stackSize;
-                }
 
-                // Take 1 if there is only 1 remaining
-                if (target_stack.count == 1) {
-                    return 1;
-                }
-
-                return target_stack.count / 2;
-            };
-
-            const auto amount = get_take_amount();
-
-            origin_stack.item  = target_stack.item;
-            origin_stack.count = amount;
-
-            target_stack.Delete(amount);
-
+            swap_contents(origin_stack, target_stack);
             return false;
         }
+
+        // Right click
+        auto get_take_amount = [&]() -> proto::Item::StackCount {
+            // Never exceed the stack size
+            if (target_stack.count > target_stack.item->stackSize * 2) {
+                return target_stack.item->stackSize;
+            }
+
+            // Take 1 if there is only 1 remaining
+            if (target_stack.count == 1) {
+                return 1;
+            }
+
+            return target_stack.count / 2;
+        };
+
+        const auto amount = get_take_amount();
+
+        origin_stack.item  = target_stack.item;
+        origin_stack.count = amount;
+
+        target_stack.Delete(amount);
+
+        return false;
     }
 
-    // Swapping into another stack
-    // 1. O -> T: Match target stack's filter filters
-    // 2. T -> O: Match origin stack's filter filters
-    // 3. O <> T: Match origin && target stack's filter filters
-    if ((target_stack.Empty() && origin_stack.MatchesFilter(target_stack)) ||
-        (origin_stack.Empty() && origin_stack.MatchesFilter(target_stack)) ||
-        origin_stack.filter == target_stack.filter) {
-
-        std::swap(origin_stack.item, target_stack.item);
-        std::swap(origin_stack.count, target_stack.count);
+    // Both stacks non empty
+    if (target_stack.filter == origin_stack.filter) {
+        swap_contents(origin_stack, target_stack);
     }
 
-    return origin_stack.Empty();
+    return false;
 }
 
 bool game::MoveItemstackToIndex(ItemStack& origin_stack, ItemStack& target_stack, const unsigned short mouse_button) {
@@ -468,10 +493,6 @@ bool game::MoveItemstackToIndex(ItemStack& origin_stack, ItemStack& target_stack
     // Moving nothing to nothing
     if (origin_stack.Empty() && target_stack.Empty())
         return true;
-
-    if (!origin_stack.MatchesFilter(target_stack))
-        return false;
-
 
     if (origin_stack.item == target_stack.item) {
         return MoveSameItem(origin_stack, target_stack, mouse_button != 0);

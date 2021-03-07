@@ -28,10 +28,8 @@ namespace jactorio::game
         }
 
 
-        ///
-        /// \remark Comparison between two stacks is reversible
-        /// \return true if provided stack matches filter of current stack and can thus be inserted into it
-        J_NODISCARD bool MatchesFilter(const ItemStack& other) const;
+        /// \return true if provided stack can be inserted into current stack, disregarding stack limits
+        J_NODISCARD bool Accepts(const ItemStack& other) const;
 
         ///
         /// Clears item and count, NOT filter
