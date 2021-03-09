@@ -89,7 +89,7 @@ void game::ItemStack::Drop(ItemStack& target_stack, const proto::Item::StackCoun
 
     target_stack.item = item;
     target_stack.count += amount;
-    assert(target_stack.count <= item->stackSize);
+    assert(!target_stack.Overloaded());
 
     Delete(amount);
 }
