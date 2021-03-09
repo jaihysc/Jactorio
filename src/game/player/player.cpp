@@ -305,7 +305,9 @@ void game::Player::Placement::TryPickup(game::World& world,
     auto* entity_tile   = world.GetTile(coord, TileLayer::entity);
     auto* resource_tile = world.GetTile(coord, TileLayer::resource);
 
-    // TODO what happens if no tile?
+    if (entity_tile == nullptr || resource_tile == nullptr) {
+        return;
+    }
 
     const auto* entity_proto   = entity_tile->GetPrototype<proto::Entity>();
     const auto* resource_proto = resource_tile->GetPrototype<proto::ResourceEntity>();
