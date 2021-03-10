@@ -27,16 +27,12 @@ function(log_msg message)
 	message(" - ${message}")
 endfunction()
 
-# Shows properties for a subdirectory
-function(jactorio_show_properties)
-	log_msg("Binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
-endfunction()
-
 # Copies from data/ folder to output folder
 function(jactorio_copy_data_files)
 	set(JACTORIO_DATA_FOLDER data)
 
-	log_msg("Copying files to output directory: ${CMAKE_CURRENT_BINARY_DIR}/${JACTORIO_DATA_FOLDER}")
+	set(COPY_DESTINATION_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+	log_msg("Copying data files to: ${COPY_DESTINATION_DIR}")
 
 	file(GLOB_RECURSE
 		DATA_FILES
@@ -45,7 +41,7 @@ function(jactorio_copy_data_files)
 	)
 
 	foreach(DATA_FILE ${DATA_FILES})
-		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${DATA_FILE} COPYONLY)
+		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${COPY_DESTINATION_DIR}/${DATA_FILE} COPYONLY)
 	endforeach(DATA_FILE)
 
 	log_msg("DONE Copying files to output directory")
