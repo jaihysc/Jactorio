@@ -16,23 +16,19 @@
 
 namespace jactorio::game
 {
-    ///
     /// Top level class for controlling game simulation
     class GameController
     {
         static constexpr auto kDefaultWorldCount = 1;
 
     public:
-        ///
         /// Clears worlds, logic, player
         void ResetGame();
 
-        ///
         /// Sets up game for logic updates
         /// \return false if error
         J_NODISCARD bool Init();
 
-        ///
         /// One simulation tick update
         void LogicUpdate();
 
@@ -69,7 +65,6 @@ namespace jactorio::game
         }
 
     private:
-        ///
         /// \return false if error
         J_NODISCARD bool InitPrototypes();
         void InitKeybinds();

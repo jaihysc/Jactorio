@@ -50,52 +50,43 @@ namespace jactorio::game
         }
 
 
-        ///
         /// Resets data on this tile, becomes TopLeft again if previously NonTopLeft
         void Clear() noexcept;
 
 
         // ======================================================================
 
-        ///
         /// Fetches orientation at current tile
         J_NODISCARD Orientation GetOrientation() const noexcept;
 
 
         // Prototype
 
-        ///
         /// Sets prototype and orientation
         void SetPrototype(Orientation orientation, PrototypeT& prototype) noexcept;
 
-        ///
         /// Sets prototype and orientation
         void SetPrototype(Orientation orientation, PrototypeT* prototype) noexcept;
 
-        ///
         /// Sets prototype at current tile tile to nullptr
         void SetPrototype(std::nullptr_t) noexcept;
 
-        ///
         /// \tparam T Return type which prototypeData is cast to
         template <typename T = PrototypeT>
         J_NODISCARD const T* GetPrototype() const noexcept;
 
         // Unique data
 
-        ///
         /// Heap allocates unique data
         /// \return Created unique data
         template <typename TData, typename... Args>
         TData& MakeUniqueData(Args&&... args);
 
-        ///
         /// Unique data at current tile or if multi tile, top left
         /// \tparam T Return type which uniqueData is cast to
         template <typename T = UniqueDataT>
         J_NODISCARD T* GetUniqueData() noexcept;
 
-        ///
         /// Unique data at current tile or if multi tile, top left
         /// \tparam T Return type which uniqueData is cast to
         template <typename T = UniqueDataT>
@@ -114,9 +105,7 @@ namespace jactorio::game
         J_NODISCARD proto::FWorldObject::Dimension GetDimension() const noexcept;
 
 
-        ///
         /// Turn or unturn ChunkTile to/from a multi tile
-        ///
         /// Call prior to any operations involving multi tile index or top_left tile
         void SetupMultiTile(TileDistanceT multi_tile_index, ChunkTile& top_left) noexcept;
 
@@ -129,7 +118,6 @@ namespace jactorio::game
         //
         /// \return Number of tiles from top left on X axis
         J_NODISCARD TileDistanceT GetOffsetX() const noexcept;
-        ///
         /// \return Number of tiles from top left on Y axis
         J_NODISCARD TileDistanceT GetOffsetY() const noexcept;
 
@@ -171,7 +159,6 @@ namespace jactorio::game
         }
 
     private:
-        ///
         /// Shared between top left and non top left
         struct Common
         {
@@ -182,7 +169,6 @@ namespace jactorio::game
                 swap(lhs.orientation, rhs.orientation);
             }
 
-            ///
             /// If the tile is multi-tile, eg: 3 x 2
             /// 0 1 2
             /// 3 4 5
@@ -202,7 +188,6 @@ namespace jactorio::game
         {
             TopLeft() = default;
 
-            ///
             /// Does not copy uniqueData
             TopLeft(const TopLeft& other) noexcept;
             TopLeft(TopLeft&& other) noexcept = default;
@@ -220,7 +205,6 @@ namespace jactorio::game
 
             UniqueDataContainerT uniqueData;
 
-            ///
             /// Copies this object, prototype must not be null if uniqueData is not null
             /// \param to UniqueData copied to here
             void CopyUniqueData(TopLeft& to, PrototypeT* prototype) const;
@@ -291,18 +275,15 @@ namespace jactorio::game
         TileData data_;
 
 
-        ///
         /// Sets orientation at current tile
         void SetOrientation(Orientation orientation) noexcept;
 
         J_NODISCARD static bool IsTopLeft(TileDistanceT multi_tile_index) noexcept;
 
-        ///
         /// Returns data within the union topLeft
         J_NODISCARD TopLeft& AsTopLeft() noexcept;
         J_NODISCARD const TopLeft& AsTopLeft() const noexcept;
 
-        ///
         /// Returns data within the union nonTopLeft
         J_NODISCARD NonTopLeft& AsNonTopLeft() noexcept;
         J_NODISCARD const NonTopLeft& AsNonTopLeft() const noexcept;

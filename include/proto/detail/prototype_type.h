@@ -12,7 +12,6 @@
 
 namespace jactorio::proto
 {
-    ///
     /// Represents an output location for an entity on 4 orientation
     struct Tile4Way
     {

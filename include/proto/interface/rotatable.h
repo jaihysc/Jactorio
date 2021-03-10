@@ -19,7 +19,6 @@ namespace jactorio
 
 namespace jactorio::proto
 {
-    ///
     /// Entities which can be rotated by the player
     class IRotatable
     {

@@ -298,7 +298,6 @@ namespace jactorio::game
         world_.DeserializePostProcess();
 
 
-        ///
         /// Checks that multi-tile tile is linked to top left
         auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tlayer) {
             auto* top_left = world_.GetTile(coord, tlayer)->GetTopLeft();

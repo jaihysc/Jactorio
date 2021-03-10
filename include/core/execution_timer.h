@@ -16,7 +16,6 @@
 
 namespace jactorio
 {
-    ///
     /// Times execution time within a scope, to stop early, call stop()
     /// Begins counter upon instantiation, stops upon being destroyed or stop called
     class ExecutionTimer
@@ -25,7 +24,6 @@ namespace jactorio
         explicit ExecutionTimer(const std::string& name);
         ~ExecutionTimer();
 
-        ///
         /// Stops the Execution_timer
         void Stop() const noexcept;
 
@@ -35,7 +33,6 @@ namespace jactorio
         ExecutionTimer& operator=(ExecutionTimer&& other) noexcept = delete;
 
 
-        ///
         /// Contains measured times of all Execution_timers
         /// Key is the timer_name_ of each instance
         /// Value is time taken in milliseconds

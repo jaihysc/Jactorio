@@ -70,7 +70,6 @@ namespace jactorio::game
 
     // ======================================================================
 
-    ///
     /// Inherits ItemDropOff to gain access to insertion methods
     class ItemDropOffTest : public testing::Test, public ItemDropOff
     {
@@ -94,7 +93,6 @@ namespace jactorio::game
             return proto::ConveyorData{segment};
         }
 
-        ///
         /// \param orientation Inserter orientation to dropoff
         void ConveyorInsert(const Orientation orientation, proto::ConveyorData& line_data) {
             proto::Item item;

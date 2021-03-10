@@ -18,7 +18,6 @@ namespace jactorio::game
     class Logic;
     class ChunkTile;
 
-    ///
     /// Stores information & functions regarding a player (Duplicated for multiple players)
     class Player
     {
@@ -55,24 +54,20 @@ namespace jactorio::game
         }
 
 
-        ///
         /// How the player perceives the world, does not modify the world
         class World
         {
             using PlayerPosT = float;
 
         public:
-            ///
             /// Call on game tick to calculate the coordinates of mouse selected tile
             void CalculateMouseSelectedTile(const glm::mat4& mvp_matrix);
 
-            ///
             /// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
             J_NODISCARD WorldCoord GetMouseTileCoords() const {
                 return mouseSelectedTile_;
             }
 
-            ///
             /// \return true if selected tile is within placement range
             J_NODISCARD bool MouseSelectedTileInRange() const;
 
@@ -86,7 +81,6 @@ namespace jactorio::game
             }
 
 
-            ///
             /// The tile the player is on, decimals indicate partial tile
             J_NODISCARD PlayerPosT GetPositionX() const {
                 return positionX_;
@@ -95,7 +89,6 @@ namespace jactorio::game
                 return positionY_;
             }
 
-            ///
             /// If the tile at the specified amount is valid, the player will be moved to that tile
             void MovePlayerX(PlayerPosT amount);
             void MovePlayerY(PlayerPosT amount);
@@ -112,7 +105,6 @@ namespace jactorio::game
             }
 
         private:
-            ///
             /// \return true if the tile can be walked on
             bool TargetTileValid(game::World* world, const WorldCoord& coord) const;
 
@@ -134,7 +126,6 @@ namespace jactorio::game
         public:
             static constexpr std::size_t kDefaultInventorySize = 80;
 
-            ///
             /// High level method for inventory actions, prefer over calls to HandleClick and others
             void HandleInventoryActions(const data::PrototypeManager& proto,
                                         game::Inventory& inv,
@@ -143,7 +134,6 @@ namespace jactorio::game
 
             // ======================================================================
 
-            ///
             /// Interacts with the inventory at index
             /// \param index The inventory index
             /// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
@@ -154,22 +144,18 @@ namespace jactorio::game
                              bool reference_select,
                              game::Inventory& inv);
 
-            ///
             /// Gets the currently item player is currently holding on the cursor
             /// \return nullptr if there is no item selected
             J_NODISCARD const ItemStack* GetSelectedItem() const;
 
-            ///
             /// Deselects the current item and returns it to its slot ONLY if selected by reference
             /// \return true if successfully deselected
             bool DeselectSelectedItem();
 
-            ///
             /// Increments the selected item to the stack size
             /// \return true if successfully incremented
             bool IncrementSelectedItem();
 
-            ///
             /// Once item count reaches 0, the selected item slot is cleared
             /// \return true if items still remain in stack, false if now empty
             bool DecrementSelectedItem();
@@ -219,21 +205,17 @@ namespace jactorio::game
             }
 
 
-            ///
             /// Rotates placement_orientation clockwise
             void RotateOrientation();
-            ///
             /// Rotates placement_orientation counter clockwise
             void CounterRotateOrientation();
 
 
-            ///
             /// Sets the activated tile, use nullptr to unset
             void SetActivatedTile(ChunkTile* tile) {
                 activatedTile_ = tile;
             }
 
-            ///
             /// Gets the tile of the entity activated on by the player
             /// \return nullptr If no tile is activated by the player
             J_NODISCARD ChunkTile* GetActivatedTile() const {
@@ -241,23 +223,19 @@ namespace jactorio::game
             }
 
 
-            ///
             /// Will place an entity at the location or if an entity does not already exist
             /// \return true if entity was placed
             bool TryPlaceEntity(game::World& world, Logic& logic, const WorldCoord& coord) const;
 
-            ///
             /// Attempts to activate the tile at world coordinates
             /// \return true if tile was activated
             bool TryActivateTile(game::World& world, const WorldCoord& coord);
 
-            ///
             /// This will either pickup an entity, or mine resources from a resource tile
             /// Call when the key for picking up entities is pressed
             /// If resource + entity exists on one tile, picking up entity takes priority
             void TryPickup(game::World& world, Logic& logic, const WorldCoord& coord, uint16_t ticks = 1);
 
-            ///
             /// \return progress of entity pickup or resource extraction as a fraction between 0 - 1
             J_NODISCARD float GetPickupPercentage() const;
 
@@ -307,25 +285,20 @@ namespace jactorio::game
             void RecipeGroupSelect(uint16_t index);
             J_NODISCARD uint16_t RecipeGroupGetSelected() const;
 
-            ///
             /// Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
             void RecipeCraftTick(const data::PrototypeManager& proto, uint16_t ticks = 1);
 
-            ///
             /// Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
             void QueueRecipe(const data::PrototypeManager& proto, const proto::Recipe& recipe);
 
-            ///
             /// Returns const reference to recipe queue for rendering in gui
             J_NODISCARD const RecipeQueueT& GetRecipeQueue() const;
             J_NODISCARD uint16_t GetCraftingTicksRemaining() const;
 
-            ///
             /// Recursively depth first crafts the recipe
             /// \remark WILL NOT check that the given recipe is valid or required ingredients are present and assumes is
             void RecipeCraftR(const data::PrototypeManager& proto, const proto::Recipe& recipe);
 
-            ///
             /// Recursively steps through a recipe and sub-recipes to determine if it is craftable
             /// \param batches How many runs of the recipe
             J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& proto,
@@ -355,7 +328,6 @@ namespace jactorio::game
             }
 
         private:
-            ///
             /// The actual recursive function for RecipeCraftR
             /// \param used_items Tracks amount of an item that has already been used,
             /// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the

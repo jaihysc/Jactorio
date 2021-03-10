@@ -55,7 +55,6 @@ namespace jactorio
     public:
         using Position2<WorldCoordAxis>::Position2;
 
-        ///
         /// Increments coordinate
         /// \param val Used to select specialization of Position2Increment to increment coordinate
         /// \param increment Amount to increment by, negative to decrement
@@ -64,7 +63,6 @@ namespace jactorio
             Position2Increment(std::forward<T>(val), *this, increment);
         }
 
-        ///
         /// \return Incremented form of current coordinate
         /// \param val Used to select specialization of Position2Increment to increment coordinate
         /// \param increment Amount to increment by, negative to decrement

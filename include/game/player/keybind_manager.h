@@ -25,7 +25,6 @@ namespace jactorio::game
     class KeybindManager
     {
     public:
-        ///
         /// \remark Provided parameter's lifetime must exceed this object
         explicit KeybindManager(InputManager& input, GameController& game_controller)
             : input_(input), gameController_(game_controller) {}
@@ -49,14 +48,12 @@ namespace jactorio::game
         }
 
 
-        ///
         /// Modifies the keyboard input which correlates to the provided action
         void ChangeActionInput(PlayerAction::Type player_action,
                                SDL_KeyCode key,
                                InputAction key_action,
                                SDL_Keymod mods = KMOD_NONE);
 
-        ///
         /// Modifies the mouse input which correlates to the provided action
         void ChangeActionInput(PlayerAction::Type player_action,
                                MouseInput key,
@@ -64,34 +61,27 @@ namespace jactorio::game
                                SDL_Keymod mods = KMOD_NONE);
 
 
-        ///
         /// Modifies keyboard button for provided player action
         void ChangeActionKey(PlayerAction::Type player_action, SDL_KeyCode key);
 
-        ///
         /// Modifies mouse button for provided player action
         void ChangeActionKey(PlayerAction::Type player_action, MouseInput key);
 
-        ///
         /// Modifies the key's action for provided player action
         void ChangeActionKeyAction(PlayerAction::Type player_action, InputAction key_action);
 
-        ///
         /// Modifies the modifiers for provided player action
         void ChangeActionMods(PlayerAction::Type player_action, SDL_Keymod mods);
 
 
-        ///
         /// Uses pre-determined default keybinds for actions
         void LoadDefaultKeybinds();
 
-        ///
         /// Calls ChangeActionInput for all player actions with stored key bindings
         /// \remark Only has effect after this object was deserialized to register all key bindings
         void RegisterAllKeyData();
 
 
-        ///
         /// Returns key information for each keybind
         /// Index each PlayerAction::Type by its value when cast to int
         J_NODISCARD auto& GetKeybindInfo() const {
@@ -123,7 +113,6 @@ namespace jactorio::game
         std::array<InputManager::InputKeyData, PlayerAction::kActionCount_> actionKeyData_;
 
 
-        ///
         /// Performs actual change of input for action
         /// Do not directly call, call ChangeActionInput
         /// \tparam TKey SDL_KeyCode or MouseInput

@@ -51,7 +51,6 @@ void render::DisplayWindow::SetFullscreen(const bool desired_fullscreen) {
     }
 }
 
-///
 
 int render::DisplayWindow::Init(const int width, const int height) {
     LOG_MESSAGE(info, "Using SDL2 for window creation");

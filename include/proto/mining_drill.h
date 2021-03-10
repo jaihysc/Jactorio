@@ -60,7 +60,6 @@ namespace jactorio::proto
     };
 
 
-    ///
     /// Drill, Mines resource entities
     class MiningDrill final : public HealthEntity
     {
@@ -99,14 +98,12 @@ namespace jactorio::proto
 
         // ======================================================================
         // Logic
-        ///
         /// Finds the FIRST output item of the mining drill, beginning from top left
         /// \param orien Orientation of drill
         J_NODISCARD Item* FindOutputItem(const game::World& world, WorldCoord coord, Orientation orien) const;
 
         void OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const override;
 
-        ///
         /// Ensures that the mining radius covers a resource entity
         /// \param orien Orientation of drill
         J_NODISCARD bool OnCanBuild(const game::World& world,
@@ -141,19 +138,15 @@ namespace jactorio::proto
 
         J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& coord, Orientation orientation) const;
 
-        ///
         /// \param orien Orientation of drill
         J_NODISCARD int GetMiningAreaX(Orientation orien) const;
-        ///
         /// \param orien Orientation of drill
         J_NODISCARD int GetMiningAreaY(Orientation orien) const;
 
-        ///
         /// Sets up drill data such that resources can be deducted from the ground
         /// \return true if a resource was found, otherwise false
         bool SetupResourceDeduction(const game::World& world, MiningDrillData& drill_data, Orientation orien) const;
 
-        ///
         /// Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
         /// depleted
         /// \param orien Orientation of drill
@@ -163,11 +156,9 @@ namespace jactorio::proto
                             MiningDrillData& drill_data,
                             ResourceEntityResourceCount amount = 1) const;
 
-        ///
         /// Sets up deferred callback for when it has mined a resource
         void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
 
-        ///
         /// Sets up deferred callback for when it has mined a resource, but failed to output
         void RegisterOutputCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
     };

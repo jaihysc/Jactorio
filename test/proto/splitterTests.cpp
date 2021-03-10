@@ -23,9 +23,7 @@ namespace jactorio::proto
         TransportBelt transBelt_;
     };
 
-    ///
     /// Splitter creates conveyor at its 2 tiles, then connects to neighboring conveyors
-    ///
     /// v v
     /// C C Orientation down
     /// < >
@@ -54,7 +52,6 @@ namespace jactorio::proto
         EXPECT_EQ(splitter_data->left.structure->target, con_data_br.structure.get());
     }
 
-    ///
     /// Removing should disconnect from neighboring conveyors
     ///   Left
     /// < C <

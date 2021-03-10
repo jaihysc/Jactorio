@@ -21,7 +21,6 @@ namespace jactorio::proto
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : structure(std::move(line_segment)) {}
 
-        ///
         /// Updates orientation and member set for rendering
         void SetOrientation(LineOrientation orientation) {
             this->lOrien = orientation;
@@ -54,7 +53,6 @@ namespace jactorio::proto
     };
 
 
-    ///
     /// Abstract class for all everything which moves items (belts, underground belts, splitters)
     class Conveyor : public HealthEntity
     {
@@ -62,7 +60,6 @@ namespace jactorio::proto
         Conveyor() = default;
 
     public:
-        ///
         /// Number of tiles traveled by each item on the belt per tick
         /// \remark For Python API use only
         PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);

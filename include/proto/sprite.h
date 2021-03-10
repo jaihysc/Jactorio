@@ -14,7 +14,6 @@
 
 namespace jactorio::proto
 {
-    ///
     /// Unique data: Renderable_data
     class Sprite final : public FrameworkBase
     {
@@ -63,7 +62,6 @@ namespace jactorio::proto
         // ======================================================================
         // Sprite (image) properties
 
-        ///
         /// Group(s) determines which spritemap(s) this sprite is placed on
         PYTHON_PROP_REF(std::vector<SpriteGroup>, group);
 
@@ -78,33 +76,26 @@ namespace jactorio::proto
          *    ----------------
          */
 
-        ///
         /// If true : X = Set, Y = Frame,
         ///			  false: Y = Set, X = Frame
         PYTHON_PROP_REF_I(bool, invertSetFrame, false);
 
-        ///
         /// Animation frames, X axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteFrameT, frames, 1);
-        ///
         /// Y axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteSetT, sets, 1);
 
 
-        ///
         /// Pixels to remove from the border when GetCoord() is called
         PYTHON_PROP_REF_I(SpriteTrimT, trim, 0);
 
 
-        ///
         /// \return true is Sprite is in specified group
         J_NODISCARD bool IsInGroup(SpriteGroup group) const;
 
-        ///
         /// If group is empty, it is set to the group provided
         void DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group);
 
-        ///
         /// Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the
         /// border \remark Requires width_ and height_ to be initialized \return UV coordinates for set, frame within
         /// sprite (0, 0) is top left
@@ -115,20 +106,17 @@ namespace jactorio::proto
 
         J_NODISCARD const unsigned char* GetSpritePtr() const;
 
-        ///
         /// Gets size of image on X axis
         J_NODISCARD SpriteDimension GetWidth() const {
             return width_;
         }
 
-        ///
         /// Gets size of image on Y axis
         J_NODISCARD SpriteDimension GetHeight() const {
             return height_;
         }
 
 
-        ///
         /// Loads a sprite from sprite_path into member sprite
         /// \remark Do not include ~/data/
         Sprite* LoadImage(const std::string& image_path);
@@ -153,7 +141,6 @@ namespace jactorio::proto
         std::string spritePath_;
         unsigned char* spriteBuffer_ = nullptr;
 
-        ///
         /// Loads image from file
         /// load_image only sets the sprite_path and calls this
         /// \exception ProtoError Failed to load from file
@@ -176,7 +163,6 @@ namespace jactorio::proto
          * 30 - 39: Sprite 4
          */
 
-        ///
         /// Performs the following adjustments to set and frame
         /// \tparam InvertSet set is flipped horizontally if true
         /// \param set Modulus of total number of sets

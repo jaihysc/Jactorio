@@ -24,7 +24,6 @@ namespace jactorio::proto
         using DimensionAxis = uint8_t;
         using Dimension     = Position2<DimensionAxis>;
 
-        ///
         /// If true, swaps width and height when orientation is left or right in Getters
         PYTHON_PROP_REF_I(bool, rotateDimensions, true);
 

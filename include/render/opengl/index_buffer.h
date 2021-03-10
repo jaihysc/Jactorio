@@ -11,7 +11,6 @@ namespace jactorio::render
     class IndexBuffer
     {
     public:
-        ///
         /// \param count Number of indices
         IndexBuffer(const unsigned int* data, unsigned int count);
         ~IndexBuffer();
@@ -21,7 +20,6 @@ namespace jactorio::render
         IndexBuffer& operator=(const IndexBuffer& other) = delete;
         IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
 
-        ///
         /// Creates a new buffer of provided specifications
         void Reserve(const void* data, uint32_t index_count);
 

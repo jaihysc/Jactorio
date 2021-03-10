@@ -31,7 +31,6 @@ namespace jactorio::proto
             itemProduct_ = recipe_data.itemProduct;
         }
 
-        ///
         /// Sets inventory contents of assembly machine to allow crafting
         void SetupMachineCraftingInv(const Item::StackCount amount = 1) {
             data_.ingredientInv[0] = {item1_, amount};

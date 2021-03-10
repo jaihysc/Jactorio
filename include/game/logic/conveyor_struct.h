@@ -21,7 +21,6 @@ namespace jactorio::game
     // Items closest to the end are stored at the front
     // See FFF 176 https://factorio.com/blog/post/fff-176
 
-    ///
     /// Item on a conveyor
     /// Tile distance from next item or end of conveyor, pointer to item
     struct ConveyorItem
@@ -40,18 +39,15 @@ namespace jactorio::game
         }
     };
 
-    ///
     /// One side of a conveyor
     struct ConveyorLane
     {
         using IntOffsetT   = int16_t;
         using FloatOffsetT = double;
 
-        ///
         /// \return true if left size is not empty and has a valid index
         J_NODISCARD bool IsActive() const;
 
-        ///
         /// \param start_offset Item offset from the start of conveyor in tiles
         /// \return true if an item can be inserted into this conveyor
         J_NODISCARD bool CanInsert(proto::LineDistT start_offset, IntOffsetT item_offset);
@@ -89,7 +85,6 @@ namespace jactorio::game
         }
     };
 
-    ///
     /// Stores a collection of items heading in one direction
     class ConveyorStruct
     {
@@ -131,20 +126,16 @@ namespace jactorio::game
             return left_side ? left : right;
         }
 
-        ///
         /// \param start_offset Item offset from the start of conveyor in tiles
         /// \return true if an item can be inserted into this conveyor
         J_NODISCARD bool CanInsert(bool left_side, const proto::LineDistT& start_offset);
 
-        ///
         /// \return true if left size is not empty and has a valid index
         J_NODISCARD bool IsActive(bool left_side) const;
 
-        ///
         /// Deducts tile length offset to get offset based on lane length
         /// \param target_segment_ttype If deducting termination of current segment's target is unnecessary, use
         /// straight
-        ///
         /// Since the length of segments is the tile length, it must be deducted to get the lane length to accurately
         /// insert, remove and any other operation on segments
         static void ApplyTerminationDeduction(bool is_left,
@@ -165,32 +156,27 @@ namespace jactorio::game
 
         // Item insertion
 
-        ///
         /// Appends item onto the specified side of a belt behind the last item
         /// \param offset Number of tiles to offset from previous item or the end of the conveyor segment when
         /// there are no items
         void AppendItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
-        ///
         /// Inserts the item onto the specified belt side at the offset from the beginning of the conveyor
         /// \param offset Distance from beginning of conveyor
         void InsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
-        ///
         /// Attempts to insert the item onto the specified belt side at the offset from the beginning of the
         /// conveyor
         /// \param offset Distance from beginning of conveyor
         /// \return false if unsuccessful
         bool TryInsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
-        ///
         /// Finds item at offset within epsilon upper and lower bounds inclusive, <deque index,
         /// ConveyorItem> \return .second.second is nullptr if no items were found
         J_NODISCARD std::pair<size_t, ConveyorItem> GetItem(bool left_side,
                                                             FloatOffsetT offset,
                                                             FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2) const;
 
-        ///
         /// Finds and removes item at offset within epsilon inclusive
         /// \return nullptr if no items were found
         const proto::Item* TryPopItem(bool left_side,
@@ -211,9 +197,7 @@ namespace jactorio::game
         bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
 
-        ///
         /// Adjusts provided value such that InsertItem(, offset, ) is at the correct location
-        ///
         /// This is because segments are numbered from 0 to n from the head of the line, storing the segmentIndex
         /// directly leads to insertion at the incorrect locations when the segment length is changed.
         /// Thus, an adjustment is applied to all offsets inserting into the segment such that the same offset
@@ -241,11 +225,9 @@ namespace jactorio::game
 
 
         /// Offset applied for structIndex
-        ///
         /// When this segment is extended from the head, offset increments 1.
         /// When the segment is shortened from the head, offset decrements 1.
         /// No effect when extended or shortened from the tail.
-        ///
         /// The offset ensures that all entities which stores a struct index inserts at the same location
         /// when the segment is extended or shortened, used in methods with a Abs suffix
         IntOffsetT headOffset = 0;

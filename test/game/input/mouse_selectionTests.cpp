@@ -195,7 +195,6 @@ namespace jactorio::game
         EXPECT_TRUE(entity.getSpriteSetCalled);
     }
 
-    ///
     /// Gracefully handle being unable to erase the last overlay, assumes it was already erased
     TEST_F(MouseSelectionOverlayTest, EraseNonExistentLastOverlay) {
         const proto::Sprite cursor;

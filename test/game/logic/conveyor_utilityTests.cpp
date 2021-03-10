@@ -17,7 +17,6 @@ namespace jactorio::game
     class ConveyorUtilityTest : public testing::Test
     {
     protected:
-        ///
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
@@ -56,7 +55,6 @@ namespace jactorio::game
     }
 
 
-    ///
     /// Should gracefully handle no tile above
     TEST_F(ConveyorUtilityTest, ConnectUpNoTileAbove) {
         TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_);
@@ -64,7 +62,6 @@ namespace jactorio::game
         ConveyorConnectUp(world_, {0, 0});
     }
 
-    ///
     /// Should gracefully handle no struct above
     TEST_F(ConveyorUtilityTest, ConnectUpNoStructAbove) {
         TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_);
@@ -72,7 +69,6 @@ namespace jactorio::game
         ConveyorConnectUp(world_, {0, 1});
     }
 
-    ///
     /// Should gracefully handle entity not a conveyor struct
     TEST_F(ConveyorUtilityTest, ConnectUpNonStruct) {
         const proto::ContainerEntity container_proto;
@@ -83,7 +79,6 @@ namespace jactorio::game
         ConveyorConnectUp(world_, {0, 1});
     }
 
-    ///
     /// Do not connect to itself if the struct spans multiple tiles
     TEST_F(ConveyorUtilityTest, ConnectUpNoConnectSelf) {
         auto& structure = TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_).structure;
@@ -94,7 +89,6 @@ namespace jactorio::game
         EXPECT_EQ(structure->target, nullptr);
     }
 
-    ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorUtilityTest, ConnectUpLeading) {
         // ^
@@ -108,7 +102,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
-    ///
     /// A conveyor placed in front of another one will set the target of the neighbor
     TEST_F(ConveyorUtilityTest, ConnectUpTrailing) {
         //  v
@@ -122,7 +115,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_d.target, &con_struct_r);
     }
 
-    ///
     /// Do not connect conveyors with orientations pointed at each other
     TEST_F(ConveyorUtilityTest, ConnectUpPointedTowardsEachOther) {
         // v
@@ -137,7 +129,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_u.target, nullptr);
     }
 
-    ///
     /// When connecting to a conveyor, it should store the target's structIndex as sideInsertIndex
     TEST_F(ConveyorUtilityTest, ConnectUpSetStructIndex) {
         // >
@@ -153,7 +144,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_u.sideInsertIndex, 10);
     }
 
-    ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorUtilityTest, ConnectRightLeading) {
         // > >
@@ -166,7 +156,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
-    ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorUtilityTest, ConnectDownLeading) {
         // v
@@ -180,7 +169,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
-    ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorUtilityTest, ConnectLeftLeading) {
         // < <
@@ -210,7 +198,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
-    ///
     /// Only disconnects the conveyor above, not itself
     TEST_F(ConveyorUtilityTest, DisconnectUpNoDisconnectSelf) {
         auto& con_struct_ahead = *TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_).structure;
@@ -223,7 +210,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
-    ///
     /// If neighbor segment connects to current and bends, the bend must be removed after disconnecting
     TEST_F(ConveyorUtilityTest, DisconnectUpFromNeighborBending) {
         auto& con_data_above = TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_);
@@ -291,14 +277,12 @@ namespace jactorio::game
     class ConveyorGroupingTest : public testing::Test
     {
     protected:
-        ///
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
         World world_;
         proto::TransportBelt transBelt_;
 
-        ///
         /// Checks if conveyor at current coords with current_direction
         /// grouped with other conveyor at other_coord with other_direction
         /// \param compare Function which can be used to do additional comparisons
@@ -333,7 +317,6 @@ namespace jactorio::game
         }
     };
 
-    ///
     /// Using ahead conveyor structure in same direction is prioritized over creating a new conveyor structure
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupAhead) {
         auto compare_func =
@@ -350,14 +333,12 @@ namespace jactorio::game
         EXPECT_TRUE(TestGrouping({0, 0}, Orientation::left, {1, 0}, Orientation::left, compare_func));
     }
 
-    ///
     /// Cannot use ahead conveyor if it is in different direction
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupAheadDifferentDirection) {
         EXPECT_FALSE(TestGrouping({0, 0}, Orientation::right, {0, 1}, Orientation::up));
         EXPECT_FALSE(TestGrouping({0, 0}, Orientation::up, {0, 1}, Orientation::down));
     }
 
-    ///
     /// Grouping with behind conveyor prioritized over creating a new conveyor structure
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupBehind) {
         auto compare_func =
@@ -376,7 +357,6 @@ namespace jactorio::game
         EXPECT_TRUE(TestGrouping({1, 0}, Orientation::left, {0, 0}, Orientation::left, compare_func));
     }
 
-    ///
     /// Conveyors will not group across chunk boundaries
     TEST_F(ConveyorGroupingTest, ConveyorCreateNoGroupCrossChunk) {
         EXPECT_FALSE(TestGrouping({0, -1}, Orientation::up, {0, 0}, Orientation::up));
@@ -391,7 +371,6 @@ namespace jactorio::game
     //
     //
 
-    ///
     /// Destroy head should unregister the head from logic updates
     TEST_F(ConveyorUtilityTest, DestroyHead) {
         //
@@ -413,7 +392,6 @@ namespace jactorio::game
         EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 0);
     }
 
-    ///
     /// Removing beginning of grouped conveyor segment with bending termination
     /// Creates new segment with what was the second tile now the head
     TEST_F(ConveyorUtilityTest, DestroyHeadBendingTermination) {
@@ -448,7 +426,6 @@ namespace jactorio::game
         EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 2);
     }
 
-    ///
     /// Removing middle of grouped conveyor segment
     /// Create new segment behind, shorten segment ahead
     TEST_F(ConveyorUtilityTest, DestroyMiddle) {
@@ -535,7 +512,6 @@ namespace jactorio::game
         EXPECT_EQ(con_data_3.structure, new_con_struct);
     }
 
-    ///
     /// When changing structure, other structures which has the old structure as a target must be updated
     /// to use the new structure
     TEST_F(ConveyorUtilityTest, ChangeStructureUpdateTargets) {
@@ -581,7 +557,6 @@ namespace jactorio::game
         EXPECT_EQ(d_con_data_4.structure->target, new_con_struct.get());
     }
 
-    ///
     /// Ensures the function ConveyorLogicRemove also functions for splitters
     TEST_F(ConveyorUtilityTest, LogicRemoveSplitter) {
         const proto::Splitter splitter;
@@ -625,7 +600,6 @@ namespace jactorio::game
             return BuildConveyor({0, 1}, orientation);
         }
 
-        ///
         /// Validates that a tile at coords 1,1 with the placement orientation produces the expected line
         /// orientation
         void ValidateResultOrientation(const Orientation place_orien,
@@ -648,7 +622,6 @@ namespace jactorio::game
         }
     };
 
-    ///
     /// A tile with no conveyor structure is treated as no conveyor at tile
     TEST_F(ConveyorCalcLineOrienTest, IgnoreNullptrStruct) {
         auto& l_con     = BuildLeftConveyor(Orientation::right);
@@ -896,7 +869,6 @@ namespace jactorio::game
     }
 
 
-    ///
     /// Should change line orientation of right neighbor from {0, 0} to up_right (Aesthetics only)
     TEST_F(ConveyorUtilityTest, UpdateNeighborLineOrientation) {
         //

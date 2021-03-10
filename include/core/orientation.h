@@ -31,20 +31,17 @@ namespace jactorio
         }
 
 
-        ///
         /// Inverts current direction
         constexpr Orientation& Invert() {
             dir_ = Invert(dir_);
             return *this;
         }
 
-        ///
         /// \return Inverted direction of current direction
         J_NODISCARD constexpr Orientation Inverted() const {
             return Invert(dir_);
         }
 
-        ///
         /// \return Inverted direction of provided direction
         static constexpr Direction Invert(const Direction value) {
             assert(0 <= value && value <= 3);
@@ -80,7 +77,6 @@ namespace jactorio
     // Supports templates which formerly used enum class Orientation
     using Direction = Orientation::Direction;
 
-    ///
     /// Increments or decrements depending on orientation.
     /// up--, right++, down++, left--
     template <typename TCoord, typename TIncrement>

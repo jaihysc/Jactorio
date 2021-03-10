@@ -23,7 +23,6 @@ namespace jactorio::render
                           unsigned int window_size_x,
                           unsigned int window_size_y);
 
-    ///
     /// Initiates rendering and starts the rendering thread
     void RenderInit(ThreadedLoopCommon& common);
 } // namespace jactorio::render

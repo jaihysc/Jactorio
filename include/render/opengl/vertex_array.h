@@ -21,7 +21,6 @@ namespace jactorio::render
         VertexArray& operator=(const VertexArray& other) = delete;
         VertexArray& operator=(VertexArray&& other) noexcept = delete;
 
-        ///
         /// Adds specified buffer to the vertex array
         /// \remark Vertex_buffer must be deleted manually, it is not managed by the vertex array
         /// \param vb Vertex buffer to add to vertex array

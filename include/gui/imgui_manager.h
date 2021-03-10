@@ -35,7 +35,6 @@ namespace jactorio::gui
     inline bool input_keyboard_captured = false;
 
 
-    ///
     /// Initializes the spritemap for rendering the character menus
     /// \remark Requires Sprite::sprite_group::gui to be initialized
     void SetupCharacterData(render::RendererSprites& renderer_sprites);

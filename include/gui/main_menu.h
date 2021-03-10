@@ -11,11 +11,9 @@ namespace jactorio
 
 namespace jactorio::gui
 {
-    ///
     /// Menu upon start
     void StartMenu(ThreadedLoopCommon& common);
 
-    ///
     /// Menu in game
     void MainMenu(ThreadedLoopCommon& common);
 } // namespace jactorio::gui

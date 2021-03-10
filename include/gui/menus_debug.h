@@ -34,7 +34,6 @@ namespace jactorio::gui
 
     void DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto);
 
-    ///
     /// Info on tile currently hovered over
     void DebugTileInfo(GameWorlds& worlds, game::Player& player);
 

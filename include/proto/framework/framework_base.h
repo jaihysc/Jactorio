@@ -77,7 +77,6 @@ namespace jactorio::data
 
 namespace jactorio::proto
 {
-    ///
     /// Creates a formatted log message if log level permits
     template <typename... Args, typename = std::common_type<Args...>>
     void DataAssert(const bool condition, const char* format, Args&&... args) {
@@ -90,7 +89,6 @@ namespace jactorio::proto
         }
     }
 
-    ///
     /// Abstract base class for all unique data
     struct UniqueDataBase
     {
@@ -152,15 +150,12 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        ///
         /// NON VIRTUAL category, use GetCategory if object is not downcast to its actual type
         static constexpr Category category = Category::none;
 
-        ///
         /// Category of this Prototype item
         virtual Category GetCategory() const = 0;
 
-        ///
         /// Unique per prototype, unique & auto assigned per new prototype added
         /// 0 indicates invalid id
         PrototypeIdT internalId = 0;
@@ -169,11 +164,9 @@ namespace jactorio::proto
         std::string pythonTraceback;
 
 
-        ///
         /// Internal name, MUST BE unique per data_category
         PYTHON_PROP_REF(std::string, name);
 
-        ///
         /// Determines the priority of this prototype used in certain situations
         /// Automatically assigned incrementally alongside internalId if 0
         /// \remark 0 indicates invalid id
@@ -202,7 +195,6 @@ namespace jactorio::proto
         // ======================================================================
         // Unique data associated with entity
 
-        ///
         /// Copies the unique_data associated with a prototype
         virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(const UniqueDataBase* /*other*/) const {
             assert(false); // Not implemented
@@ -212,16 +204,13 @@ namespace jactorio::proto
 
         // ======================================================================
         // Data Events
-        ///
         /// Called after all prototypes are loaded prior to validation
         virtual void PostLoad() {}
 
-        ///
         /// Validates properties of the prototype are valid
         /// \exception proto::Data_exception If invalid
         virtual void PostLoadValidate(const data::PrototypeManager& proto) const = 0;
 
-        ///
         /// Called after the prototype has been validated
         virtual void ValidatedPostLoad() {}
 

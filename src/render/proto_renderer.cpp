@@ -14,7 +14,6 @@ using namespace jactorio;
 
 constexpr float kPixelZ = 0.1f;
 
-///
 /// \param tile_offset Tile offset (for distance after each item)
 void PrepareConveyorSegmentData(render::RendererLayer& layer,
                                 const SpriteUvCoordsT& uv_coords,

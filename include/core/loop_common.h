@@ -16,7 +16,6 @@ namespace jactorio::render
 
 namespace jactorio
 {
-    ///
     /// Used between threaded loops
     class ThreadedLoopCommon
     {

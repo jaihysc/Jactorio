@@ -79,7 +79,6 @@ const proto::ConveyorData* game::GetConData(const ChunkTile& tile) {
     }
 }
 
-///
 /// Determines origin and neighbor's targets
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam NeighborConnect Neighbor orientation required for neighbor to connect to origin
@@ -119,7 +118,6 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
         connect_segment(neighbor_struct, origin);
 }
 
-///
 /// Connection logic for origin and neighbor
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam XOffset Offset applied to origin to get neighbor
@@ -161,7 +159,6 @@ void game::ConveyorConnectLeft(World& world, const WorldCoord& coord) {
 }
 
 
-///
 /// Disconnects segments and adjusts segment termination type accordingly
 template <int XOffset, int YOffset>
 void DisconnectSegment(game::World& world, const WorldCoord& coord) {
@@ -408,7 +405,6 @@ void game::ConveyorRenumber(World& world, WorldCoord coord, const int start_inde
 }
 
 
-///
 /// If current tile has structure which has old_con_struct as a target, change to new_con_struct
 void ChangeTargetSingle(game::World& world,
                         const WorldCoord& coord,
@@ -421,7 +417,6 @@ void ChangeTargetSingle(game::World& world,
     }
 }
 
-///
 /// Change structures which has old_con_struct as a target to new_con_struct
 /// \param coord Coordinate to begin, incrementing in opposite direction of old_con_struct, old_con_struct.length times
 void ChangeTarget(game::World& world,
@@ -569,7 +564,6 @@ void game::ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord
 
 void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coord) {
 
-    ///
     /// Changes termination type at coordinates
     auto change_ttype = [&world](const WorldCoord& neighbor_coord, const ConveyorStruct::TerminationType new_ttype) {
         auto* con_data = GetConData(world, neighbor_coord);
@@ -588,7 +582,6 @@ void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coo
         }
     };
 
-    ///
     /// Changes termination type at coordinates if it matches required_direction
     auto try_change_ttype = [&world, &change_ttype](const WorldCoord& neighbor_coord,
                                                     const Orientation required_direction,

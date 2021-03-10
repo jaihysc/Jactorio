@@ -49,7 +49,6 @@ void render::ChangeWindowSize(Renderer& renderer,
     LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", window_size_x, window_size_y);
 }
 
-///
 /// Waits until next frame time, draws frame
 void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_clock::time_point& next_frame) {
     // Sleep until the next fixed update interval
@@ -64,7 +63,6 @@ void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_c
     render::Renderer::GlClear();
 }
 
-///
 /// Retrieves and handles sdl events
 void PollEvents(ThreadedLoopCommon& common, render::DisplayWindow& display_window, SDL_Event& e) {
     while (SDL_PollEvent(&e)) {

@@ -39,7 +39,6 @@ namespace jactorio::game
         EVENT_CATEGORY(application)
     };
 
-    ///
     /// Keyboard or mouse activity
     class InputActivityEvent final : public EventBase
     {

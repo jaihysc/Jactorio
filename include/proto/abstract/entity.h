@@ -14,7 +14,6 @@ namespace jactorio::proto
 {
     class Item;
 
-    ///
     /// Unique per entity placed in the world
     struct EntityData : FEntityData
     {
@@ -23,7 +22,6 @@ namespace jactorio::proto
         }
     };
 
-    ///
     /// Placeable items in the world
     class Entity : public FEntity
     {
@@ -94,7 +92,6 @@ namespace jactorio::proto
         // ======================================================================
         // Game events
 
-        ///
         /// Entity was build in the world
         virtual void OnBuild(game::World& world,
                              game::Logic& logic,
@@ -102,7 +99,6 @@ namespace jactorio::proto
                              game::TileLayer tlayer,
                              Orientation orientation) const = 0;
 
-        ///
         /// Determines if prototype can be built at coord
         /// \param coord Top left of prototype
         /// \param orien Orientation of prototype
@@ -114,14 +110,12 @@ namespace jactorio::proto
         }
 
 
-        ///
         /// Entity was picked up from a built state, called BEFORE the entity has been removed
         virtual void OnRemove(game::World& world,
                               game::Logic& logic,
                               const WorldCoord& coord,
                               game::TileLayer tlayer) const = 0;
 
-        ///
         /// A neighbor of this prototype in the world was updated
         /// \param emit_coords Coordinates of the prototype which is EMITTING the update
         /// \param receive_coords Coordinates of the prototype RECEIVING the update

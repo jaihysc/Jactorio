@@ -24,7 +24,6 @@ struct ParserData
     bool inLVal = false; // Left of equals sign
     bool inRVal = false; // Right of equals sign
 
-    ///
     /// Call this when entering a new line to reset variables and buffers
     void ResetVariables() {
         charNumber = 0;
@@ -34,7 +33,6 @@ struct ParserData
         currentLineBuffer.clear();
     }
 
-    ///
     /// Logs parsing error message and throws
     /// \exception ProtoError Thrown when this function is called
     [[noreturn]] void ParseError(const std::string& message) const {
@@ -46,7 +44,6 @@ struct ParserData
 };
 
 
-///
 /// Helper for parse, handles end of line actions
 void ParseEol(data::PrototypeManager& proto, ParserData& parser_data, const std::string& directory_prefix) {
     // R val was not specified or empty

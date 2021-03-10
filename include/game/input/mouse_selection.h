@@ -31,7 +31,6 @@ namespace jactorio
 
 namespace jactorio::game
 {
-    ///
     /// Handles mouse input and selection
     class MouseSelection
     {
@@ -44,12 +43,10 @@ namespace jactorio::game
         // ======================================================================
         // Client only mouse selection (affects only rendering) For Player mouse selection, see player
 
-        ///
         /// Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the
         /// cursor
         void DrawCursorOverlay(GameWorlds& worlds, Player& player, const data::PrototypeManager& proto);
 
-        ///
         /// Draws cursor_sprite when over entity & no item selected or item not placeable
         /// With item selected: draws ghost of entity
         void DrawOverlay(World& world,
@@ -65,7 +62,6 @@ namespace jactorio::game
         void RemoveLastOverlay(World& world) const;
     };
 
-    ///
     /// Callback provided to glfwSetCursorPosCallback to set mouse position
     void SetCursorPosition(double x_pos, double y_pos);
 } // namespace jactorio::game

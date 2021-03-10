@@ -23,20 +23,16 @@ namespace jactorio::proto
             return recipe_.Get();
         }
 
-        ///
         /// Changes recipe to provided recipe, nullptr for no recipe
         void ChangeRecipe(game::Logic& logic, const data::PrototypeManager& proto, const Recipe* new_recipe);
 
-        ///
         /// Checks if necessary ingredients are present to begin crafting
         /// \return true if recipe crafting has begun
         J_NODISCARD bool CanBeginCrafting() const;
 
-        ///
         /// Deducts items from ingredient inventory equal to amount specified by recipe
         void CraftRemoveIngredients();
 
-        ///
         /// Outputs recipe product to product inventory
         void CraftAddProduct();
 
@@ -78,7 +74,6 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        ///
         /// Begins crafting if ingredients are met
         /// \return true if crafting has begun
         bool TryBeginCrafting(game::Logic& logic, AssemblyMachineData& data) const;

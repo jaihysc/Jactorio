@@ -20,7 +20,6 @@
 
 namespace jactorio::game
 {
-    ///
     /// A chunk within the game
     ///
     /// Made up of tiles and objects:
@@ -56,11 +55,9 @@ namespace jactorio::game
         using SerialLogicGroupArrayT = std::array<std::vector<TileInfo>, kLogicGroupCount>;
 
     public:
-        ///
         /// \remark For cereal deserialization only
         Chunk() = default;
 
-        ///
         /// Default initialization of chunk tiles
         explicit Chunk(const ChunkCoord& c_coord) : position_(c_coord) {}
 
@@ -90,12 +87,10 @@ namespace jactorio::game
             return position_;
         }
 
-        ///
         /// Tiles at provided tlayer
         J_NODISCARD TileArrayT& Tiles(TileLayer tlayer);
         J_NODISCARD const TileArrayT& Tiles(TileLayer tlayer) const;
 
-        ///
         /// Gets tile at x, y offset from top left of chunk
         J_NODISCARD ChunkTile& GetCTile(const ChunkTileCoord& coord, TileLayer tlayer);
         J_NODISCARD const ChunkTile& GetCTile(const ChunkTileCoord& coord, TileLayer tlayer) const;
@@ -135,7 +130,6 @@ namespace jactorio::game
         ChunkCoord position_;
         std::array<TileArrayT, kTileLayerCount> layers_;
 
-        ///
         /// Other chunk has logic entries pointing to tiles within itself,
         /// this will recreate the entries, pointing to this chunk's tiles
         void ResolveLogicEntries(const Chunk& other) noexcept;

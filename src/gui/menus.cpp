@@ -26,7 +26,6 @@
 
 using namespace jactorio;
 
-///
 /// Implements ImGui::IsItemClicked() for left and right mouse buttons
 /// \param on_click Called after inventory actions were handled
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
@@ -69,7 +68,6 @@ float GetProgressBarFraction(const GameTickT game_tick,
 // ==========================================================================================
 // Player menus (Excluding entity menus)
 
-///
 /// Draws the player's inventory menu
 void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
     const gui::GuiMenu menu;
@@ -210,7 +208,6 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     }
 }
 
-///
 /// Draws preview tooltip for a recipe
 /// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
 template <bool IsPlayerCrafting>

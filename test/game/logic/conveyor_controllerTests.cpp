@@ -29,7 +29,6 @@ namespace jactorio::game
         proto::Item itemProto_;
         proto::TransportBelt transportBelt_;
 
-        ///
         /// Creates a world, chunk and logic chunk at 0, 0
         void SetUp() override {
             chunk_ = &world_.EmplaceChunk({0, 0});

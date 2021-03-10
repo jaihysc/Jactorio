@@ -18,7 +18,6 @@ namespace jactorio::game
 {
     class Logic;
 
-    ///
     /// Manages deferrals, prototypes inheriting 'Deferred'
     class DeferralTimer
     {
@@ -44,7 +43,6 @@ namespace jactorio::game
         struct DebugInfo;
 
     public:
-        ///
         /// Information about the registered deferral for removing
         struct DeferralEntry
         {
@@ -65,12 +63,10 @@ namespace jactorio::game
             CallbackIndex callbackIndex = 0;
         };
 
-        ///
         /// Calls all deferred callbacks for the current game tick
         /// \param game_tick Current game tick
         void DeferralUpdate(Logic& logic, World& world, GameTickT game_tick);
 
-        ///
         /// Registers callback which will be called upon reaching the specified game tick
         /// \param deferred Implements virtual function on_defer_time_elapsed
         /// \param due_game_tick Game tick where the callback will be called
@@ -79,7 +75,6 @@ namespace jactorio::game
                                      DeferUniqueDataT* unique_data,
                                      GameTickT due_game_tick);
 
-        ///
         /// Registers callback which will be called after the specified game ticks pass
         /// \param deferred Implements virtual function on_defer_time_elapsed
         /// \param elapse_game_tick Callback will be called in game ticks from now
@@ -88,11 +83,9 @@ namespace jactorio::game
                                        DeferUniqueDataT* unique_data,
                                        GameTickT elapse_game_tick);
 
-        ///
         /// Removes registered callback at game_tick at index
         void RemoveDeferral(DeferralEntry entry);
 
-        ///
         /// Removes registered callback and sets entry index to 0
         void RemoveDeferralEntry(DeferralEntry& entry);
 
@@ -109,7 +102,6 @@ namespace jactorio::game
 
         GameTickT lastGameTick_ = 0;
 
-        ///
         /// Used to fill the gap when a callback has been removed
         class BlankCallback final : public proto::FEntity
         {

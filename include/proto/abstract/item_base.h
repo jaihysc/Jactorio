@@ -10,7 +10,6 @@ namespace jactorio::proto
 {
     class Sprite;
 
-    ///
     /// Basic abstract class for items
     class ItemBase : public FrameworkBase
     {

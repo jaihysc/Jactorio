@@ -367,7 +367,6 @@ void GenerateChunk(game::World& world,
     }
 }
 
-///
 /// Generates a chunk and adds it to the world when done
 /// Call this with a std::thread to to this in async
 void Generate(game::World& world, const data::PrototypeManager& proto, const int chunk_x, const int chunk_y) {

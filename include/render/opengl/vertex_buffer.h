@@ -21,17 +21,14 @@ namespace jactorio::render
         VertexBuffer& operator=(const VertexBuffer& other) = delete;
         VertexBuffer& operator=(VertexBuffer&& other) noexcept = delete;
 
-        ///
         /// Gets pointer to begin modifying buffer data
         J_NODISCARD void* Map() const;
 
-        ///
         /// Call to finish modifying buffer data, provided pointer from Map now invalid
         void UnMap() const;
 
         // void UpdateData(const void* data, uint32_t offset, uint32_t size) const;
 
-        ///
         /// Creates a new buffer of provided specifications
         void Reserve(const void* data, uint32_t byte_size, bool static_buffer) const;
 

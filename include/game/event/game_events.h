@@ -19,7 +19,6 @@ namespace jactorio::game
     public:
         explicit LogicTickEvent(const uint16_t tick) : gameTick(tick) {}
 
-        ///
         /// 0 - 59
         uint16_t gameTick;
 

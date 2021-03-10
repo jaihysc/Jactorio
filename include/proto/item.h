@@ -13,7 +13,6 @@ namespace jactorio::proto
 
 namespace jactorio::proto
 {
-    ///
     /// Creating a item prototype may omit sprite group, it is automatically defaulted to both gui and terrain
     class Item final : public ItemBase
     {
@@ -39,7 +38,6 @@ namespace jactorio::proto
         Entity* entityPrototype = nullptr;
 
 
-        ///
         /// Number of items which can be together
         PYTHON_PROP_REF(StackCount, stackSize);
 

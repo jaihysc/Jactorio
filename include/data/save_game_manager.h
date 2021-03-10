@@ -27,27 +27,22 @@ namespace jactorio::data
 
     void SerializeGameController(const game::GameController& game_controller, const std::string& save_name);
 
-    ///
     /// \param out_game_controller Deserialized into this
     void DeserializeGameController(game::GameController& out_game_controller, const std::string& save_name);
 
     J_NODISCARD bool IsValidSaveName(const std::string& save_name);
 
-    ///
     /// \param save_name No path, no extensions
     J_NODISCARD std::string ResolveSavePath(const std::string& save_name);
 
-    ///
     /// Iterator to save directory, directory itself is always valid
     J_NODISCARD std::filesystem::directory_iterator GetSaveDirIt();
 
     // Keybinds
 
-    ///
     /// Serializes to kKeybindSaveName
     void SerializeKeybinds(const game::KeybindManager& keybind_manager);
 
-    ///
     /// Deserializes from kKeybindSaveName
     /// \param out_keybind_manager Deserialized into this
     /// \return false If file is not found, true if succeeded

@@ -22,7 +22,6 @@ namespace jactorio::game
 
         data::PrototypeManager proto_;
 
-        ///
         /// Sets the base tile and entity at coord
         void SetEntityCoords(const WorldCoord& coord,
                              const proto::Tile* tile_proto,
@@ -64,7 +63,6 @@ namespace jactorio::game
         EXPECT_EQ(playerPlace_.orientation, Orientation::up);
     }
 
-    ///
     /// Place entity at 0, 0
     TEST_F(PlayerPlacementTest, TryPlaceEntity) {
         // Create entity
@@ -181,7 +179,6 @@ namespace jactorio::game
         EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
     }
 
-    ///
     /// Picking up an entity wil unset activated tile if activated tile was the entity
     TEST_F(PlayerPlacementTest, TryPickupEntityDeactivateTile) {
 
@@ -359,7 +356,6 @@ namespace jactorio::game
         EXPECT_EQ(resource_data.resourceAmount, 1); // Picked up
     }
 
-    ///
     /// Picking up an entity which is rotated (treated as 2x1 instead of 1x2)
     TEST_F(PlayerPlacementTest, TryPickupRotated) {
         world_.EmplaceChunk({0, 0});

@@ -50,7 +50,6 @@ namespace jactorio::game
 
         static constexpr auto kActionCount_ = static_cast<int>(Type::count_);
 
-        ///
         /// \return Function which performs (executes) given PlayerAction::Type
         J_NODISCARD static Executor& GetExecutor(Type type);
 

@@ -16,7 +16,6 @@
 
 namespace jactorio::proto
 {
-    ///
     /// \remark MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1
     /// \tparam T Type stored in noise_layer
     template <typename T>
@@ -67,7 +66,6 @@ namespace jactorio::proto
         // ======================================================================
         // Noise value
 
-        ///
         /// \return Starting noise value
         /// Default value is -1
         J_NODISCARD NoiseValT GetStartNoise() const {
@@ -85,7 +83,6 @@ namespace jactorio::proto
             return this;
         }
 
-        ///
         /// \return Maximum noise value accepted
         J_NODISCARD NoiseValT GetEndNoise() const {
             // Last item will have highest value
@@ -97,7 +94,6 @@ namespace jactorio::proto
         // T value
 
 
-        ///
         /// Adds a tile range, the order which this is called affects the order of the tile range
         /// \remark Will not add if start_val is not set
         /// \param end_range Exclusive ending range, unless it is last item
@@ -114,7 +110,6 @@ namespace jactorio::proto
         }
 
 
-        ///
         /// Fetches the tile at the current range
         /// normalize is false, Nullptr if out of range
         /// normalize is true, Min/max value tile if out of range
@@ -128,7 +123,6 @@ namespace jactorio::proto
             return prototypes_[upper_bound - 1];
         }
 
-        ///
         /// Gets start end range for a noise value
         /// \return inclusive start, exclusive end range unless it is last item, {0, 0} if invalid
         J_NODISCARD std::pair<NoiseValT, NoiseValT> GetValNoiseRange(NoiseValT val) const {
@@ -151,7 +145,6 @@ namespace jactorio::proto
         }
 
     private:
-        ///
         /// If normalize is set, normalizes provided value
         void TryNormalizeNoiseVal(NoiseValT& val) const {
             // Ending range must be inclusive for last noise value so normalize works
@@ -168,7 +161,6 @@ namespace jactorio::proto
             }
         }
 
-        ///
         /// \return upper noise range bound index, 0 if not found
         J_NODISCARD size_t IterateNoiseRange(const NoiseValT val) const noexcept {
             bool last_value = true;

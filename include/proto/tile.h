@@ -10,7 +10,6 @@ namespace jactorio::proto
 {
     class Sprite;
 
-    ///
     /// Tiles which are auto-placed by the world generator
     /// Configure how the world generator places these tiles with a Noise_layer
     class Tile final : public FWorldObject
@@ -20,7 +19,6 @@ namespace jactorio::proto
 
         Tile() = default;
 
-        ///
         /// \param sprite_ptr Points to a sprite prototype
         explicit Tile(Sprite* sprite_ptr) : sprite(sprite_ptr) {}
 

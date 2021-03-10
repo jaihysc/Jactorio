@@ -44,7 +44,6 @@ struct InserterUpdateProps
 using DropoffQueue = std::vector<InserterUpdateProps>;
 using PickupQueue  = std::vector<InserterUpdateProps>;
 
-///
 /// Rotates inserters, queues inserters awaiting dropoff and pickup handling
 void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue, const InserterUpdateProps& props) {
     using namespace game;

@@ -10,7 +10,6 @@
 
 namespace jactorio
 {
-    ///
     /// Performs cast, data may be lost
     template <class TTarget, class TOriginal>
     constexpr TTarget LossyCast(
@@ -21,7 +20,6 @@ namespace jactorio
         return static_cast<TTarget>(val);
     }
 
-    ///
     /// Performs cast ensuring no data is lost
     /// \remark Same behavior as static cast if assertions are disabled
     template <class TTargetInt, class TOriginalInt>

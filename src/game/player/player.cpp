@@ -165,7 +165,6 @@ void game::Player::Placement::CounterRotateOrientation() {
 }
 
 
-///
 /// \param coord Top left tile x, y
 /// \param orientation Orientation of placed / removed entity
 void UpdateNeighboringEntities(game::World& world,

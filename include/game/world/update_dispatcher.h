@@ -18,7 +18,6 @@
 
 namespace jactorio::game
 {
-    ///
     /// Calls callbacks for tile updates
     class UpdateDispatcher
     {
@@ -51,13 +50,11 @@ namespace jactorio::game
             WorldCoord emitter;
         };
 
-        ///
         /// Registers proto_listener callback when target coord is updated, providing current coord
         ListenerEntry Register(const WorldCoord& current_coord,
                                const WorldCoord& target_coord,
                                const proto::FEntity& proto_listener);
 
-        ///
         /// Unregister entry
         /// \return true if succeeded, false if failed
         bool Unregister(const ListenerEntry& entry);

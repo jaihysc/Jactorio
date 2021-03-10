@@ -24,7 +24,6 @@ namespace jactorio::proto
         EXPECT_EQ(recipe, &laptop_recipe);
     }
 
-    ///
     /// Returns true if iname exists in array and matches count
     bool VectorGetVal(std::vector<RecipeItem>& vector, const std::string& iname, const uint16_t val) {
         for (auto& i : vector) {

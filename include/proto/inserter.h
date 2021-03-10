@@ -13,7 +13,6 @@
 
 namespace jactorio::proto
 {
-    ///
     /// Holds the internal structure for inserters
     struct InserterData final : HealthEntityData
     {
@@ -70,16 +69,13 @@ namespace jactorio::proto
         /// The hand holding the item
         PYTHON_PROP_I(Sprite*, handSprite, nullptr);
 
-        ///
         /// Degrees to rotate per tick
         /// \remark For Python API use only
         PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1);
 
-        ///
         /// Tile distance which the inserter can reach
         PYTHON_PROP_I(ProtoUintT, tileReach, 1);
 
-        ///
         /// Degrees to rotate per tick
         RotationDegreeT rotationSpeed;
 
@@ -100,7 +96,6 @@ namespace jactorio::proto
                                                game::World& world,
                                                const WorldCoord& coord) const override;
 
-        ///
         /// \param orientation Points towards dropoff
         void OnBuild(game::World& world,
                      game::Logic& logic,

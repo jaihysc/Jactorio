@@ -29,7 +29,6 @@ namespace jactorio
     // It is difficult to compute enough decimal points by hand for EXPECT_DOUBLE_EQ, thus EXPECT_NEAR is used
     constexpr double kFloatingAbsErr = 0.000000001;
 
-    ///
     /// Inherit and override what is necessary
     class TestMockWorldObject : public proto::FWorldObject
     {
@@ -82,7 +81,6 @@ namespace jactorio
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
 
-    ///
     /// Sets up a multi tile with proto at coord on the provided specified tile
     /// \return Top left tile
     inline game::ChunkTile& TestSetupMultiTile(game::World& world,
@@ -112,7 +110,6 @@ namespace jactorio
         return *tl_tile;
     }
 
-    ///
     /// Creates a container of provided size at coord
     inline game::ChunkTile& TestSetupContainer(game::World& world,
                                                const WorldCoord& coord,
@@ -128,7 +125,6 @@ namespace jactorio
         return container_layer;
     }
 
-    ///
     /// Creates an inserter at coord
     inline game::ChunkTile& TestSetupInserter(game::World& world,
                                               game::Logic& logic,
@@ -144,7 +140,6 @@ namespace jactorio
         return *tile;
     }
 
-    ///
     /// Creates conveyor at coord, registers tile for logic updates
     inline void TestCreateConveyorSegment(game::World& world,
                                           const WorldCoord& coord,
@@ -163,7 +158,6 @@ namespace jactorio
         chunk->GetLogicGroup(game::LogicGroup::conveyor).emplace_back(tile);
     }
 
-    ///
     /// Creates a assembly machine at coordinates
     /// \return top left tile
     inline game::ChunkTile& TestSetupAssemblyMachine(game::World& world,
@@ -175,7 +169,6 @@ namespace jactorio
         return origin_layer;
     }
 
-    ///
     /// Creates resource with orientation up at coord
     inline game::ChunkTile& TestSetupResource(game::World& world,
                                               const WorldCoord& coord,
@@ -191,7 +184,6 @@ namespace jactorio
         return *tile;
     }
 
-    ///
     /// Creates a drill in the world with orientation, calling OnBuild
     inline game::ChunkTile& TestSetupDrill(game::World& world,
                                            game::Logic& logic,
@@ -212,7 +204,6 @@ namespace jactorio
         return *tile;
     }
 
-    ///
     /// Creates conveyor at tile with provided conveyor structure
     inline auto& TestSetupConveyor(game::World& world,
                                    const WorldCoord& coord,
@@ -226,7 +217,6 @@ namespace jactorio
         return tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
     }
 
-    ///
     /// Creates conveyor at tile its own conveyor structure
     inline auto& TestSetupConveyor(
         game::World& world,
@@ -241,7 +231,6 @@ namespace jactorio
         return TestSetupConveyor(world, coord, con_proto, con_struct);
     }
 
-    ///
     /// Creates splitter data at tile, no conveyor structure
     inline auto& TestSetupBlankSplitter(game::World& world,
                                         const WorldCoord& coord,
@@ -251,7 +240,6 @@ namespace jactorio
         return top_left.MakeUniqueData<proto::SplitterData>(orien);
     }
 
-    ///
     /// Creates splitter data at tile with conveyor structures
     inline auto& TestSetupSplitter(game::World& world,
                                    const WorldCoord& coord,
@@ -278,7 +266,6 @@ namespace jactorio
         proto::Item* itemProduct = nullptr;
     };
 
-    ///
     /// Sets up and registers a recipe
     /// 1a + 1b = 1c
     J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto) {
@@ -298,7 +285,6 @@ namespace jactorio
     }
 
 
-    ///
     /// Serializes T and returns deserialized T
     template <typename T>
     J_NODISCARD T TestSerializeDeserialize(const T& object) {

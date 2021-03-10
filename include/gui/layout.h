@@ -27,7 +27,6 @@ namespace jactorio::gui
     // ======================================================================
     // Widget Positioning
 
-    ///
     /// Gets height of current ImGui font
     float GetFontHeight();
 
@@ -43,17 +42,14 @@ namespace jactorio::gui
         return 2 * kGuiStyleWindowPaddingX;
     }
 
-    ///
     /// \param items Items after the first item
     constexpr unsigned GetTotalWindowItemSpacingX(const unsigned items) {
         return items * kGuiStyleItemSpacingX;
     };
 
-    ///
     /// Adds additional vertical space
     void AddVerticalSpace(float y);
 
-    ///
     /// Adds additional vertical space, disregarding the imgui style var "itemSpacing"
     void AddVerticalSpaceAbsolute(float y);
 
@@ -61,26 +57,21 @@ namespace jactorio::gui
     // ======================================================================
     // Window positioning
 
-    ///
     /// The window size is calculated on the size of the player's inventory
     J_NODISCARD ImVec2 GetWindowSize();
 
-    ///
     /// Gets the center window position
     J_NODISCARD ImVec2 GetWindowCenter();
 
 
-    ///
     /// The next window drawn will be on the left center of the screen
     void SetupNextWindowLeft(const ImVec2& window_size);
     void SetupNextWindowLeft();
 
-    ///
     /// The next window drawn will be on the left center of the screen
     void SetupNextWindowRight(const ImVec2& window_size);
     void SetupNextWindowRight();
 
-    ///
     /// The next window drawn will be centered on the screen
     void SetupNextWindowCenter(const ImVec2& window_size);
     void SetupNextWindowCenter();

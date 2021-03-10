@@ -16,7 +16,6 @@ namespace jactorio::game
 
         proto::Item* cursor_ = nullptr;
 
-        ///
         /// Creates the cursor prototype which is hardcoded when an item is selected
         void SetupInventoryCursor() {
             cursor_ = &proto_.Make<proto::Item>(proto::Item::kInventorySelectedCursor);
@@ -472,7 +471,6 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].count, 0);
     }
 
-    ///
     /// Sorting will not move the inventory selection cursor (to prevent breaking the inventory logic)
     TEST_F(PlayerInventoryTest, PlayerInventorySortNoMoveCursor) {
         SetupInventoryCursor();

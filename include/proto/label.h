@@ -8,7 +8,6 @@
 
 namespace jactorio::proto
 {
-    ///
     /// Constants for all labels' names
     struct LabelNames
     {
@@ -27,7 +26,6 @@ namespace jactorio::proto
         static constexpr auto kKeyActionKUp      = "__core__/label:key-action-key-up";
     };
 
-    ///
     /// Stores localized text
     class Label final : public FrameworkBase
     {

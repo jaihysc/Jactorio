@@ -34,7 +34,6 @@ namespace jactorio::proto
         }
 
 
-        ///
         /// Sets the prototype pointer for a conveyor at tile
         game::ChunkTile& BuildConveyor(const WorldCoord coord, const Orientation orientation) {
             auto* tile = world_.GetTile(coord, game::TileLayer::entity);
@@ -46,7 +45,6 @@ namespace jactorio::proto
             return *tile;
         }
 
-        ///
         /// Dispatches the appropriate events for when a conveyor is built
         void TlBuildEvents(const WorldCoord& coord, const Orientation orientation) {
             lineProto_.OnBuild(world_, logic_, coord, game::TileLayer::entity, orientation);
@@ -58,7 +56,6 @@ namespace jactorio::proto
             DispatchNeighborUpdate(coord, {coord.x - 1, coord.y}, Orientation::left);
         }
 
-        ///
         /// Dispatches the appropriate events AFTER a conveyor is removed
         void TlRemoveEvents(const WorldCoord& coord) {
             lineProto_.OnRemove(world_, logic_, coord, game::TileLayer::entity);
@@ -72,7 +69,6 @@ namespace jactorio::proto
 
         // Bend
 
-        ///
         /// \param l_index index for left only segment in logic group
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {

@@ -47,13 +47,11 @@ namespace jactorio::render
         // ======================================================================
         // OpenGL calls
 
-        ///
         /// Sets up OpenGl settings, only need to call once on program start
         static void GlSetup() noexcept;
 
         static void GlClear() noexcept;
 
-        ///
         /// Resizes rendering buffers to new window size
         void GlResizeWindow(unsigned int window_x, unsigned int window_y) noexcept;
 
@@ -77,13 +75,11 @@ namespace jactorio::render
         float tileProjectionMatrixOffset = 0;
 
 
-        ///
         /// Renderer will lookup uv coords at the provided spritemap_coords
         void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
             spritemapCoords_ = &spritemap_coords;
         }
 
-        ///
         /// Faster non range checked get into spritemapCoords_
         /// \remark Ensure key always exists
         J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(
@@ -94,7 +90,6 @@ namespace jactorio::render
             return GetSpriteUvCoords(*spritemapCoords_, key);
         }
 
-        ///
         /// \param world World to render
         /// \param player_x X Position of the player in tiles
         /// \param player_y Y Position of the player in tiles
@@ -124,19 +119,15 @@ namespace jactorio::render
         /// Hides the camera moving
         static constexpr int kPaddingChunks = 1;
 
-        ///
         /// Number of tiles to draw to fill window dimensions
         J_NODISCARD Position2<int> GetTileDrawAmount() const noexcept;
 
-        ///
         /// All tiles drawn will have its position added to tile offset
         J_NODISCARD Position2<int> GetTileDrawOffset(int position_x, int position_y) const noexcept;
 
-        ///
         /// Top left chunk coordinates to begin drawing
         J_NODISCARD Position2<int> GetChunkDrawStart(int position_x, int position_y) const noexcept;
 
-        ///
         /// Number of chunks to draw to fill window dimensions
         J_NODISCARD Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
 
@@ -149,7 +140,6 @@ namespace jactorio::render
         /// Each thread gets 2 layers for rendering tiles + unique data
         std::vector<RendererLayer> renderLayers_;
 
-        ///
         /// \param row_start Chunk coordinate where the row of chunks starts
         /// \param chunk_span Number of chunks spanned
         /// \param render_tile_offset Offset drawn tiles on screen by this tile amount
@@ -181,12 +171,10 @@ namespace jactorio::render
 
         static void ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept;
 
-        ///
         /// Draws current data to the screen
         /// \param index_count Count of indices to draw
         static void GlDraw(uint64_t index_count) noexcept;
 
-        ///
         /// Updates projection matrix and zoom level
         void GlUpdateTileProjectionMatrix() noexcept;
 

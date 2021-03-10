@@ -39,7 +39,6 @@ namespace jactorio::gui
         GuiMenu& operator=(const GuiMenu&&) = delete;
 
 
-        ///
         /// Must be called before using Draw__ methods
         void Begin(const char* name) const;
 
@@ -62,7 +61,6 @@ namespace jactorio::gui
     };
 
 
-    ///
     /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
     class GuiTitle
     {
@@ -89,26 +87,22 @@ namespace jactorio::gui
         explicit GuiItemSlots(const render::GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
 
     public:
-        ///
         /// \param slot_count Number of slots to draw
         /// \param callback Use to draw slot
         void Begin(std::size_t slot_count, const BeginCallbackT& callback) const;
 
-        ///
         /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param item_count Number to display on the item, 0 to hide
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
             PrototypeIdT sprite_id, uint16_t item_count, const DrawSlotCallbackT& callback = [] {}) const;
 
-        ///
         /// Draws slot without item count
         /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
             PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {}) const;
 
-        ///
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
             const game::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {}) const;
@@ -122,7 +116,6 @@ namespace jactorio::gui
         float endingVerticalSpace = -1.f;
 
     private:
-        ///
         /// Invisible button which detects clicks
         void DrawBackingButton() const;
 
@@ -131,7 +124,6 @@ namespace jactorio::gui
     };
 
 
-    ///
     /// \remark Will pad description to match length of title if short to avoid cutting title off
     /// \param title Title of the tooltip
     /// \param draw_func Code to run while drawing the tooltip

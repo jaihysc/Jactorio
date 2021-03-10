@@ -102,7 +102,6 @@ bool data::IsValidSaveName(const std::string& save_name) {
 }
 
 
-///
 /// If save directory does not exist, a directory is made
 void CheckExistsSaveDirectory() {
     if (!std::filesystem::exists(kSaveGameFolder)) {

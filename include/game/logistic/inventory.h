@@ -31,30 +31,24 @@ namespace jactorio::game
         /// \return true if provided stack can be inserted into current stack, disregarding stack limits
         J_NODISCARD bool Accepts(const ItemStack& other) const;
 
-        ///
         /// Clears item and count, NOT filter
         void Clear() noexcept;
 
 
-        ///
         /// \return true if stack holds no items
         J_NODISCARD bool Empty() const noexcept;
 
-        ///
         /// \return true if stack >= stack size
         J_NODISCARD bool Full() const noexcept;
 
-        ///
         /// \return true if this stack contains more than its stack size
         J_NODISCARD bool Overloaded() const noexcept;
 
 
-        ///
         /// \return Available space left in this stack
         J_NODISCARD proto::Item::StackCount FreeCount() const noexcept;
 
 
-        ///
         /// Deletes provided number of items from current stack
         /// \remark Ensure stack has enough to delete
         void Delete(proto::Item::StackCount amount) noexcept;
@@ -62,7 +56,6 @@ namespace jactorio::game
         /// Attempts to drop specified amount of item from current stack into provided stack
         void Drop(ItemStack& target_stack, proto::Item::StackCount amount) noexcept;
 
-        ///
         /// \return true if provided ItemStack holds the selection cursor from the player
         J_NODISCARD bool IsCursor() const noexcept;
 
@@ -78,7 +71,6 @@ namespace jactorio::game
         }
 
     private:
-        ///
         /// Validates that the contents of this itemstack is valid
         void Verify() const noexcept;
     };
@@ -109,11 +101,9 @@ namespace jactorio::game
 
         //
 
-        ///
         /// Sorts by localized name, grouping multiples of the same item into one stack, obeying stack size
         void Sort();
 
-        ///
         /// Returns whether or not item stack can be added to the current inventory
         /// \return true if succeeded, first index which can be added at
         J_NODISCARD std::pair<bool, size_t> CanAdd(const ItemStack& stack) const;
@@ -124,22 +114,18 @@ namespace jactorio::game
         proto::Item::StackCount Add(const ItemStack& stack);
 
 
-        ///
         /// Gets count of item in inventory
         J_NODISCARD uint32_t Count(const proto::Item& item) const;
 
-        ///
         /// Gets the first item within the inventory
         /// \return nullptr if no items were found
         J_NODISCARD const proto::Item* First() const;
 
 
-        ///
         /// Removes amount of specified item from inventory
         /// \return false if there is insufficient items to remove, inventory unchanged
         bool Remove(const proto::Item& item, uint32_t amount);
 
-        ///
         /// Removes amount of specified item from inventory
         /// \remark DOES NOT check that there are sufficient items to remove, use Remove() if checking is needed
         void Delete(const proto::Item& item, uint32_t amount);
@@ -150,7 +136,6 @@ namespace jactorio::game
         }
 
     private:
-        ///
         /// Validates that the contents of the inventory are valid
         void Verify() const;
 
@@ -158,7 +143,6 @@ namespace jactorio::game
     };
 
 
-    ///
     /// Moves itemstack origin to target
     /// When stacking items, the stack prioritizes the target inventory
     /// \remarks This should be only used by the player, machines should use Inventory::Add instead

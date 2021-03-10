@@ -81,7 +81,6 @@ namespace jactorio::game
         }
 
 
-        ///
         /// Checks that entity with top left at coord with dimensions has been placed
         void ValidatePlaced(const WorldCoord& coord,
                             const proto::Entity& entity,
@@ -102,7 +101,6 @@ namespace jactorio::game
             }
         }
 
-        ///
         /// Checks that entity with top left at coord with dimensions has been deleted
         void ValidateEmpty(const WorldCoord& coord, const proto::FWorldObject::Dimension& dimension = {1, 1}) {
             for (WorldCoordAxis y = coord.y; y < coord.y + dimension.y; ++y) {
@@ -176,7 +174,6 @@ namespace jactorio::game
         ValidateEmpty({9, 2}, dimension);
     }
 
-    ///
     /// When the placed entity overlaps another entity, the placement is also invalid
     TEST_F(WorldPlacementTest, PlaceEntity3x3OverlapExisting) {
         const proto::FWorldObject::Dimension dimension(3, 3);
@@ -200,7 +197,6 @@ namespace jactorio::game
         ValidateEmpty({5, 5}, dimension);
     }
 
-    ///
     /// When removing an entity, specifying anywhere will remove the entire entity
     TEST_F(WorldPlacementTest, RemoveEntity3x3ValidSelectNonTopLeft) {
         const proto::FWorldObject::Dimension dimension(3, 3);

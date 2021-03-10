@@ -31,7 +31,6 @@ namespace jactorio::game
             return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
         }
 
-        ///
         /// Creates chest with, emits OnNeighborUpdate
         /// \param orientation Orientation to chest from inserter
         /// \param stack_count Amount of items chest starts with

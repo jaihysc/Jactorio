@@ -16,7 +16,6 @@ namespace jactorio::proto
 
 namespace jactorio::game
 {
-    ///
     /// Named values for each z buffer number
     enum class OverlayLayer
     {
@@ -30,7 +29,6 @@ namespace jactorio::game
     constexpr int kOverlayLayerCount = static_cast<int>(OverlayLayer::count_);
 
 
-    ///
     /// Holds items which do not adhere to the tiles for rendering
     class OverlayElement
     {

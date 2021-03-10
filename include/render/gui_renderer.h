@@ -46,7 +46,6 @@ namespace jactorio::render
                     gui::MenuData& menu_data)
             : worlds(worlds), logic(logic), player(player), proto(proto), menuData(menu_data) {}
 
-        ///
         /// For OnRShowGui to init prototype and uniqueData
         /// \param g_rendr
         /// \param prototype

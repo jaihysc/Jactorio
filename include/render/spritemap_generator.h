@@ -15,7 +15,6 @@
 
 namespace jactorio::render
 {
-    ///
     /// Generates spritemaps on initialization with tile sprites
     /// - Concatenate sprite into spritemap
     /// - Location of a sprite within spritemap
@@ -66,29 +65,24 @@ namespace jactorio::render
         std::map<unsigned int, SpritemapData> spritemapDatas_;
 
     public:
-        ///
         /// Frees all spritemap memory
         void Clear();
 
-        ///
         /// Creates a spritemap and stores it as a render::Texture
         /// \remark Requires OpenGL context
         void GInitializeSpritemap(const data::PrototypeManager& proto,
                                   proto::Sprite::SpriteGroup group,
                                   bool invert_sprites);
 
-        ///
         /// Creates a spritemap
         J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& proto,
                                                   proto::Sprite::SpriteGroup group,
                                                   bool invert_sprites) const;
 
-        ///
         /// Retrieves spritemap at specified group
         const SpritemapData& GetSpritemap(proto::Sprite::SpriteGroup group);
         const Texture* GetTexture(proto::Sprite::SpriteGroup group);
 
-        ///
         /// Generates spritemap
         /// \remark Color in non specified areas of the spritemap are undefined
         /// \param sprites Collection of pointers towards sprite prototypes
@@ -101,7 +95,6 @@ namespace jactorio::render
         /// Additional border to each sprite, use to avoid black lines
         static constexpr int sprite_border = 1;
 
-        ///
         /// Holds a sprite and its neighbors on the spritemap
         struct GeneratorNode
         {
@@ -113,19 +106,15 @@ namespace jactorio::render
             GeneratorNode* right = nullptr;
         };
 
-        ///
         /// Gets sprite width with adjustments
         static proto::Sprite::SpriteDimension GetSpriteWidth(const proto::Sprite* sprite);
-        ///
         /// Gets sprite height with adjustments
         static proto::Sprite::SpriteDimension GetSpriteHeight(const proto::Sprite* sprite);
 
 
         static void SortInputSprites(std::vector<const proto::Sprite*>& sprites);
 
-        ///
         /// Recursively creates linked GeneratorNodes of sprites
-        ///
         /// Will erase from sprites as each sprite is used
         static void GenerateSpritemapNodes(std::vector<const proto::Sprite*>& sprites,
                                            std::vector<GeneratorNode*>& node_buffer,
@@ -134,13 +123,11 @@ namespace jactorio::render
                                            SpritemapDimensionT max_height);
 
 
-        ///
         /// Calculates width of spritemap with adjustments
         /// \param base_node node above parent node
         static SpritemapDimensionT GetSpritemapWidth(GeneratorNode& base_node);
 
 
-        ///
         /// Copies pixel at sprite_x, sprite_y to spritemap buffer
         static void SetSpritemapPixel(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
                                       SpritemapDimensionT spritemap_width,
@@ -152,7 +139,6 @@ namespace jactorio::render
                                       proto::Sprite::SpriteDimension sprite_height,
                                       unsigned pixel_x,
                                       unsigned pixel_y);
-        ///
         /// Recursively outputs GeneratorNodes into provided sprite buffer
         static void GenerateSpritemapOutput(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
                                             SpritemapDimensionT spritemap_width,

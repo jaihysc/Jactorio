@@ -43,7 +43,6 @@
 // To construct sprite, a constructor with the name Sprite(...) is available
 
 
-///
 /// Call from python context, stores traceback in prototype
 inline void ExtractPythonTraceback(jactorio::proto::FrameworkBase& prototype) {
     py::exec("import sys as _sys \n"
@@ -67,7 +66,6 @@ inline void ExtractPythonTraceback(jactorio::proto::FrameworkBase& prototype) {
     prototype.pythonTraceback.pop_back(); // Remove final newline
 }
 
-///
 /// Name of cpp class, python name to reference cpp class, cpp inheritors for cpp class
 #define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)                                            \
     m.def(                                                                                        \

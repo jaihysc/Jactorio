@@ -27,7 +27,6 @@ namespace jactorio::proto
         HealthEntity() = default;
 
     public:
-        ///
         /// How many hit points this entity can have before it dies
         /// \remark 0 max health is invalid
         PYTHON_PROP_REF_I(uint16_t, maxHealth, kDefaultHealth);

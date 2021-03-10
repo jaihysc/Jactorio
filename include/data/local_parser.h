@@ -10,9 +10,7 @@ namespace jactorio::data
 {
     class PrototypeManager;
 
-    ///
     /// Parses localization files found in data/__name__/local/<lang>.cfg
-    ///
     /// Only the currently selected language will be parsed.
     /// Parsed data will be added to prototypes
 
@@ -33,7 +31,6 @@ namespace jactorio::data
     char const* const kLanguageIdentifier[] = {KEYS_DEF};
 #undef KEY_DEF
 
-    ///
     /// Parses a .cfg file, will throw exceptions on error
     /// \param file_str File contents
     /// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA

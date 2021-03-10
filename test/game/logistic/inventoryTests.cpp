@@ -585,7 +585,6 @@ namespace jactorio::game
         }
     }
 
-    ///
     /// If there is an item which exceeds its stack size, do not attempt to stack into it
     TEST(Inventory, SortItemExcedingStack) {
         proto::Item item;
@@ -610,7 +609,6 @@ namespace jactorio::game
         EXPECT_EQ(inv[2].count, 70);
     }
 
-    ///
     /// Should find the first empty slot and add the item there
     /// Slots, 0, 1 Will be with another item
     /// Should place in slot 2
@@ -639,7 +637,6 @@ namespace jactorio::game
         EXPECT_EQ(inv[2].count, 20);
     }
 
-    ///
     /// Should find slot with item of same type, respecting max stack size, add the remaining at the next
     /// available slot which is another item of the same type
     ///

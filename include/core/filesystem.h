@@ -8,7 +8,6 @@
 
 namespace jactorio
 {
-    ///
     /// Reads file from path as string
     /// \return Empty string if path is invalid
     std::string ReadFile(const std::string& path);
