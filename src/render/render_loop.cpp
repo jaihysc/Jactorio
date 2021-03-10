@@ -8,8 +8,6 @@
 #include <SDL.h>
 #include <examples/imgui_impl_sdl.h>
 
-#include "jactorio.h"
-
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
@@ -30,9 +28,8 @@ using namespace jactorio;
 unsigned int window_x = 0;
 unsigned int window_y = 0;
 
-render::Renderer* main_renderer = nullptr;
-
-void render::ChangeWindowSize(game::EventData& event,
+void render::ChangeWindowSize(Renderer& renderer,
+                              game::EventData& event,
                               const unsigned int window_size_x,
                               const unsigned int window_size_y) {
     // Ignore minimize
@@ -47,17 +44,11 @@ void render::ChangeWindowSize(game::EventData& event,
     window_y = window_size_y;
 
     event.SubscribeOnce(game::EventType::renderer_tick,
-                        [](auto& /*e*/) { main_renderer->GlResizeWindow(window_x, window_y); });
+                        [&renderer](auto& /*e*/) { renderer.GlResizeWindow(window_x, window_y); });
 
     LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", window_size_x, window_size_y);
 }
 
-render::Renderer* render::GetBaseRenderer() {
-    return main_renderer;
-}
-
-
-///
 /// Waits until next frame time, draws frame
 void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_clock::time_point& next_frame) {
     // Sleep until the next fixed update interval
@@ -72,7 +63,6 @@ void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_c
     render::Renderer::GlClear();
 }
 
-///
 /// Retrieves and handles sdl events
 void PollEvents(ThreadedLoopCommon& common, render::DisplayWindow& display_window, SDL_Event& e) {
     while (SDL_PollEvent(&e)) {
@@ -96,7 +86,7 @@ void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& displ
     SDL_Event e;
 
     while (common.gameState == main_menu_game_state) {
-        common.gameDataLocal.event.Raise<game::RendererTickEvent>(
+        common.gameController.event.Raise<game::RendererTickEvent>(
             game::EventType::renderer_tick, game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
         gui::ImguiBeginFrame(display_window);
@@ -129,25 +119,25 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
     while (common.gameState == world_render_game_state) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-        auto& player       = common.GetDataGlobal().player;
-        auto& player_world = common.GetDataGlobal().worlds[player.world.GetId()];
+        auto& player       = common.gameController.player;
+        auto& player_world = common.gameController.worlds[player.world.GetId()];
 
         // ======================================================================
         // RENDER LOOP ======================================================================
         {
             EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
-            common.gameDataLocal.event.Raise<game::RendererTickEvent>(
+            common.gameController.event.Raise<game::RendererTickEvent>(
                 game::EventType::renderer_tick,
                 game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
             // MVP Matrices updated in here
-            main_renderer->GlRenderPlayerPosition(common.GetDataGlobal().logic.GameTick(),
-                                                  player_world,
-                                                  player.world.GetPositionX(),
-                                                  player.world.GetPositionY());
+            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(),
+                                                    player_world,
+                                                    player.world.GetPositionX(),
+                                                    player.world.GetPositionY());
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
@@ -160,11 +150,11 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             }
 
             gui::ImguiDraw(display_window,
-                           common.GetDataGlobal().worlds,
-                           common.GetDataGlobal().logic,
+                           common.gameController.worlds,
+                           common.gameController.logic,
                            player,
-                           common.gameDataLocal.proto,
-                           common.gameDataLocal.event);
+                           common.gameController.proto,
+                           common.gameController.event);
         }
         // ======================================================================
         // ======================================================================
@@ -196,15 +186,16 @@ void render::RenderInit(ThreadedLoopCommon& common) {
     ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
     gui::Setup(display_window);
 
-    // Shader
     // From my testing, allocating it on the heap is faster than using the stack
-    ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
-    main_renderer = new Renderer();
+    auto renderer   = std::make_unique<Renderer>();
+    common.renderer = renderer.get();
+
+    // Shader
 
     const Shader shader(std::vector<ShaderCreationInput>{{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
                                                          {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}});
     shader.Bind();
-    main_renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
+    renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
 
     // Texture will be bound to slot 0 above, tell this to shader
     Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
@@ -215,23 +206,22 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Since game data will be now accessed, wait until prototype loading is complete
     LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
-    while (!common.prototypeLoadingComplete)
+    while (!common.prototypeLoadingComplete) // BUG if logic exits while render is waiting, it will never exit
         ;
     LOG_MESSAGE(debug, "Continuing render initialization");
 
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::terrain, true);
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::gui, false);
+    renderer_sprites.GInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, true);
+    renderer_sprites.GInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
     Renderer::GlSetup();
-    main_renderer->GlSetDrawThreads(8);
+    renderer->GlSetDrawThreads(8);
 
     // Terrain
-    main_renderer->SetSpriteUvCoords(
-        renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions);
+    renderer->SetSpriteUvCoords(renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions);
     renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
 
     // Gui
@@ -240,15 +230,16 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // ======================================================================
 
-    common.gameDataLocal.input.key.Register(
+    common.gameController.input.key.Register(
         [&]() {
-            common.gameDataLocal.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
-                const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
-                auto& window         = render_e.windows[0].get();
+            common.gameController.event.SubscribeOnce(
+                game::EventType::renderer_tick, [&renderer](const game::EventBase& e) {
+                    const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
+                    auto& window         = render_e.windows[0].get();
 
-                window.SetFullscreen(!window.IsFullscreen());
-                main_renderer->GlResizeWindow(window_x, window_y);
-            });
+                    window.SetFullscreen(!window.IsFullscreen());
+                    renderer->GlResizeWindow(window_x, window_y);
+                });
         },
         SDLK_SPACE,
         game::InputAction::key_down);

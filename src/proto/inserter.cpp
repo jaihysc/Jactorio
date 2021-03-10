@@ -40,73 +40,68 @@ SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
 void proto::Inserter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              game::ChunkTileLayer& tile_layer,
+                              const game::TileLayer tlayer,
                               Orientation orientation) const {
-    auto& inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
+    auto& inserter_data = world.GetTile(coord, tlayer)->MakeUniqueData<InserterData>(orientation);
     inserter_data.set   = OnRGetSpriteSet(orientation, world, coord);
 
     InitPickupDropoff(world, coord, orientation);
 }
 
 void proto::Inserter::OnTileUpdate(game::World& world,
-                                   const WorldCoord& emit_coords,
-                                   const WorldCoord& receive_coords,
+                                   const WorldCoord& emit_coord,
+                                   const WorldCoord& receive_coord,
                                    UpdateType /*type*/) const {
-    auto& inserter_layer = world.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
-    auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
-
-    auto& target_layer = world.GetTile(emit_coords)->GetLayer(game::TileLayer::entity);
-    auto* target_data  = target_layer.GetUniqueData();
+    auto& inserter_data = *world.GetTile(receive_coord, game::TileLayer::entity)->GetUniqueData<InserterData>();
+    auto* target_data   = world.GetTile(emit_coord, game::TileLayer::entity)->GetUniqueData();
 
     //
 
-    const auto pickup_coords  = GetPickupCoord(receive_coords, inserter_data.orientation);
-    const auto dropoff_coords = GetDropoffCoord(receive_coords, inserter_data.orientation);
+    const auto pickup_coords  = GetPickupCoord(receive_coord, inserter_data.orientation);
+    const auto dropoff_coords = GetDropoffCoord(receive_coord, inserter_data.orientation);
 
     // Neighbor was removed, Uninitialize removed item handler
     if (target_data == nullptr) {
-        if (emit_coords == pickup_coords) {
+        if (emit_coord == pickup_coords) {
             inserter_data.pickup.Uninitialize();
         }
-        else if (emit_coords == dropoff_coords) {
+        else if (emit_coord == dropoff_coords) {
             inserter_data.dropoff.Uninitialize();
         }
 
-        world.LogicRemove(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world.LogicRemove(game::LogicGroup::inserter, receive_coord, game::TileLayer::entity);
         return;
     }
 
 
-    if (emit_coords == pickup_coords) {
-        inserter_data.pickup.Initialize(world, emit_coords);
+    if (emit_coord == pickup_coords) {
+        inserter_data.pickup.Initialize(world, emit_coord);
     }
-    else if (emit_coords == dropoff_coords) {
-        inserter_data.dropoff.Initialize(world, emit_coords);
+    else if (emit_coord == dropoff_coords) {
+        inserter_data.dropoff.Initialize(world, emit_coord);
     }
 
 
     // Add to logic updates if initialized, remove if not
     if (inserter_data.pickup.IsInitialized() && inserter_data.dropoff.IsInitialized()) {
-        world.LogicRegister(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world.LogicRegister(game::LogicGroup::inserter, receive_coord, game::TileLayer::entity);
     }
 }
 
 void proto::Inserter::OnRemove(game::World& world,
                                game::Logic& /*logic*/,
                                const WorldCoord& coord,
-                               game::ChunkTileLayer& tile_layer) const {
+                               const game::TileLayer tlayer) const {
     world.LogicRemove(game::LogicGroup::inserter, coord, game::TileLayer::entity);
 
-    const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
+    const auto* inserter_data = world.GetTile(coord, tlayer)->GetUniqueData<InserterData>();
 
     world.updateDispatcher.Unregister({coord, GetDropoffCoord(coord, inserter_data->orientation)});
     world.updateDispatcher.Unregister({coord, GetPickupCoord(coord, inserter_data->orientation)});
 }
 
-void proto::Inserter::OnDeserialize(game::World& world,
-                                    const WorldCoord& coord,
-                                    game::ChunkTileLayer& tile_layer) const {
-    auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
+void proto::Inserter::OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const {
+    auto* inserter_data = tile.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
     InitPickupDropoff(world, coord, inserter_data->orientation);
@@ -124,14 +119,12 @@ void proto::Inserter::ValidatedPostLoad() {
 
 // ======================================================================
 
-WorldCoord proto::Inserter::GetDropoffCoord(WorldCoord coord, const Orientation orientation) const {
-    OrientationIncrement(orientation, coord.x, coord.y, this->tileReach);
-    return coord;
+WorldCoord proto::Inserter::GetDropoffCoord(const WorldCoord& coord, const Orientation orientation) const {
+    return coord.Incremented(orientation, this->tileReach);
 }
 
-WorldCoord proto::Inserter::GetPickupCoord(WorldCoord coord, const Orientation orientation) const {
-    OrientationIncrement(orientation, coord.x, coord.y, this->tileReach * -1);
-    return coord;
+WorldCoord proto::Inserter::GetPickupCoord(const WorldCoord& coord, const Orientation orientation) const {
+    return coord.Incremented(orientation, this->tileReach * -1);
 }
 
 void proto::Inserter::InitPickupDropoff(game::World& world,

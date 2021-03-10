@@ -4,7 +4,7 @@
 
 #include "core/coordinate_tuple.h"
 #include "game/logic/conveyor_utility.h"
-#include "game/world/chunk_tile_layer.h"
+#include "game/world/chunk_tile.h"
 #include "game/world/world.h"
 #include "proto/sprite.h"
 
@@ -15,10 +15,10 @@ static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitt
 void proto::Splitter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              game::ChunkTileLayer& tile_layer,
+                              const game::TileLayer tlayer,
                               const Orientation orientation) const {
 
-    tile_layer.MakeUniqueData<SplitterData>(orientation);
+    world.GetTile(coord, tlayer)->MakeUniqueData<SplitterData>(orientation);
 
     auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
         auto* con_data = GetConData(world, side_coord);
@@ -28,7 +28,7 @@ void proto::Splitter::OnBuild(game::World& world,
     };
 
     build_conveyor(coord);
-    build_conveyor(GetNonTopLeftCoord(world, coord));
+    build_conveyor(GetNonTopLeftCoord(world, coord, tlayer));
 }
 
 void proto::Splitter::OnNeighborUpdate(game::World& world,
@@ -42,10 +42,10 @@ void proto::Splitter::OnNeighborUpdate(game::World& world,
 void proto::Splitter::OnRemove(game::World& world,
                                game::Logic& /*logic*/,
                                const WorldCoord& coord,
-                               game::ChunkTileLayer& /*tile_layer*/) const {
+                               const game::TileLayer tlayer) const {
 
     RemoveConveyor(world, coord, kSplitterLogicGroup);
-    RemoveConveyor(world, GetNonTopLeftCoord(world, coord), kSplitterLogicGroup);
+    RemoveConveyor(world, GetNonTopLeftCoord(world, coord, tlayer), kSplitterLogicGroup);
 }
 
 
@@ -70,20 +70,19 @@ void proto::Splitter::ValidatedPostLoad() {
 
 // ======================================================================
 
-WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord) {
+WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world,
+                                               const WorldCoord& coord,
+                                               const game::TileLayer tlayer) {
     // Get top left coord
 
-    const auto* tile = world.GetTile(coord);
+    const auto* tile = world.GetTile(coord, tlayer);
     assert(tile != nullptr);
-    const auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-    auto tl_coord = coord;
-    layer.AdjustToTopLeft(tl_coord);
-
+    const auto tl_coord = coord.Incremented(*tile);
 
     // Increment to the other side depending on splitter 's orientation
 
-    switch (layer.GetUniqueData<SplitterData>()->orientation) {
+    switch (tile->GetUniqueData<SplitterData>()->orientation) {
     case Orientation::up:
     case Orientation::down:
         return {tl_coord.x + 1, tl_coord.y};

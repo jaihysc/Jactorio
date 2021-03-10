@@ -13,7 +13,7 @@
 #include "proto/abstract/entity.h"
 
 #include "game/player/player.h"
-#include "game/world/chunk_tile_layer.h"
+#include "game/world/chunk_tile.h"
 
 #include "gui/colors.h"
 #include "gui/menu_data.h"
@@ -161,14 +161,14 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
 
     bool drew_gui = false;
 
-    auto* layer = player.placement.GetActivatedLayer();
-    if (layer != nullptr) {
-        drew_gui = layer->GetPrototype<proto::Entity>()->OnRShowGui(g_rendr, layer);
+    auto* tile = player.placement.GetActivatedTile();
+    if (tile != nullptr) {
+        drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(g_rendr, tile);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }
         else {
-            player.placement.SetActivatedLayer(nullptr);
+            player.placement.SetActivatedTile(nullptr);
         }
     }
 

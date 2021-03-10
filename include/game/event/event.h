@@ -12,37 +12,31 @@
 
 namespace jactorio::game
 {
-    ///
     /// Used for dispatching and listening to events
     class EventData
     {
         using CallbackFunc = std::function<void(const EventBase& e)>;
 
     public:
-        ///
         /// Subscribes a callback to an event
         /// \param callback Should accept single parameter EventBase by reference
         void Subscribe(EventType event_type, CallbackFunc callback);
 
-        ///
         /// Subscribes a callback to an event which will only run once
         /// \param callback Should accept single parameter EventBase by reference
         void SubscribeOnce(EventType event_type, CallbackFunc callback);
 
-        ///
         /// Unsubscribes a callback to an event
         /// \return true if successfully removed, false if callback does not exist
         bool Unsubscribe(EventType event_type, CallbackFunc callback);
 
 
-        ///
         /// Raises event of EventType, forwards args to constructor of TEvent inheriting EventBase,
         /// Constructed event is provided by reference to all callbacks
         template <typename TEvent, typename... Args>
         void Raise(EventType event_type, Args&&... args);
 
 
-        ///
         /// Erases all event data held
         void Clear();
 

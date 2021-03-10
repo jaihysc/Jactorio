@@ -26,32 +26,27 @@ namespace jactorio::game
     constexpr auto kMinInserterDegree = 0;
     constexpr auto kMaxInserterDegree = 180;
 
-    ///
     /// Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
     ///
     ///   / |
     ///  /  | x
     /// /   |
     /// ----------- 0 or 180
-    ///
     /// \param degree Current degree of inserter arm 0 <= degree <= 180
     /// \param target_distance Tiles to the location which the inserter picks up / drops items
     double GetInserterArmOffset(TIntDegree degree, unsigned target_distance);
 
-    ///
     /// Gets the tile length of the inserter arm
     ///
     ///   / |
     /// x/  |
     /// /   |
     /// ----------- 0 or 180
-    ///
     /// \param degree Current degree of inserter arm 0 <= degree <= 180
     /// \param target_distance Tiles to the location which the inserter picks up / drops items
     double GetInserterArmLength(TIntDegree degree, unsigned target_distance);
 
 
-    ///
     /// Updates inserter logic for a logic chunk
     void InserterLogicUpdate(World& world, Logic& logic);
 } // namespace jactorio::game

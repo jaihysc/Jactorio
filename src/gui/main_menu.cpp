@@ -19,7 +19,6 @@
 
 using namespace jactorio;
 
-///
 /// \param fraction Fraction of the screen width to occupy
 J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
     constexpr auto min_width = 150;
@@ -31,7 +30,6 @@ J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
     return calculated_width;
 }
 
-///
 /// \param fraction Fraction of the screen height to occupy
 J_NODISCARD static float GetMainMenuHeight(const float fraction = 1.f / 2) {
     constexpr auto min_height = 200;
@@ -43,7 +41,6 @@ J_NODISCARD static float GetMainMenuHeight(const float fraction = 1.f / 2) {
     return calculated_height;
 }
 
-///
 /// Spans entire menu
 J_NODISCARD static float GetButtonWidth() {
     return ImGui::GetWindowSize().x - gui::GetTotalWindowPaddingX();
@@ -53,20 +50,17 @@ J_NODISCARD static float GetButtonHeight() {
     return 50;
 }
 
-///
 /// Quarter of menu (with some separation between buttons)
 J_NODISCARD static float GetButtonMiniWidth() {
     return GetButtonWidth() / 4 - gui::GetTotalWindowItemSpacingX(1);
 }
 
-///
 /// Total space by mini button taken including padding and spacing
 J_NODISCARD static auto GetButtonMiniSpan() {
     return GetButtonMiniWidth() + gui::kGuiStyleItemSpacingX;
 }
 
 
-///
 /// Button which spans entire menu
 /// \param width If -1: jactorio default, 0: Imgui default
 /// \param height If -1: jactorio default 0: Imgui default
@@ -82,13 +76,11 @@ J_NODISCARD static bool MenuButton(const char* label, float width = -1, float he
     return ImGui::Button(label, {width, height});
 }
 
-///
 /// Spans quarter of menu, ImGui default height
 J_NODISCARD static bool MenuButtonMini(const char* label) {
     return MenuButton(label, GetButtonMiniWidth(), 0);
 }
 
-///
 /// Menu button for heading back to previous menu when clicked
 /// \return true if clicked
 static bool MenuBackButton(gui::MainMenuData& menu_data, const gui::MainMenuData::Window new_menu) {
@@ -101,7 +93,6 @@ static bool MenuBackButton(gui::MainMenuData& menu_data, const gui::MainMenuData
 }
 
 
-///
 /// Sets draw cursor to where next menu button should begin (similar to a tab stop)
 /// \remark Do NOT call SameLineMenuButtonMini, it is already on the same line
 /// \param button_gap Additional gap of that would have fit provided button count to skip
@@ -120,7 +111,6 @@ static void ToNextMenuButtonMiniBegin(const unsigned button_gap = 0) {
     ImGui::SetCursorPosX(new_cursor_x + GetButtonMiniSpan() * SafeCast<float>(button_gap));
 }
 
-///
 /// \param button_gap Additional gap of that would have fit provided button count
 static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
     ImGui::SameLine();
@@ -135,7 +125,6 @@ void ErrorText(const char* error_msg) {
     ImGui::TextUnformatted(error_msg);
 }
 
-///
 /// \param error_str Cleared when user dismisses it
 void ErrorTextDismissible(std::string& error_str) {
     if (error_str.empty())
@@ -169,7 +158,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     title.Begin("New game");
 
 
-    auto seed = common.GetDataGlobal().worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
+    auto seed = common.gameController.worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
     ImGui::InputInt("Seed", &seed);
 
 
@@ -177,19 +166,18 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
-        common.ResetGlobalData();
+        common.gameController.ResetGame();
 
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
     }
 
 
     // Sets seed for newly reset global data as well
-    for (auto& world : common.GetDataGlobal().worlds) {
+    for (auto& world : common.gameController.worlds) {
         world.SetWorldGeneratorSeed(seed);
     }
 }
 
-///
 /// Lists all save games, loads save game user clicks on
 void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     using namespace gui;
@@ -209,7 +197,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
 
         if (MenuButton(filename.c_str())) {
             try {
-                data::DeserializeGameData(common.gameDataLocal, common.GetDataGlobal(), filename);
+                data::DeserializeGameController(common.gameController, filename);
             }
             catch (cereal::Exception& e) {
                 last_load_error = e.what();
@@ -226,7 +214,6 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     }
 }
 
-///
 /// Asks for save name and saves current world
 void SaveGameMenu(ThreadedLoopCommon& common) {
     using namespace gui;
@@ -257,7 +244,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
     if (data::IsValidSaveName(save_name)) {
         if (MenuButtonMini("Save")) {
             try {
-                data::SerializeGameData(common.GetDataGlobal(), save_name);
+                data::SerializeGameController(common.gameController, save_name);
                 common.mainMenuData.currentMenu = MainMenuData::Window::main;
             }
             catch (cereal::Exception& e) {
@@ -270,10 +257,9 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 
 // Options menu
 
-///
 /// Changes player_action's keybind to next key up
 static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::Type player_action) {
-    common.gameDataLocal.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
+    common.gameController.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
         const auto& input_variant = static_cast<const game::InputActivityEvent&>(e).input;
 
         if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
@@ -284,8 +270,8 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
                 return;
             }
 
-            common.keybindManager.ChangeActionKey(player_action, kb_event.key);
-            common.keybindManager.ChangeActionMods(player_action, kb_event.mods);
+            common.gameController.keybindManager.ChangeActionKey(player_action, kb_event.key);
+            common.gameController.keybindManager.ChangeActionMods(player_action, kb_event.mods);
         }
         else {
             const auto& ms_event = std::get<game::MouseActivityEvent>(input_variant);
@@ -295,14 +281,13 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
                 return;
             }
 
-            common.keybindManager.ChangeActionKey(player_action, ms_event.key);
-            common.keybindManager.ChangeActionMods(player_action, ms_event.mods);
+            common.gameController.keybindManager.ChangeActionKey(player_action, ms_event.key);
+            common.gameController.keybindManager.ChangeActionMods(player_action, ms_event.mods);
         }
     });
 }
 
 
-///
 /// Allows the user to change keybinds
 void OptionKeybindMenu(ThreadedLoopCommon& common) {
     using namespace gui;
@@ -324,14 +309,12 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     ImGui::TextUnformatted("Action");
 
 
-    ///
     /// Button which when clicked will set the next key for the player action
     auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code, const SDL_Keymod mods) {
         std::string keybind_name;
 
         // Mod names
 
-        ///
         /// Tests if the provided key mod(s) is set
         auto keymod_set = [&mods](const SDL_Keymod target_mods) {
             return (mods & (static_cast<SDL_Keymod>(0) | target_mods)) == target_mods;
@@ -395,7 +378,6 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         return MenuButtonMini(keybind_name.c_str());
     };
 
-    ///
     /// Dropdown which displays current key action, and can be opened to select a new key action
     /// \return {dropdown clicked, clicked InputAction}
     auto key_action_dropdown = [&common](const char* dropdown_name,
@@ -411,7 +393,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         };
 
         auto localize_key_action = [&common, &key_action_labels](const std::size_t key_action_index) {
-            return common.gameDataLocal.proto.Get<proto::Label>(std::string(key_action_labels[key_action_index]))
+            return common.gameController.proto.Get<proto::Label>(std::string(key_action_labels[key_action_index]))
                 ->GetLocalizedName()
                 .c_str();
         };
@@ -440,7 +422,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
 
     // Key action which was selected
-    const auto& info = common.keybindManager.GetKeybindInfo();
+    const auto& info = common.gameController.keybindManager.GetKeybindInfo();
 
     // Omit displaying the test player action, which should be the last player action
     static_assert(game::PlayerAction::Type::test ==
@@ -448,7 +430,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     for (std::size_t i = 0; i < info.size() - 1; ++i) {
         const auto action_label_name = std::string(proto::LabelNames::kPlayerActionPrefix) + std::to_string(i);
-        const auto* label            = common.gameDataLocal.proto.Get<proto::Label>(action_label_name);
+        const auto* label            = common.gameController.proto.Get<proto::Label>(action_label_name);
         assert(label != nullptr);
 
         ImGui::TextUnformatted(label->GetLocalizedName().c_str());
@@ -486,22 +468,21 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
         auto [dropdown_clicked, clicked_player_action] = key_action_dropdown(combo_id.c_str(), key_action);
         if (dropdown_clicked) {
-            common.keybindManager.ChangeActionKeyAction(player_action, clicked_player_action);
+            common.gameController.keybindManager.ChangeActionKeyAction(player_action, clicked_player_action);
         }
     }
 
     if (MenuBackButton(common.mainMenuData, MainMenuData::Window::options)) {
-        data::SerializeKeybinds(common.keybindManager);
+        data::SerializeKeybinds(common.gameController.keybindManager);
     }
 
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Reset")) {
-        common.keybindManager.LoadDefaultKeybinds();
+        common.gameController.keybindManager.LoadDefaultKeybinds();
     }
 }
 
-///
 /// Presents Various submenus for options of the game
 void OptionsMenu(ThreadedLoopCommon& common) {
     using namespace gui;
@@ -520,7 +501,6 @@ void OptionsMenu(ThreadedLoopCommon& common) {
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
 }
 
-///
 /// \return true if a submenu was drawn
 bool DrawSubmenu(ThreadedLoopCommon& common) {
     switch (common.mainMenuData.currentMenu) {

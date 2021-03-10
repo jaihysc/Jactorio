@@ -16,7 +16,6 @@ namespace jactorio::game
 
         proto::Item* cursor_ = nullptr;
 
-        ///
         /// Creates the cursor prototype which is hardcoded when an item is selected
         void SetupInventoryCursor() {
             cursor_ = &proto_.Make<proto::Item>(proto::Item::kInventorySelectedCursor);
@@ -309,11 +308,11 @@ namespace jactorio::game
         // A inventory click at a stack location with a filter requires that the item attempting to insert into it
         // matches the filter
 
-        proto::Item filtered_item{};
-        proto::Item not_filtered_item{};
+        proto::Item filtered_item;
+        proto::Item not_filtered_item;
 
         // Slot 0 is filtered
-        proto::Item::Inventory inv{10};
+        Inventory inv{10};
         inv[0].filter = &filtered_item;
 
         // Has item not matching filter
@@ -472,123 +471,24 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].count, 0);
     }
 
-    TEST_F(PlayerInventoryTest, PlayerInventorySort) {
-        proto::Item item;
-        item.stackSize = 50;
-
-        proto::Item item_2;
-        item_2.stackSize = 10;
-
-        // Item 1
-        playerInv_.inventory[0].item  = &item;
-        playerInv_.inventory[0].count = 10;
-
-        playerInv_.inventory[10].item  = &item;
-        playerInv_.inventory[10].count = 25;
-
-        playerInv_.inventory[20].item  = &item;
-        playerInv_.inventory[20].count = 25;
-
-        playerInv_.inventory[13].item  = &item;
-        playerInv_.inventory[13].count = 20;
-
-        playerInv_.inventory[14].item  = &item;
-        playerInv_.inventory[14].count = 30;
-
-        // Item 2
-        playerInv_.inventory[31].item  = &item_2;
-        playerInv_.inventory[31].count = 4;
-
-        playerInv_.inventory[32].item  = &item_2;
-        playerInv_.inventory[32].count = 6;
-
-        playerInv_.inventory[22].item  = &item_2;
-        playerInv_.inventory[22].count = 1;
-
-
-        // Sorted inventory should be as follows
-        // Item(count)
-        // 1(50), 1(50), 1(10), 2(10), 2(1)
-        playerInv_.InventorySort(playerInv_.inventory);
-
-        EXPECT_EQ(playerInv_.inventory[0].item, &item);
-        EXPECT_EQ(playerInv_.inventory[0].count, 50);
-        EXPECT_EQ(playerInv_.inventory[1].item, &item);
-        EXPECT_EQ(playerInv_.inventory[1].count, 50);
-        EXPECT_EQ(playerInv_.inventory[2].item, &item);
-        EXPECT_EQ(playerInv_.inventory[2].count, 10);
-
-        EXPECT_EQ(playerInv_.inventory[3].item, &item_2);
-        EXPECT_EQ(playerInv_.inventory[3].count, 10);
-        EXPECT_EQ(playerInv_.inventory[4].item, &item_2);
-        EXPECT_EQ(playerInv_.inventory[4].count, 1);
-    }
-
-    TEST_F(PlayerInventoryTest, PlayerInventorySort2) {
-        // Sorting will not move the item with inventory_selected_cursor_iname (to prevent breaking the inventory logic)
+    /// Sorting will not move the inventory selection cursor (to prevent breaking the inventory logic)
+    TEST_F(PlayerInventoryTest, PlayerInventorySortNoMoveCursor) {
         SetupInventoryCursor();
 
         playerInv_.inventory[10].item  = cursor_;
         playerInv_.inventory[10].count = 0;
 
-
-        playerInv_.InventorySort(playerInv_.inventory);
+        playerInv_.inventory.Sort();
 
         EXPECT_EQ(playerInv_.inventory[10].item, cursor_);
         EXPECT_EQ(playerInv_.inventory[10].count, 0);
 
         // There should have been no new cursors created anywhere
-        for (int i = 0; i < playerInv_.inventory.size(); ++i) {
+        for (int i = 0; i < playerInv_.inventory.Size(); ++i) {
             if (i == 10)
                 continue;
             EXPECT_NE(playerInv_.inventory[i].item, cursor_);
         }
-    }
-
-    TEST_F(PlayerInventoryTest, PlayerInventorySortFull) {
-        // Sorting the inventory when it is full should also work
-        proto::Item item;
-        item.stackSize = 50;
-
-        for (auto& i : playerInv_.inventory) {
-            i.item  = &item;
-            i.count = 50;
-        }
-
-        playerInv_.InventorySort(playerInv_.inventory);
-
-
-        // There should have been no new cursors created anywhere
-        for (auto& i : playerInv_.inventory) {
-            EXPECT_EQ(i.item, &item);
-            EXPECT_EQ(i.count, 50);
-        }
-    }
-
-    TEST_F(PlayerInventoryTest, PlayerInventorySortItemExcedingStack) {
-        // If there is an item which exceeds its stack size, do not attempt to stack into it
-        proto::Item item;
-        item.stackSize = 50;
-
-        playerInv_.inventory[10].item  = &item;
-        playerInv_.inventory[10].count = 100;
-
-        playerInv_.inventory[11].item  = &item;
-        playerInv_.inventory[11].count = 100;
-
-        playerInv_.inventory[12].item  = &item;
-        playerInv_.inventory[12].count = 10;
-
-        playerInv_.InventorySort(playerInv_.inventory);
-
-        EXPECT_EQ(playerInv_.inventory[0].item, &item);
-        EXPECT_EQ(playerInv_.inventory[0].count, 100);
-
-        EXPECT_EQ(playerInv_.inventory[1].item, &item);
-        EXPECT_EQ(playerInv_.inventory[1].count, 100);
-
-        EXPECT_EQ(playerInv_.inventory[2].item, &item);
-        EXPECT_EQ(playerInv_.inventory[2].count, 10);
     }
 
     TEST_F(PlayerInventoryTest, Serialize) {

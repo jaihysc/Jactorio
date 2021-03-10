@@ -51,7 +51,6 @@ void render::DisplayWindow::SetFullscreen(const bool desired_fullscreen) {
     }
 }
 
-///
 
 int render::DisplayWindow::Init(const int width, const int height) {
     LOG_MESSAGE(info, "Using SDL2 for window creation");
@@ -176,11 +175,11 @@ bool render::DisplayWindow::WindowContextActive() const {
 // ======================================================================
 // Events
 
-void HandleWindowEvent(game::EventData& event, const SDL_Event& sdl_event) {
+void HandleWindowEvent(render::Renderer& renderer, game::EventData& event, const SDL_Event& sdl_event) {
     switch (sdl_event.window.event) {
     case SDL_WINDOWEVENT_RESIZED:
     case SDL_WINDOWEVENT_SIZE_CHANGED:
-        render::ChangeWindowSize(event, sdl_event.window.data1, sdl_event.window.data2);
+        ChangeWindowSize(renderer, event, sdl_event.window.data1, sdl_event.window.data2);
         break;
 
     case SDL_WINDOWEVENT_SHOWN:
@@ -208,7 +207,7 @@ void HandleWindowEvent(game::EventData& event, const SDL_Event& sdl_event) {
 void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL_Event& sdl_event) const {
     switch (sdl_event.type) {
     case SDL_WINDOWEVENT:
-        HandleWindowEvent(common.gameDataLocal.event, sdl_event);
+        HandleWindowEvent(*common.renderer, common.gameController.event, sdl_event);
         break;
 
     case SDL_QUIT:
@@ -232,9 +231,9 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
 
         game::InputManager::SetInput(keycode, input_action, keymod);
 
-        common.gameDataLocal.event.Raise<game::KeyboardActivityEvent>(
+        common.gameController.event.Raise<game::KeyboardActivityEvent>(
             game::EventType::keyboard_activity, keycode, input_action, keymod);
-        common.gameDataLocal.event.Raise<game::InputActivityEvent>(
+        common.gameController.event.Raise<game::InputActivityEvent>(
             game::EventType::input_activity, keycode, input_action, keymod);
     } break;
 
@@ -244,7 +243,7 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         break;
     case SDL_MOUSEWHEEL:
         if (!gui::input_mouse_captured)
-            GetBaseRenderer()->tileProjectionMatrixOffset += SafeCast<float>(sdl_event.wheel.y * 10);
+            common.renderer->tileProjectionMatrixOffset += SafeCast<float>(sdl_event.wheel.y * 10);
         break;
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:
@@ -280,9 +279,9 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
 
         game::InputManager::SetInput(mouse_input, action, KMOD_NONE);
 
-        common.gameDataLocal.event.Raise<game::MouseActivityEvent>(
+        common.gameController.event.Raise<game::MouseActivityEvent>(
             game::EventType::mouse_activity, mouse_input, action, KMOD_NONE);
-        common.gameDataLocal.event.Raise<game::InputActivityEvent>(
+        common.gameController.event.Raise<game::InputActivityEvent>(
             game::EventType::input_activity, mouse_input, action, KMOD_NONE);
     } break;
 

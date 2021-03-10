@@ -20,11 +20,11 @@ namespace jactorio::proto
 
     class IDeferred;
     class IUpdateListener;
+    class Entity;
 } // namespace jactorio::proto
 
 namespace jactorio::game
 {
-    ///
     /// Stores all data for a world
     class World
     {
@@ -36,12 +36,12 @@ namespace jactorio::game
 
         static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis coord);
         static ChunkCoord WorldCToChunkC(const WorldCoord& coord);
-        ///
         /// Chunk coord -> World coord at first tile of chunk
         static WorldCoordAxis ChunkCToWorldC(ChunkCoordAxis chunk_coord);
         static WorldCoord ChunkCToWorldC(const ChunkCoord& chunk_coord);
 
         static OverlayOffsetAxis WorldCToOverlayC(WorldCoordAxis coord);
+        static Position2<OverlayOffsetAxis> WorldCToOverlayC(const WorldCoord& coord);
 
 
         // World access
@@ -67,153 +67,90 @@ namespace jactorio::game
         }
 
 
-        ///
+        /// Creates chunk
         /// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
         /// \return Added chunk
         template <typename... TChunkArgs>
-        Chunk& EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y, TChunkArgs... args) {
-            const auto& [it, success] = worldChunks_.emplace(std::piecewise_construct,
-                                                             std::make_tuple(chunk_x, chunk_y),
-                                                             std::make_tuple(chunk_x, chunk_y, args...));
+        Chunk& EmplaceChunk(const ChunkCoord& c_coord, TChunkArgs... args) {
+            const auto& [it, success] = worldChunks_.emplace(
+                std::piecewise_construct, std::make_tuple(c_coord.x, c_coord.y), std::make_tuple(c_coord, args...));
             assert(success); // Attempted to insert at already existent location
 
             return it->second;
         }
 
-        template <typename... TChunkArgs>
-        Chunk& EmplaceChunk(const ChunkCoord& chunk_coord, TChunkArgs... args) {
-            return EmplaceChunk(chunk_coord.x, chunk_coord.y, std::forward<TChunkArgs>()...);
-        }
-
-        ///
         /// Attempts to delete chunk at chunk_x, chunk_y
-        void DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
+        void DeleteChunk(const ChunkCoord& c_coord);
 
-        ///
         /// Clears chunk data, logic chunks and chunks awaiting generation
         /// \remark Ensure PrepareWorldClear was called prior to this
         void Clear();
 
 
-        ///
         /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
+        J_NODISCARD Chunk* GetChunkC(const ChunkCoord& c_coord);
 
-        ///
         /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
+        J_NODISCARD const Chunk* GetChunkC(const ChunkCoord& c_coord) const;
 
 
-        ///
-        /// Retrieves a chunk in game world using chunk coordinates
-        /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkC(const ChunkCoord& chunk_pair);
-
-        ///
-        /// Retrieves a chunk in game world using chunk coordinates
-        /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkC(const ChunkCoord& chunk_pair) const;
-
-
-        ///
-        /// Gets the chunk at the specified world coordinate
-        /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkW(WorldCoordAxis world_x, WorldCoordAxis world_y);
-
-        ///
-        /// Gets the chunk at the specified world coordinate
-        /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkW(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
-
-
-        ///
         /// Gets the chunk at the specified world coordinate
         /// \return nullptr if no chunk exists
         J_NODISCARD Chunk* GetChunkW(const WorldCoord& coord);
 
-        ///
         /// Gets the chunk at the specified world coordinate
         /// \return nullptr if no chunk exists
         J_NODISCARD const Chunk* GetChunkW(const WorldCoord& coord) const;
 
-        // ======================================================================
 
-        ///
+        // Get Tile
+
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y);
+        J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord, TileLayer tlayer);
 
-        ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
+        J_NODISCARD const ChunkTile* GetTile(WorldCoord coord, TileLayer tlayer) const;
 
-
-        ///
-        /// Gets the tile at the specified world coordinate
-        /// \return nullptr if no tile exists
-        J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord);
-
-        ///
-        /// Gets the tile at the specified world coordinate
-        /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(const WorldCoord& coord) const;
 
         // ======================================================================
+        // Placement
 
-        ///
-        /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& coord, TileLayer layer);
+        /// Determines if entity of given dimensions can be placed at specified coord
+        /// \return true if a entity with the specified dimensions can be placed at coord
+        J_NODISCARD bool PlaceLocationValid(const WorldCoord& coord, proto::FWorldObject::Dimension dimensions) const;
 
-        ///
-        /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& coord, TileLayer layer) const;
+        /// Places entity at coord
+        /// \return true if placed successfully
+        bool Place(const WorldCoord& coord, Orientation orien, const proto::Entity& entity);
 
-        ///
-        /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord coord, const ChunkTileLayer& chunk_tile_layer);
+        /// Removes entity at coord
+        /// \return true if removed successfully
+        bool Remove(const WorldCoord& coord, Orientation orien);
 
-        ///
-        /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& coord,
-                                                    const ChunkTileLayer& chunk_tile_layer) const;
-
-
-        ///
-        /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept;
-
-        ///
-        /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord,
-                                                          const TileLayer& tile_layer) const noexcept;
 
         // ==============================================================
         // Logic chunk
 
-        ///
-        /// Adds a layer at coordinates to be considered for logic updates
-        void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer layer);
+        /// Adds a tile at coordinates to be considered for logic updates
+        void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
-        ///
-        /// Removes a layer at coordinates to be considered for logic updates
+        /// Removes a tile at coordinates to be considered for logic updates
         /// w/ custom comparison func to remove
-        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTileLayer*)>& pred);
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTile*)>& pred);
 
-        ///
-        /// Removes a layer at coordinates to be considered for logic updates
-        void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer layer);
+        /// Removes a tile at coordinates to be considered for logic updates
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
 
-        ///
         /// Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
         /// a reference to the existing one will be returned
         /// \param chunk The chunk this logic chunk is associated with
         void LogicAddChunk(Chunk& chunk);
 
-        ///
         /// Returns all the chunks which require logic updates
         J_NODISCARD LogicChunkContainerT& LogicGetChunks();
         J_NODISCARD const LogicChunkContainerT& LogicGetChunks() const;
@@ -229,12 +166,10 @@ namespace jactorio::game
         }
 
 
-        ///
         /// Queues a chunk to be generated at specified position
         /// \remark To be called from render thread only
-        void QueueChunkGeneration(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
+        void QueueChunkGeneration(const ChunkCoord& c_coord) const;
 
-        ///
         /// Takes first in from chunk generation queue and generates chunk
         /// Call once per logic loop tick to generate one chunk only, this keeps performance constant
         /// when generating large amounts of chunks
@@ -243,14 +178,12 @@ namespace jactorio::game
 
         // ======================================================================
 
-        ///
         /// Forwards args to updateDispatcher.Dispatch itself being world data
         template <typename... TArgs>
         auto UpdateDispatch(const WorldCoord& coord, TArgs&&... args) {
             updateDispatcher.Dispatch(*this, coord, std::forward<TArgs>(args)...);
         }
 
-        ///
         /// Forwards args to updateDispatcher.Dispatch itself being world data
         template <typename... TArgs>
         auto UpdateDispatch(TArgs&&... args) {
@@ -258,7 +191,6 @@ namespace jactorio::game
         }
 
 
-        ///
         /// To be used after deserializing
         /// Steps through all chunks:
         /// Dispatches OnDeserialize(),

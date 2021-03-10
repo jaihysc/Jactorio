@@ -10,7 +10,6 @@
 
 namespace jactorio
 {
-    ///
     /// Manages non owning pointer to prototype
     template <typename Ty>
     class PointerWrapper

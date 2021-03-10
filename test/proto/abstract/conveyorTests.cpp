@@ -29,28 +29,25 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        static game::ConveyorStruct& GetSegment(game::ChunkTileLayer* tile_layer) {
-            return *tile_layer->GetUniqueData<ConveyorData>()->structure;
+        static game::ConveyorStruct& GetSegment(game::ChunkTile* tile) {
+            return *tile->GetUniqueData<ConveyorData>()->structure;
         }
 
 
-        ///
         /// Sets the prototype pointer for a conveyor at tile
-        game::ChunkTileLayer& BuildConveyor(const WorldCoord coord, const Orientation orientation) {
-            auto& layer = world_.GetTile(coord.x, coord.y)->GetLayer(game::TileLayer::entity);
+        game::ChunkTile& BuildConveyor(const WorldCoord coord, const Orientation orientation) {
+            auto* tile = world_.GetTile(coord, game::TileLayer::entity);
+            assert(tile != nullptr);
 
-            layer.SetPrototype(orientation, &lineProto_);
+            tile->SetPrototype(orientation, &lineProto_);
             TlBuildEvents(coord, orientation);
 
-            return layer;
+            return *tile;
         }
 
-        ///
         /// Dispatches the appropriate events for when a conveyor is built
         void TlBuildEvents(const WorldCoord& coord, const Orientation orientation) {
-            auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
-
-            lineProto_.OnBuild(world_, logic_, coord, layer, orientation);
+            lineProto_.OnBuild(world_, logic_, coord, game::TileLayer::entity, orientation);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -59,13 +56,9 @@ namespace jactorio::proto
             DispatchNeighborUpdate(coord, {coord.x - 1, coord.y}, Orientation::left);
         }
 
-        ///
         /// Dispatches the appropriate events AFTER a conveyor is removed
         void TlRemoveEvents(const WorldCoord& coord) {
-
-            auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
-
-            lineProto_.OnRemove(world_, logic_, coord, layer);
+            lineProto_.OnRemove(world_, logic_, coord, game::TileLayer::entity);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -76,11 +69,10 @@ namespace jactorio::proto
 
         // Bend
 
-        ///
         /// \param l_index index for left only segment in logic group
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
-            game::Chunk& chunk = *world_.GetChunkC(0, 0);
+            game::Chunk& chunk = *world_.GetChunkC({0, 0});
             auto& logic_group  = chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
             ASSERT_EQ(logic_group.size(), 3);
@@ -99,8 +91,8 @@ namespace jactorio::proto
 
         // Grouping
 
-        std::vector<game::ChunkTileLayer*>& GetConveyors(const ChunkCoord& chunk_coords) {
-            return world_.GetChunkC(chunk_coords.x, chunk_coords.y)->GetLogicGroup(game::LogicGroup::conveyor);
+        std::vector<game::ChunkTile*>& GetConveyors(const ChunkCoord& chunk_coords) {
+            return world_.GetChunkC(chunk_coords)->GetLogicGroup(game::LogicGroup::conveyor);
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
@@ -116,15 +108,11 @@ namespace jactorio::proto
                                     const WorldCoord& receive_coords,
                                     const Orientation emit_orientation) {
 
-            auto* tile = world_.GetTile(receive_coords);
-            if (tile == nullptr)
+            auto* tile = world_.GetTile(receive_coords, game::TileLayer::entity);
+            if (tile == nullptr || tile->GetPrototype() == nullptr)
                 return;
 
-            auto& layer = tile->GetLayer(game::TileLayer::entity);
-            if (layer.GetPrototype() == nullptr)
-                return;
-
-            layer.GetPrototype<Entity>()->OnNeighborUpdate(
+            tile->GetPrototype<Entity>()->OnNeighborUpdate(
                 world_, logic_, emit_coords, receive_coords, emit_orientation);
         }
     };
@@ -137,8 +125,8 @@ namespace jactorio::proto
         // Should create a conveyor segment and add its chunk to logic chunks
         world_.EmplaceChunk({-1, 0});
 
-        auto& layer = world_.GetTile(-5, 0)->GetLayer(game::TileLayer::entity);
-        layer.SetPrototype(Orientation::right, &lineProto_);
+        auto* tile = world_.GetTile({-5, 0}, game::TileLayer::entity);
+        tile->SetPrototype(Orientation::right, &lineProto_);
 
         TlBuildEvents({-5, 0}, Orientation::right);
 
@@ -147,13 +135,13 @@ namespace jactorio::proto
         // Added current chunk as a logic chunk
         ASSERT_EQ(world_.LogicGetChunks().size(), 1);
 
-        auto& tile_layers = GetConveyors({-1, 0});
+        auto& tiles = GetConveyors({-1, 0});
 
         // Should have created a conveyor structure
-        ASSERT_EQ(tile_layers.size(), 1);
-        ASSERT_TRUE(dynamic_cast<ConveyorData*>(tile_layers.front()->GetUniqueData()));
+        ASSERT_EQ(tiles.size(), 1);
+        ASSERT_NE(tiles.front()->GetUniqueData<ConveyorData>(), nullptr);
 
-        auto& line_segment = GetSegment(tile_layers[0]);
+        auto& line_segment = GetSegment(tiles[0]);
         EXPECT_EQ(line_segment.direction, Orientation::right);
         EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::straight);
         EXPECT_EQ(line_segment.length, 1);
@@ -210,11 +198,11 @@ namespace jactorio::proto
         BuildConveyor({1, 0}, Orientation::right);
         BuildConveyor({0, 0}, Orientation::right);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 2);
+        ASSERT_EQ(tiles.size(), 2);
 
-        auto& line_segment = GetSegment(tile_layers[0]);
+        auto& line_segment = GetSegment(tiles[0]);
         EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
         EXPECT_EQ(line_segment.length, 2);
     }
@@ -236,11 +224,11 @@ namespace jactorio::proto
 
         TlRemoveEvents({0, 0});
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 2);
+        ASSERT_EQ(tiles.size(), 2);
 
-        auto& line_segment = GetSegment(tile_layers[1]);
+        auto& line_segment = GetSegment(tiles[1]);
         EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::bend_right);
         EXPECT_EQ(line_segment.length, 2);
     }
@@ -253,20 +241,20 @@ namespace jactorio::proto
          */
         BuildConveyor({1, 0}, Orientation::right);
 
-        auto& layer = world_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
+        auto* tile = world_.GetTile({1, 1}, game::TileLayer::entity);
 
 
         TransportBelt proto;
-        layer.SetPrototype(Orientation::up, &proto);
+        tile->SetPrototype(Orientation::up, &proto);
 
 
         // Should update line above, turn right to a up-right
         TlBuildEvents({1, 1}, Orientation::up);
 
         {
-            auto& result_layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
+            auto* result_tile = world_.GetTile({1, 0}, game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien, LineOrientation::up_right);
+            EXPECT_EQ(result_tile->GetUniqueData<ConveyorData>()->lOrien, LineOrientation::up_right);
         }
     }
 
@@ -283,17 +271,17 @@ namespace jactorio::proto
         BuildConveyor({1, 2}, Orientation::up);
         BuildConveyor({1, 1}, Orientation::right); // Between the 2 above and below
 
-        auto& layer = world_.GetTile(1, 2)->GetLayer(game::TileLayer::entity);
-        layer.SetPrototype(Orientation::up, &lineProto_);
+        auto* tile = world_.GetTile({1, 2}, game::TileLayer::entity);
+        tile->SetPrototype(Orientation::up, &lineProto_);
 
 
         // Removing the bottom line makes the center one bend down-right
         TlRemoveEvents({1, 2});
 
         {
-            auto& result_layer = world_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
+            auto* result_tile = world_.GetTile({1, 1}, game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien, LineOrientation::down_right);
+            EXPECT_EQ(result_tile->GetUniqueData<ConveyorData>()->lOrien, LineOrientation::down_right);
         }
     }
 
@@ -306,48 +294,48 @@ namespace jactorio::proto
         // line
 
 
-        auto& down_layer = world_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
-        down_layer.SetPrototype(Orientation::down, &lineProto_);
+        auto* down_tile = world_.GetTile({0, 0}, game::TileLayer::entity);
+        down_tile->SetPrototype(Orientation::down, &lineProto_);
         TlBuildEvents({0, 0}, Orientation::down);
 
-        auto& left_layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
-        left_layer.SetPrototype(Orientation::left, &lineProto_);
+        auto* left_tile = world_.GetTile({1, 0}, game::TileLayer::entity);
+        left_tile->SetPrototype(Orientation::left, &lineProto_);
         TlBuildEvents({1, 0}, Orientation::left);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 2);
+        ASSERT_EQ(tiles.size(), 2);
 
-        auto& segment = GetSegment(tile_layers[1]);
+        auto& segment = GetSegment(tiles[1]);
         EXPECT_EQ(segment.terminationType, game::ConveyorStruct::TerminationType::bend_left);
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<ConveyorData*>(left_layer.GetUniqueData())->structIndex, 1);
+        EXPECT_EQ(left_tile->GetUniqueData<ConveyorData>()->structIndex, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildBendingConveyorSegmentLeading) {
         // Change the conveyor_struct termination type in accordance with orientation when placed ahead of
         // existing line
 
-        auto& left_layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
-        left_layer.SetPrototype(Orientation::left, &lineProto_);
+        auto* left_tile = world_.GetTile({1, 0}, game::TileLayer::entity);
+        left_tile->SetPrototype(Orientation::left, &lineProto_);
         TlBuildEvents({1, 0}, Orientation::left);
 
-        auto& down_layer = world_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
-        down_layer.SetPrototype(Orientation::down, &lineProto_);
+        auto* down_tile = world_.GetTile({0, 0}, game::TileLayer::entity);
+        down_tile->SetPrototype(Orientation::down, &lineProto_);
         TlBuildEvents({0, 0}, Orientation::down);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 2);
+        ASSERT_EQ(tiles.size(), 2);
 
-        auto& segment = GetSegment(tile_layers[0]);
+        auto& segment = GetSegment(tiles[0]);
         EXPECT_EQ(segment.terminationType, game::ConveyorStruct::TerminationType::bend_left);
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<ConveyorData*>(left_layer.GetUniqueData())->structIndex, 1);
+        EXPECT_EQ(left_tile->GetUniqueData<ConveyorData>()->structIndex, 1);
     }
 
 
@@ -365,11 +353,11 @@ namespace jactorio::proto
 
         TlRemoveEvents({0, 1});
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 1);
+        ASSERT_EQ(tiles.size(), 1);
 
-        auto& segment = GetSegment(tile_layers[0]);
+        auto& segment = GetSegment(tiles[0]);
         EXPECT_EQ(segment.terminationType, game::ConveyorStruct::TerminationType::straight);
         EXPECT_EQ(segment.length, 1);
     }
@@ -496,16 +484,16 @@ namespace jactorio::proto
         BuildConveyor({1, 1}, Orientation::up);
         BuildConveyor({1, 2}, Orientation::up);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 3);
+        ASSERT_EQ(tiles.size(), 3);
 
         {
-            auto& line_segment = GetSegment(tile_layers[0]);
+            auto& line_segment = GetSegment(tiles[0]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
         }
         {
-            auto& line_segment = GetSegment(tile_layers[1]);
+            auto& line_segment = GetSegment(tiles[1]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
         }
 
@@ -533,16 +521,16 @@ namespace jactorio::proto
 
         BuildConveyor({1, 1}, Orientation::right);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 3);
+        ASSERT_EQ(tiles.size(), 3);
 
         {
-            auto& line_segment = GetSegment(tile_layers[0]);
+            auto& line_segment = GetSegment(tiles[0]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
         }
         {
-            auto& line_segment = GetSegment(tile_layers[1]);
+            auto& line_segment = GetSegment(tiles[1]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
         }
 
@@ -564,17 +552,17 @@ namespace jactorio::proto
 
         BuildConveyor({1, 0}, Orientation::down);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 3);
+        ASSERT_EQ(tiles.size(), 3);
 
         {
-            auto& line_segment = GetSegment(tile_layers[0]);
+            auto& line_segment = GetSegment(tiles[0]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
             EXPECT_EQ(line_segment.headOffset, 1); // Incremented 1 when turned side only
         }
         {
-            auto& line_segment = GetSegment(tile_layers[1]);
+            auto& line_segment = GetSegment(tiles[1]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
             EXPECT_EQ(line_segment.headOffset, 1);
         }
@@ -600,16 +588,16 @@ namespace jactorio::proto
 
         BuildConveyor({0, 1}, Orientation::left);
 
-        auto& tile_layers = GetConveyors({0, 0});
+        auto& tiles = GetConveyors({0, 0});
 
-        ASSERT_EQ(tile_layers.size(), 3);
+        ASSERT_EQ(tiles.size(), 3);
 
         {
-            auto& line_segment = GetSegment(tile_layers[0]);
+            auto& line_segment = GetSegment(tiles[0]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
         }
         {
-            auto& line_segment = GetSegment(tile_layers[1]);
+            auto& line_segment = GetSegment(tiles[1]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
         }
 
@@ -629,53 +617,53 @@ namespace jactorio::proto
          */
 
         {
-            auto& layer = world_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
-            layer.SetPrototype(Orientation::right, &lineProto_);
+            auto* tile = world_.GetTile({0, 0}, game::TileLayer::entity);
+            tile->SetPrototype(Orientation::right, &lineProto_);
             TlBuildEvents({0, 0}, Orientation::right);
         }
         {
-            auto& layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
-            layer.SetPrototype(Orientation::down, &lineProto_);
+            auto* tile = world_.GetTile({1, 0}, game::TileLayer::entity);
+            tile->SetPrototype(Orientation::down, &lineProto_);
             TlBuildEvents({1, 0}, Orientation::down);
         }
         {
-            auto& layer = world_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
-            layer.SetPrototype(Orientation::left, &lineProto_);
+            auto* tile = world_.GetTile({1, 1}, game::TileLayer::entity);
+            tile->SetPrototype(Orientation::left, &lineProto_);
             TlBuildEvents({1, 1}, Orientation::left);
         }
         {
-            auto& layer = world_.GetTile(0, 1)->GetLayer(game::TileLayer::entity);
-            layer.SetPrototype(Orientation::up, &lineProto_);
+            auto* tile = world_.GetTile({0, 1}, game::TileLayer::entity);
+            tile->SetPrototype(Orientation::up, &lineProto_);
             TlBuildEvents({0, 1}, Orientation::up);
         }
 
 
-        auto& tile_layers = GetConveyors({0, 0});
-        ASSERT_EQ(tile_layers.size(), 4);
+        auto& tiles = GetConveyors({0, 0});
+        ASSERT_EQ(tiles.size(), 4);
 
         // Right
         {
-            auto& line_segment = GetSegment(tile_layers[0]);
+            auto& line_segment = GetSegment(tiles[0]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
         // Down
         {
-            auto& line_segment = GetSegment(tile_layers[1]);
+            auto& line_segment = GetSegment(tiles[1]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
 
         // Left
         {
-            auto& line_segment = GetSegment(tile_layers[2]);
+            auto& line_segment = GetSegment(tiles[2]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
 
         // Up
         {
-            auto& line_segment = GetSegment(tile_layers[3]);
+            auto& line_segment = GetSegment(tiles[3]);
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }

@@ -27,7 +27,6 @@ namespace jactorio::game
         /// 0 indicates invalid ID
         using CallbackId = uint64_t;
 
-        ///
         /// Sets the state of an input
         /// Callbacks for the respective inputs are called when CallCallbacks() is called
         static void SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod = KMOD_NONE);
@@ -36,7 +35,6 @@ namespace jactorio::game
 
         // ======================================================================
 
-        ///
         /// Registers a keyboard input callback which will be called when the specified input is activated
         /// \return id of the registered callback, 0 Indicates error
         CallbackId Register(const InputCallback& callback,
@@ -44,7 +42,6 @@ namespace jactorio::game
                             InputAction action,
                             SDL_Keymod mods = KMOD_NONE);
 
-        ///
         /// Registers a mouse input callback which will be called when the specified input is activated
         /// \return id of the registered callback, 0 Indicates error
         CallbackId Register(const InputCallback& callback,
@@ -53,20 +50,16 @@ namespace jactorio::game
                             SDL_Keymod mods = KMOD_NONE);
 
 
-        ///
         /// Calls registered callbacks based on the input set with set_input(...)
         void Raise();
 
 
-        ///
         /// Removes specified callback at callback_id
         void Unsubscribe(CallbackId callback_id);
 
-        ///
         /// Deletes all callback data
         void Clear();
 
-        ///
         static InputAction ToInputAction(int action, bool repeat);
 
     private:

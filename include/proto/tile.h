@@ -10,7 +10,6 @@ namespace jactorio::proto
 {
     class Sprite;
 
-    ///
     /// Tiles which are auto-placed by the world generator
     /// Configure how the world generator places these tiles with a Noise_layer
     class Tile final : public FWorldObject
@@ -20,7 +19,6 @@ namespace jactorio::proto
 
         Tile() = default;
 
-        ///
         /// \param sprite_ptr Points to a sprite prototype
         explicit Tile(Sprite* sprite_ptr) : sprite(sprite_ptr) {}
 
@@ -58,16 +56,14 @@ namespace jactorio::proto
             return 0;
         }
 
-        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTileLayer* /*tile_layer*/) const override {
+        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
         // ======================================================================
         // Data
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override {}
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
     };

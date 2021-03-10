@@ -10,7 +10,7 @@ namespace jactorio::proto
     class IRenderableTest : public testing::Test, public IRenderable
     {
     protected:
-        Sprite sprite_{};
+        Sprite sprite_;
 
         void SetUp() override {
             sprite_.sets   = 5;
@@ -34,7 +34,7 @@ namespace jactorio::proto
             return 0;
         }
 
-        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTileLayer* /*tile_layer*/) const override {
+        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTile* /*tile*/) const override {
             return true;
         }
     };

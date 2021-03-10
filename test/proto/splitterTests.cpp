@@ -15,7 +15,7 @@ namespace jactorio::proto
     {
     protected:
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
 
         game::World world_;
@@ -23,9 +23,7 @@ namespace jactorio::proto
         TransportBelt transBelt_;
     };
 
-    ///
     /// Splitter creates conveyor at its 2 tiles, then connects to neighboring conveyors
-    ///
     /// v v
     /// C C Orientation down
     /// < >
@@ -41,10 +39,9 @@ namespace jactorio::proto
 
         TestSetupMultiTile(world_, {0, 1}, game::TileLayer::entity, Orientation::down, splitter);
 
-        splitter.OnBuild(
-            world_, logic_, {0, 1}, world_.GetTile(0, 1)->GetLayer(game::TileLayer::entity), Orientation::down);
+        splitter.OnBuild(world_, logic_, {0, 1}, game::TileLayer::entity, Orientation::down);
 
-        auto* splitter_data = world_.GetTile(0, 1)->GetLayer(game::TileLayer::entity).GetUniqueData<SplitterData>();
+        auto* splitter_data = world_.GetTile({0, 1}, game::TileLayer::entity)->GetUniqueData<SplitterData>();
         ASSERT_NE(splitter_data, nullptr);
 
         // Top conveyor grouped with splitter
@@ -55,7 +52,6 @@ namespace jactorio::proto
         EXPECT_EQ(splitter_data->left.structure->target, con_data_br.structure.get());
     }
 
-    ///
     /// Removing should disconnect from neighboring conveyors
     ///   Left
     /// < C <
@@ -79,7 +75,7 @@ namespace jactorio::proto
         con_data_rt.structure->target = splitter_data.right.structure.get();
 
 
-        splitter.OnRemove(world_, logic_, {1, 0}, world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity));
+        splitter.OnRemove(world_, logic_, {1, 0}, game::TileLayer::entity);
 
 
         EXPECT_EQ(splitter_data.left.structure.get(), nullptr);

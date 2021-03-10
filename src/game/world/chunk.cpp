@@ -7,7 +7,7 @@
 using namespace jactorio;
 
 game::Chunk::Chunk(const Chunk& other)
-    : overlays{other.overlays}, logicGroups{other.logicGroups}, position_{other.position_}, tiles_{other.tiles_} {
+    : overlays{other.overlays}, logicGroups{other.logicGroups}, position_{other.position_}, layers_{other.layers_} {
 
     ResolveLogicEntries(other);
 }
@@ -16,42 +16,34 @@ game::Chunk::Chunk(Chunk&& other) noexcept
     : overlays{std::move(other.overlays)},
       logicGroups{std::move(other.logicGroups)},
       position_{other.position_},
-      tiles_{std::move(other.tiles_)} {
+      layers_{std::move(other.layers_)} {
 
     ResolveLogicEntries(other);
 }
 
 // ======================================================================
 
-game::Chunk::TileArrayT& game::Chunk::Tiles() {
-    return tiles_;
+game::Chunk::TileArrayT& game::Chunk::Tiles(const TileLayer tlayer) {
+    return layers_[static_cast<int>(tlayer)];
 }
 
-const game::Chunk::TileArrayT& game::Chunk::Tiles() const {
-    return tiles_;
+const game::Chunk::TileArrayT& game::Chunk::Tiles(const TileLayer tlayer) const {
+    return layers_[static_cast<int>(tlayer)];
 }
 
 
-game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoordAxis x, const ChunkTileCoordAxis y) {
-    assert(x < kChunkWidth);
-    assert(y < kChunkWidth);
+game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoord& coord, const TileLayer tlayer) {
+    return const_cast<ChunkTile&>(static_cast<const Chunk*>(this)->GetCTile(coord, tlayer));
+}
+
+const game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoord& coord, const TileLayer tlayer) const {
+    assert(coord.x < kChunkWidth);
+    assert(coord.y < kChunkWidth);
 
     using IndexT = uint16_t;
 
     static_assert(std::numeric_limits<IndexT>::max() > kChunkArea);
-    return tiles_[SafeCast<IndexT>(y) * kChunkWidth + x];
-}
-
-const game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoordAxis x, const ChunkTileCoordAxis y) const {
-    return const_cast<Chunk*>(this)->GetCTile(x, y);
-}
-
-game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoord& coord) {
-    return GetCTile(coord.x, coord.y);
-}
-
-const game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoord& coord) const {
-    return GetCTile(coord.x, coord.y);
+    return Tiles(tlayer)[SafeCast<IndexT>(coord.y) * kChunkWidth + coord.x];
 }
 
 
@@ -64,12 +56,12 @@ const game::Chunk::OverlayContainerT& game::Chunk::GetOverlay(OverlayLayer layer
 }
 
 
-game::Chunk::LogicGroupContainerT& game::Chunk::GetLogicGroup(const LogicGroup layer) {
-    return const_cast<LogicGroupContainerT&>(static_cast<const Chunk*>(this)->GetLogicGroup(layer));
+game::Chunk::LogicGroupContainerT& game::Chunk::GetLogicGroup(const LogicGroup l_group) {
+    return const_cast<LogicGroupContainerT&>(static_cast<const Chunk*>(this)->GetLogicGroup(l_group));
 }
 
-const game::Chunk::LogicGroupContainerT& game::Chunk::GetLogicGroup(const LogicGroup layer) const {
-    return logicGroups[static_cast<LogicGroupArrayT::size_type>(layer)];
+const game::Chunk::LogicGroupContainerT& game::Chunk::GetLogicGroup(const LogicGroup l_group) const {
+    return logicGroups[static_cast<LogicGroupArrayT::size_type>(l_group)];
 }
 
 // ======================================================================
@@ -79,30 +71,31 @@ void game::Chunk::ResolveLogicEntries(const Chunk& other) noexcept {
         for (auto& entry : logicGroups[i_group]) {
 
             // entry currently holds pointer info for other chunk
-            auto info = other.GetLayerInfo(*entry);
+            auto info = other.GetTileInfo(*entry);
 
-            entry = &GetCTile(info.coord).GetLayer(info.tileLayer);
+            entry = &GetCTile(info.coord, info.tileLayer);
         }
     }
 }
 
 
-game::Chunk::TileLayerInfo game::Chunk::GetLayerInfo(const ChunkTileLayer& ctl) const noexcept {
+game::Chunk::TileInfo game::Chunk::GetTileInfo(const ChunkTile& tile) const noexcept {
     for (uint8_t y = 0; y < kChunkWidth; ++y) {
         for (uint8_t x = 0; x < kChunkWidth; ++x) {
-            const auto& tile = GetCTile(x, y);
 
-            for (uint8_t i = 0; i < ChunkTile::kTileLayerCount; ++i) {
-                const auto& layer = tile.GetLayer(i);
-                if (&layer == &ctl) {
-                    return TileLayerInfo{{x, y}, static_cast<TileLayer>(i)};
+            for (uint8_t i = 0; i < kTileLayerCount; ++i) {
+                const auto tlayer = static_cast<TileLayer>(i);
+
+                const auto& i_tile = GetCTile({x, y}, tlayer);
+                if (&i_tile == &tile) {
+                    return TileInfo{{x, y}, tlayer};
                 }
             }
         }
     }
 
     assert(false);
-    return TileLayerInfo{{}, TileLayer::base};
+    return TileInfo{{}, TileLayer::base};
 }
 
 game::Chunk::SerialLogicGroupArrayT game::Chunk::ToSerializeLogicGroupArray() const {
@@ -113,12 +106,13 @@ game::Chunk::SerialLogicGroupArrayT game::Chunk::ToSerializeLogicGroupArray() co
     }
 
 
-    // Convert pointers to tile layers to world position + layer index
+    // Convert tile* to world position + layer index
     for (int i_group = 0; i_group < kLogicGroupCount; ++i_group) {
         auto& serial_group = serial_logic[i_group];
 
-        for (const auto* logic_tile_layer : logicGroups[i_group]) {
-            serial_group.push_back(GetLayerInfo(*logic_tile_layer));
+        for (const auto* tile : logicGroups[i_group]) {
+            assert(tile != nullptr);
+            serial_group.push_back(GetTileInfo(*tile));
         }
     }
 
@@ -133,8 +127,8 @@ void game::Chunk::FromSerializeLogicGroupArray(const SerialLogicGroupArrayT& ser
 
         for (const auto& serial_entry : serial_group) {
 
-            auto& layer = GetCTile(serial_entry.coord).GetLayer(serial_entry.tileLayer);
-            logicGroups[i_group].push_back(&layer);
+            auto& tile = GetCTile(serial_entry.coord, serial_entry.tileLayer);
+            logicGroups[i_group].push_back(&tile);
         }
 
         assert(logicGroups[i_group].size() == serial_group.size());

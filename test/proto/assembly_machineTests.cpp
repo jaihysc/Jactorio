@@ -14,7 +14,7 @@ namespace jactorio::proto
 
         data::PrototypeManager proto_;
 
-        AssemblyMachineData data_{};
+        AssemblyMachineData data_;
         AssemblyMachine asmMachine_;
 
         Recipe* recipe_    = nullptr;
@@ -31,7 +31,6 @@ namespace jactorio::proto
             itemProduct_ = recipe_data.itemProduct;
         }
 
-        ///
         /// Sets inventory contents of assembly machine to allow crafting
         void SetupMachineCraftingInv(const Item::StackCount amount = 1) {
             data_.ingredientInv[0] = {item1_, amount};
@@ -39,7 +38,7 @@ namespace jactorio::proto
         }
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
     };
 
@@ -68,8 +67,8 @@ namespace jactorio::proto
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 0);
 
-        ASSERT_EQ(data_.ingredientInv.size(), 2);
-        ASSERT_EQ(data_.productInv.size(), 1);
+        ASSERT_EQ(data_.ingredientInv.Size(), 2);
+        ASSERT_EQ(data_.productInv.Size(), 1);
 
         EXPECT_EQ(data_.ingredientInv[0].filter, item1_);
         EXPECT_EQ(data_.ingredientInv[1].filter, item2_);
@@ -95,8 +94,8 @@ namespace jactorio::proto
         data_.ChangeRecipe(logic_, proto_, nullptr);
         EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 
-        EXPECT_EQ(data_.ingredientInv.size(), 0);
-        EXPECT_EQ(data_.productInv.size(), 0);
+        EXPECT_EQ(data_.ingredientInv.Size(), 0);
+        EXPECT_EQ(data_.productInv.Size(), 0);
     }
 
     TEST_F(AssemblyMachineTest, CanBeginCrafting) {
@@ -192,7 +191,7 @@ namespace jactorio::proto
         proto_.GenerateRelocationTable();
         const auto result = TestSerializeDeserialize(data_);
 
-        ASSERT_EQ(result.ingredientInv.size(), 2);
+        ASSERT_EQ(result.ingredientInv.Size(), 2);
 
         EXPECT_EQ(result.ingredientInv[0].item, item1_);
         EXPECT_EQ(result.ingredientInv[1].item, item2_);
@@ -201,7 +200,7 @@ namespace jactorio::proto
         EXPECT_EQ(result.ingredientInv[1].count, 10);
 
 
-        ASSERT_EQ(result.productInv.size(), 1);
+        ASSERT_EQ(result.productInv.Size(), 1);
 
         EXPECT_EQ(result.productInv[0].item, itemProduct_);
         EXPECT_EQ(result.productInv[0].count, 6);
@@ -238,24 +237,24 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, Build) {
         // Creates unique data on build
-        auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
+        auto* tile = world_.GetTile({0, 0}, game::TileLayer::entity);
 
-        asmMachine_.OnBuild(world_, logic_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logic_, {0, 0}, game::TileLayer::entity, Orientation::up);
 
-        EXPECT_NE(layer.GetUniqueData(), nullptr);
+        EXPECT_NE(tile->GetUniqueData(), nullptr);
     }
 
     TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
-        auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
-        asmMachine_.OnBuild(world_, logic_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logic_, {0, 0}, game::TileLayer::entity, Orientation::up);
 
-        const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
-        auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
+        auto* tile                 = world_.GetTile({0, 0}, game::TileLayer::entity);
+        const auto* assembly_proto = tile->GetPrototype<AssemblyMachine>();
+        auto* assembly_data        = tile->GetUniqueData<AssemblyMachineData>();
 
         SetupRecipe();
         assembly_data->ChangeRecipe(logic_, proto_, recipe_);
 
-        assembly_proto->OnRemove(world_, logic_, {0, 0}, layer);
+        assembly_proto->OnRemove(world_, logic_, {0, 0}, game::TileLayer::entity);
         EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
     }
 

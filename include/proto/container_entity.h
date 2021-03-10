@@ -4,8 +4,8 @@
 #define JACTORIO_INCLUDE_PROTO_CONTAINER_ENTITY_H
 #pragma once
 
+#include "game/logistic/inventory.h"
 #include "proto/abstract/health_entity.h"
-#include "proto/item.h"
 
 namespace jactorio::proto
 {
@@ -14,19 +14,18 @@ namespace jactorio::proto
         ContainerEntityData() = default;
 
         explicit ContainerEntityData(const uint16_t inventory_size) {
-            inventory.resize(inventory_size);
+            inventory.Resize(inventory_size);
         }
 
-        explicit ContainerEntityData(Item::Inventory inv) : inventory(std::move(inv)) {}
+        explicit ContainerEntityData(game::Inventory inv) : inventory(std::move(inv)) {}
 
-        Item::Inventory inventory;
+        game::Inventory inventory;
 
         CEREAL_SERIALIZE(archive) {
             archive(cereal::base_class<HealthEntityData>(this), inventory);
         }
     };
 
-    ///
     /// An entity with an inventory, such as a chest
     class ContainerEntity final : public HealthEntity
     {
@@ -44,15 +43,15 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::ChunkTileLayer& tile_layer,
+                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
         void OnRemove(game::World& /*world*/,
                       game::Logic& /*logic*/,
                       const WorldCoord& /*coord*/,
-                      game::ChunkTileLayer& /*tile_layer*/) const override {}
+                      game::TileLayer /*tlayer*/) const override {}
 
-        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const override;
 
         void ValidatedPostLoad() override;
     };

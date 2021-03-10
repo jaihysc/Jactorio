@@ -18,7 +18,6 @@ namespace jactorio::data
     struct IsValidPrototype
     { static constexpr bool value = std::is_base_of_v<proto::FrameworkBase, TProto> && !std::is_abstract_v<TProto>; };
 
-    ///
     /// Manages prototype data
     class PrototypeManager
     {
@@ -41,42 +40,40 @@ namespace jactorio::data
 
         // Get
 
-        ///
         /// Gets prototype at specified name, cast to T
         /// \return nullptr if the specified prototype does not exist
         template <typename TProto>
         TProto* Get(const std::string& iname) const noexcept;
 
-        ///
         /// Gets prototype at specified category and name, cast to T
         /// \return nullptr if the specified prototype does not exist
-        ///
         /// Abstract types allowed for Python API
         template <typename TProto>
         TProto* Get(proto::Category data_category, const std::string& iname) const noexcept;
 
 
-        ///
-        /// Gets pointers to all data of specified data_type
+        /// Gets pointers to all data of specified category
         template <typename TProto>
-        std::vector<TProto*> GetAll(proto::Category type) const;
+        std::vector<TProto*> GetAll(proto::Category category) const;
+        /// Gets pointers to all data of category specified by TProto
+        template <typename TProto>
+        std::vector<TProto*> GetAll() const;
 
-        ///
-        /// Gets pointers to all data of specified data_type, sorted by Prototype_base.order
+        /// Gets pointers to all data of specified category, sorted by FrameworkBase.order
         template <typename TProto>
-        std::vector<TProto*> GetAllSorted(proto::Category type) const;
+        std::vector<TProto*> GetAllSorted(proto::Category category) const;
+        /// Gets pointers to all data of category specified by TProto, sorted by FrameworkBase.order
+        template <typename TProto>
+        std::vector<TProto*> GetAllSorted() const;
 
 
         // Make
 
-        ///
         /// Sets the prefix which will be added to all internal names
         /// Provide empty string to disable
-        ///
         /// Prefix of "base" : "electric-pole" becomes "__base__/electric-pole"
         void SetDirectoryPrefix(const std::string& name = "");
 
-        ///
         /// Create anonymous prototype TProto
         /// \return Created prototype
         template <typename TProto>
@@ -84,7 +81,6 @@ namespace jactorio::data
             return Make<TProto>("");
         }
 
-        ///
         /// Forwards TArgs to create prototype TProto
         /// \return Created prototype
         template <typename TProto, typename... TArgs>
@@ -93,7 +89,6 @@ namespace jactorio::data
 
         // Utility
 
-        ///
         /// Searches through all categories for prototype
         /// \return pointer to prototype, nullptr if not found
         template <typename TProto = proto::FrameworkBase>
@@ -103,7 +98,6 @@ namespace jactorio::data
         // ======================================================================
 
 
-        ///
         /// Loads prototypes and their properties from provided directory path
         /// \remark This is how the game loads prototypes normally
         /// \param folder_path Do not include a / at the end (Valid usage: dc/xy/data)
@@ -111,7 +105,6 @@ namespace jactorio::data
         void Load(const std::string& folder_path);
 
 
-        ///
         /// Clears all prototype data
         void Clear();
 
@@ -121,11 +114,9 @@ namespace jactorio::data
 
         // Deserialize
 
-        ///
         /// RelocationTableGet can be used after this is called
         void GenerateRelocationTable();
 
-        ///
         /// Fetches prototype at prototype id
         template <typename TProto = proto::FrameworkBase>
         J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
@@ -134,7 +125,6 @@ namespace jactorio::data
         J_NODISCARD DebugInfo GetDebugInfo() const;
 
     private:
-        ///
         /// Adds a prototype
         /// \param iname Internal name of prototype
         /// \param prototype Prototype pointer, takes ownership, must be unique for each added
@@ -185,10 +175,10 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::GetAll(const proto::Category type) const {
+    std::vector<TProto*> PrototypeManager::GetAll(const proto::Category category) const {
         static_assert(IsValidPrototype<TProto>::value);
 
-        auto category_items = dataRaw_[static_cast<uint16_t>(type)];
+        auto category_items = dataRaw_[static_cast<uint16_t>(category)];
 
         std::vector<TProto*> items;
         items.reserve(category_items.size());
@@ -202,10 +192,15 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::GetAllSorted(const proto::Category type) const {
+    std::vector<TProto*> PrototypeManager::GetAll() const {
+        return GetAll<TProto>(TProto::category);
+    }
+
+    template <typename TProto>
+    std::vector<TProto*> PrototypeManager::GetAllSorted(const proto::Category category) const {
         static_assert(IsValidPrototype<TProto>::value);
 
-        std::vector<TProto*> items = GetAll<TProto>(type);
+        std::vector<TProto*> items = GetAll<TProto>(category);
 
         // Sort
         std::sort(items.begin(), items.end(), [](proto::FrameworkBase* a, proto::FrameworkBase* b) {
@@ -213,6 +208,12 @@ namespace jactorio::data
         });
         return items;
     }
+
+    template <typename TProto>
+    std::vector<TProto*> PrototypeManager::GetAllSorted() const {
+        return GetAllSorted<TProto>(TProto::category);
+    }
+
 
     template <typename TProto, typename... TArgs>
     TProto& PrototypeManager::Make(const std::string& iname, TArgs&&... args) {

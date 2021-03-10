@@ -17,7 +17,6 @@ namespace jactorio::proto
     // Internal name, amount required
     using RecipeItem = std::pair<std::string, uint16_t>;
 
-    ///
     /// Defines an in game recipe to craft items
     class Recipe final : public FrameworkBase
     {
@@ -34,16 +33,13 @@ namespace jactorio::proto
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
-        ///
         /// Gets number of logic ticks necessary to craft recipe
         J_NODISCARD GameTickT GetCraftingTime(double multiplier = 1.) const;
 
-        ///
         /// Looks up recipe for item of iname
         /// \returns nullptr if not found
         static const Recipe* GetItemRecipe(const data::PrototypeManager& proto, const std::string& iname);
 
-        ///
         /// Returns raw materials for a recipe
         /// Assumes all provided names are valid
         /// A raw material is something which cannot be hand crafted

@@ -58,7 +58,6 @@
     template <class Archive>                           \
     void save(Archive&(archiver__), const ty__&(ty_ref__))
 
-///
 /// \remark For types serialized via smart pointer only
 #define CEREAL_LOAD_CONSTRUCT(archiver__, constructor__, data_ty__) \
     template <class TArchive>                                       \
@@ -66,7 +65,6 @@
 
 namespace jactorio::data
 {
-    ///
     /// Size checks arguments to be archived to avoid runtime errors
     template <std::size_t ArchiveSize, typename TArchive, typename... TArgs>
     void CerealArchive(TArchive& archiver, TArgs&&... args) {

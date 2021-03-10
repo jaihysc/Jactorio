@@ -33,13 +33,10 @@ namespace jactorio::proto
         IDeferred& operator=(const IDeferred& other) = default;
         IDeferred& operator=(IDeferred&& other) noexcept = default;
 
-        ///
         /// The callback requested at the specified game tick was reached
         /// \param world world data containing deferred timer which dispatched this callback
         /// \param unique_data Unique data the callback was registered with
-        virtual void OnDeferTimeElapsed(game::World& world,
-                                        game::Logic& logic,
-                                        UniqueDataBase* unique_data) const = 0;
+        virtual void OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const = 0;
     };
 } // namespace jactorio::proto
 

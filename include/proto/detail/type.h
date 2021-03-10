@@ -18,7 +18,6 @@ namespace jactorio::proto
     using LineDistT       = Decimal3T;
     using RotationDegreeT = Decimal3T;
 
-    ///
     /// <Entry direction>_<Exit direction>
     enum class LineOrientation
     {

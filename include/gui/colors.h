@@ -86,7 +86,6 @@ namespace jactorio::gui
     constexpr ImU32 kGuiStyleScrollBarSize = 14;
 
 
-    ///
     /// RAII wrapper for imgui features
     class ImGuard
     {
@@ -110,7 +109,6 @@ namespace jactorio::gui
         ImGuard(ImGuard&& other) noexcept = delete;
 
 
-        ///
         /// For debug menus only, use GuiMenu instead
         template <typename... Args>
         void Begin(Args&&... args) {

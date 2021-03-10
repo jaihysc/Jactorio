@@ -36,7 +36,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(
                                                                                 proto::Sprite::SpriteGroup group,
                                                                                 const bool invert_sprites) const {
 
-    auto sprites = proto.GetAll<const proto::Sprite>(proto::Category::sprite);
+    auto sprites = proto.GetAll<const proto::Sprite>();
 
     // Filter to group only
     sprites.erase(

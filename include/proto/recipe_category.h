@@ -10,7 +10,6 @@ namespace jactorio::proto
 {
     class Recipe;
 
-    ///
     /// A category to sort recipes within a recipe group
     class RecipeCategory final : public FrameworkBase
     {

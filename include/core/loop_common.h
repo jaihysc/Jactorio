@@ -5,15 +5,17 @@
 #pragma once
 
 #include <mutex>
-#include <optional>
 
-#include "game/game_data.h"
-#include "game/player/keybind_manager.h"
+#include "game/game_controller.h"
 #include "gui/main_menu_data.h"
+
+namespace jactorio::render
+{
+    class Renderer;
+}
 
 namespace jactorio
 {
-    ///
     /// Used between threaded loops
     class ThreadedLoopCommon
     {
@@ -26,19 +28,8 @@ namespace jactorio
         };
 
 
-        [[nodiscard]] game::GameDataGlobal& GetDataGlobal() noexcept {
-            return gameDataGlobal_.value();
-        }
-
-        [[nodiscard]] const game::GameDataGlobal& GetDataGlobal() const noexcept {
-            return gameDataGlobal_.value();
-        }
-
-
         std::mutex playerDataMutex;
         std::mutex worldDataMutex;
-
-        game::GameDataLocal gameDataLocal;
 
 
         GameState gameState = GameState::main_menu;
@@ -48,24 +39,12 @@ namespace jactorio
         volatile bool prototypeLoadingComplete = false;
 
 
-        ///
-        /// Clears and reconstructs GameDataGlobal
-        void ResetGlobalData();
+        game::GameController gameController;
 
-    private:
-        std::optional<game::GameDataGlobal> gameDataGlobal_{std::in_place};
-
-    public:
-        // Requires game data global to be constructed first
-        game::KeybindManager keybindManager{gameDataLocal.input.key, GetDataGlobal()};
+        /// Renderer currently in use, because OpenGL does not allow calls from different threads,
+        /// the renderer must be created and destroyed in the renderer thread
+        render::Renderer* renderer = nullptr;
     };
-
-    inline void ThreadedLoopCommon::ResetGlobalData() {
-        GetDataGlobal().ClearRefsToWorld(gameDataLocal);
-
-        gameDataGlobal_.reset();
-        gameDataGlobal_.emplace();
-    }
 } // namespace jactorio
 
 

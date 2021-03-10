@@ -11,7 +11,6 @@
 
 using namespace jactorio;
 
-///
 /// Recursively resolves raw materials
 void ResolveRawRecipe(const data::PrototypeManager& proto,
                       std::unordered_map<std::string, uint16_t>& materials_raw,
@@ -40,7 +39,7 @@ void ResolveRawRecipe(const data::PrototypeManager& proto,
 }
 
 const proto::Recipe* proto::Recipe::GetItemRecipe(const data::PrototypeManager& proto, const std::string& iname) {
-    const auto recipes = proto.GetAll<const Recipe>(Category::recipe);
+    const auto recipes = proto.GetAll<const Recipe>();
 
     for (const auto& recipe : recipes) {
         if (recipe->product.first == iname)

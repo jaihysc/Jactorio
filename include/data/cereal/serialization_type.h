@@ -13,10 +13,8 @@
 
 namespace jactorio::data
 {
-    ///
     /// Manages non owning pointer to prototype
     /// \remark Uses the global active prototype manager for deserializing
-    ///
     /// Converts pointer to internal id when serializing, from internal id to pointer when deserializing
     template <typename TProto>
     class SerialProtoPtr : public PointerWrapper<TProto>
@@ -55,7 +53,6 @@ namespace jactorio::data
     SerialProtoPtr(T) -> SerialProtoPtr<std::remove_pointer_t<T>>;
 
 
-    ///
     /// Manages non owning pointer to unique data
     /// \remark Uses the global active unique data manager for deserializing
     template <typename TUnique>

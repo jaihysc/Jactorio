@@ -4,32 +4,20 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H
 #pragma once
 
-#include "core/coordinate_tuple.h"
 #include "core/data_type.h"
 #include "core/orientation.h"
+#include "game/logistic/inventory.h"
 #include "proto/detail/type.h"
-#include "proto/item.h"
 
 namespace jactorio::game
 {
     class Logic;
     class World;
 
-    ///
-    /// Initialize: Return false if failed
-#define J_ITEM_HANDLER_COMMON                                                      \
-    bool Initialize(World& world, WorldCoordAxis world_x, WorldCoordAxis world_y); \
-                                                                                   \
-    bool Initialize(World& world, const WorldCoord& coord) {                       \
-        return Initialize(world, coord.x, coord.y);                                \
-    };
-
-    ///
     /// Base class for handling items (pickup / droOff)
     class ItemHandler
     {
     protected:
-        ///
         /// \param orientation Orientation from origin prototype, "the destination is <orientation> of prototype"
         explicit ItemHandler(const Orientation orientation) : orientation_(orientation) {}
 
@@ -55,34 +43,31 @@ namespace jactorio::game
     };
 
 
-    ///
     /// Represents a world location where items can be inserted
     class ItemDropOff : public ItemHandler
     {
     public:
         explicit ItemDropOff(const Orientation orientation) : ItemHandler(orientation) {}
 
-        J_ITEM_HANDLER_COMMON
+        bool Initialize(World& world, const WorldCoord& coord);
 
 
         struct DropOffParams
         {
             Logic& logic;
-            const proto::ItemStack& itemStack;
+            const ItemStack& itemStack;
             /// Entity to drop into
             proto::UniqueDataBase& uniqueData;
             Orientation orientation;
         };
 
-        ///
         ///	 \brief Insert provided item at destination
-        bool DropOff(Logic& logic, const proto::ItemStack& item_stack) const {
+        bool DropOff(Logic& logic, const ItemStack& item_stack) const {
             assert(targetUniqueData_);
             assert(dropFunc_);
             return (this->*dropFunc_)({logic, item_stack, *targetUniqueData_, orientation_});
         }
 
-        ///
         ///	 \return true if dropoff can ever possible at the specified location
         J_NODISCARD bool CanDropOff(Logic& logic, const proto::Item*& item) const {
             assert(targetUniqueData_);
@@ -111,18 +96,17 @@ namespace jactorio::game
         CanDropOffFunc canDropFunc_ = nullptr;
     };
 
-    ///
     /// Represents a world location where items can be picked up by inserters
     class InserterPickup : public ItemHandler
     {
         /// Success, picked up stack
-        using PickupReturn    = std::pair<bool, proto::ItemStack>;
+        using PickupReturn    = std::pair<bool, ItemStack>;
         using GetPickupReturn = const proto::Item*;
 
     public:
         explicit InserterPickup(const Orientation orientation) : ItemHandler(orientation) {}
 
-        J_ITEM_HANDLER_COMMON
+        bool Initialize(World& world, const WorldCoord& coord);
 
         /// \remark Picks up items when at max deg
         struct PickupParams
@@ -135,7 +119,6 @@ namespace jactorio::game
             Orientation orientation;
         };
 
-        ///
         ///	 \brief Insert provided item at destination
         PickupReturn Pickup(Logic& logic,
                             const proto::ProtoUintT inserter_tile_reach,
@@ -146,7 +129,6 @@ namespace jactorio::game
             return (this->*pickupFunc_)({logic, inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_});
         }
 
-        ///
         /// \return Item which will picked up by Pickup()
         J_NODISCARD GetPickupReturn GetPickup(Logic& logic,
                                               const proto::ProtoUintT inserter_tile_reach,
@@ -166,7 +148,6 @@ namespace jactorio::game
         J_NODISCARD GetPickupReturn GetPickupAssemblyMachine(const PickupParams& params) const;
         PickupReturn PickupAssemblyMachine(const PickupParams& params) const;
 
-        ///
         /// \returns true if at maximum inserter degree
         static bool IsAtMaxDegree(const proto::RotationDegreeT& degree);
 

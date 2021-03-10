@@ -8,16 +8,16 @@
 
 using namespace jactorio;
 
-void proto::ContainerEntity::OnBuild(game::World& /*world*/,
+void proto::ContainerEntity::OnBuild(game::World& world,
                                      game::Logic& /*logic*/,
-                                     const WorldCoord& /*coord*/,
-                                     game::ChunkTileLayer& tile_layer,
+                                     const WorldCoord& coord,
+                                     const game::TileLayer tlayer,
                                      Orientation /*orientation*/) const {
-    tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
+    world.GetTile(coord, tlayer)->MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
-bool proto::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
-    gui::ContainerEntity({g_rendr, this, tile_layer->GetUniqueData<ContainerEntityData>()});
+bool proto::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
+    gui::ContainerEntity({g_rendr, this, tile->GetUniqueData<ContainerEntityData>()});
     return true;
 }
 

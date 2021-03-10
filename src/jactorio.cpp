@@ -27,9 +27,7 @@ void InitializeGame() {
     renderer_thread.join();
 }
 
-///
 /// ENTRY POINT
-///
 int main(int ac, char* av[]) {
     using namespace jactorio;
 

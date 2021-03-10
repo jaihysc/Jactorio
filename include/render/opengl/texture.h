@@ -10,7 +10,6 @@
 
 namespace jactorio::render
 {
-    ///
     /// Manages a jactorio::proto::Sprite* and creates a texture for OpenGL
     /// This will delete the sprite* when the texture is deleted
     class Texture
@@ -20,7 +19,6 @@ namespace jactorio::render
     public:
         using SpriteBufferT = unsigned char;
 
-        ///
         /// \param buffer new allocated buffer, will be deleted when texture is deleted (assumed to be RGBA)
         /// \param width Width of buffer image
         /// \param height Height of buffer image
@@ -32,7 +30,6 @@ namespace jactorio::render
         Texture& operator=(const Texture& other) = delete;
         Texture& operator=(Texture&& other) noexcept = delete;
 
-        ///
         /// \exception Renderer_exception Index out of bounds
         void Bind(unsigned int slot = 0) const;
 

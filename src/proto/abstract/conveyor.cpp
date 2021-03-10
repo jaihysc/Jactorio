@@ -3,7 +3,6 @@
 #include "proto/abstract/conveyor.h"
 
 #include <array>
-#include <cmath>
 
 #include "game/logic/conveyor_struct.h"
 #include "game/logic/conveyor_utility.h"
@@ -82,10 +81,10 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 void proto::Conveyor::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              game::ChunkTileLayer& tile_layer,
+                              const game::TileLayer tlayer,
                               const Orientation orientation) const {
 
-    auto& con_data = tile_layer.MakeUniqueData<ConveyorData>();
+    auto& con_data = world.GetTile(coord, tlayer)->MakeUniqueData<ConveyorData>();
     BuildConveyor(world, coord, con_data, orientation, kConveyorLogicGroup);
 
     con_data.set = static_cast<uint16_t>(con_data.lOrien);
@@ -112,14 +111,12 @@ void proto::Conveyor::OnNeighborUpdate(game::World& world,
 void proto::Conveyor::OnRemove(game::World& world,
                                game::Logic& /*logic*/,
                                const WorldCoord& coord,
-                               game::ChunkTileLayer& /*tile_layer*/) const {
+                               game::TileLayer /*tlayer*/) const {
     RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 
-void proto::Conveyor::OnDeserialize(game::World& world,
-                                    const WorldCoord& coord,
-                                    game::ChunkTileLayer& tile_layer) const {
-    auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
+void proto::Conveyor::OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const {
+    auto* origin_data = tile.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
     ConveyorNeighborConnect(world, coord);

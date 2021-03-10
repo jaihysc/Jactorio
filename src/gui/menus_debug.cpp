@@ -16,8 +16,8 @@
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/conveyor_utility.h"
-#include "game/logic/inventory_controller.h"
 #include "game/logic/logic.h"
+#include "game/logistic/inventory.h"
 #include "game/player/player.h"
 #include "game/world/world.h"
 
@@ -89,7 +89,7 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
         // glm::vec3* view_translation = GetViewTransform();
         // ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
-        ImGui::Text("Layer count | Tile: %d", game::ChunkTile::kTileLayerCount);
+        ImGui::Text("Layer count | Tile: %d", game::kTileLayerCount);
 
         if (ImGui::Button("Clear debug overlays")) {
             for (auto* chunk : world.LogicGetChunks()) {
@@ -165,21 +165,21 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
     if (new_inv_size < 0)
         new_inv_size = 0;
 
-    if (new_inv_size != player.inventory.inventory.size()) {
-        player.inventory.inventory.resize(new_inv_size);
+    if (new_inv_size != player.inventory.inventory.Size()) {
+        player.inventory.inventory.Resize(new_inv_size);
     }
 
 
     ImGui::Separator();
 
 
-    auto game_items = proto.GetAll<proto::Item>(proto::Category::item);
+    auto game_items = proto.GetAll<proto::Item>();
     for (auto& item : game_items) {
         ImGui::PushID(item->name.c_str());
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
-            proto::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
-            game::AddStack(player.inventory.inventory, item_stack);
+            game::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
+            player.inventory.inventory.Add(item_stack);
         }
         ImGui::PopID();
     }
@@ -187,7 +187,6 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
 
 void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
-    auto* tile  = world.GetTile(player.world.GetMouseTileCoords());
 
     ImGuard guard;
     guard.Begin("Tile info");
@@ -195,27 +194,26 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     ImGui::Text(
         "Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
 
-    if (tile == nullptr) {
-        ImGui::TextUnformatted("Not hovering over tile");
-        return;
-    }
-
-    for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
-        auto& layer = tile->GetLayer(layer_index);
+    for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
+        auto* tile = world.GetTile(player.world.GetMouseTileCoords(), static_cast<game::TileLayer>(layer_index));
+        if (tile == nullptr) {
+            ImGui::TextUnformatted("Layer null");
+            continue;
+        }
 
         ImGui::TextUnformatted("------------------------------------");
         ImGui::Text("Layer %d", layer_index);
 
-        ImGui::Text("%s", layer.IsMultiTile() ? "Multi-tile" : "Non multi-tile");
-        ImGui::Text("%s", layer.IsTopLeft() ? "Top left" : "Non top left");
+        ImGui::Text("%s", tile->IsMultiTile() ? "Multi-tile" : "Non multi-tile");
+        ImGui::Text("%s", tile->IsTopLeft() ? "Top left" : "Non top left");
 
-        ImGui::Text("Multi-tile index: %d", layer.GetMultiTileIndex());
+        ImGui::Text("Multi-tile index: %d", tile->GetMultiTileIndex());
 
-        ImGui::Text("Orientation: %s", OrientationToStr(layer.GetOrientation()));
-        ImGui::Text("Dimensions: %d, %d", layer.GetDimensions().span, layer.GetDimensions().height);
+        ImGui::Text("Orientation: %s", tile->GetOrientation().ToCstr());
+        ImGui::Text("Dimensions: %d, %d", tile->GetDimension().x, tile->GetDimension().y);
 
-        ImGui::Text("Prototype: %s", MemoryAddressToStr(layer.GetPrototype()).c_str());
-        ImGui::Text("Unique data: %s", MemoryAddressToStr(layer.GetUniqueData()).c_str());
+        ImGui::Text("Prototype: %s", MemoryAddressToStr(tile->GetPrototype()).c_str());
+        ImGui::Text("Unique data: %s", MemoryAddressToStr(tile->GetUniqueData()).c_str());
     }
 }
 
@@ -243,12 +241,11 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
         object_layer.clear();
 
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
-            auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
-            if (layer.GetPrototype() == nullptr ||
-                layer.GetPrototype()->GetCategory() != proto::Category::transport_belt)
+            auto& tile = chunk->Tiles(game::TileLayer::entity)[i];
+            if (tile.GetPrototype() == nullptr || tile.GetPrototype()->GetCategory() != proto::Category::transport_belt)
                 continue;
 
-            auto& line_data    = *static_cast<proto::ConveyorData*>(layer.GetUniqueData());
+            auto& line_data    = *tile.GetUniqueData<proto::ConveyorData>();
             auto& line_segment = *line_data.structure;
 
             // Only draw for the head of segments
@@ -263,10 +260,8 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
             const auto position_x = i % game::Chunk::kChunkWidth;
             const auto position_y = i / game::Chunk::kChunkWidth;
 
-            int pos_x;
-            int pos_y;
-            int segment_len_x;
-            int segment_len_y;
+            Position2<int> pos;
+            Position2<int> segment_len;
 
             const proto::Sprite* direction_sprite;
             const proto::Sprite* outline_sprite;
@@ -277,34 +272,34 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
                 assert(false); // Missing case label
 
             case Orientation::up:
-                pos_x         = position_x;
-                pos_y         = position_y;
-                segment_len_x = 1;
-                segment_len_y = line_segment.length;
+                pos.x         = position_x;
+                pos.y         = position_y;
+                segment_len.x = 1;
+                segment_len.y = line_segment.length;
 
                 direction_sprite = sprite_up;
                 break;
             case Orientation::right:
-                pos_x         = position_x - line_segment.length + 1;
-                pos_y         = position_y;
-                segment_len_x = line_segment.length;
-                segment_len_y = 1;
+                pos.x         = position_x - line_segment.length + 1;
+                pos.y         = position_y;
+                segment_len.x = line_segment.length;
+                segment_len.y = 1;
 
                 direction_sprite = sprite_right;
                 break;
             case Orientation::down:
-                pos_x         = position_x;
-                pos_y         = position_y - line_segment.length + 1;
-                segment_len_x = 1;
-                segment_len_y = line_segment.length;
+                pos.x         = position_x;
+                pos.y         = position_y - line_segment.length + 1;
+                segment_len.x = 1;
+                segment_len.y = line_segment.length;
 
                 direction_sprite = sprite_down;
                 break;
             case Orientation::left:
-                pos_x         = position_x;
-                pos_y         = position_y;
-                segment_len_x = line_segment.length;
-                segment_len_y = 1;
+                pos.x         = position_x;
+                pos.y         = position_y;
+                segment_len.x = line_segment.length;
+                segment_len.y = 1;
 
                 direction_sprite = sprite_left;
                 break;
@@ -312,7 +307,7 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
 
             // Shift items 1 tile forwards if segment bends
             if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
-                OrientationIncrement(line_segment.direction, pos_x, pos_y);
+                Position2Increment(line_segment.direction, pos, 1);
             }
 
 
@@ -328,13 +323,13 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
 
             object_layer.emplace_back(
                 game::OverlayElement{*direction_sprite,
-                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
-                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos.x), SafeCast<float>(pos.y)},
+                                     {SafeCast<float>(segment_len.x), SafeCast<float>(segment_len.y)},
                                      draw_overlay_layer});
             object_layer.emplace_back(
                 game::OverlayElement{*outline_sprite,
-                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
-                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos.x), SafeCast<float>(pos.y)},
+                                     {SafeCast<float>(segment_len.x), SafeCast<float>(segment_len.y)},
                                      draw_overlay_layer});
         }
     }
@@ -423,7 +418,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data
             ImGui::Text("Termination Type: %s", s.c_str());
         }
 
-        ImGui::Text("Direction: %s", OrientationToStr(segment.direction));
+        ImGui::Text("Direction: %s", segment.direction.ToCstr());
 
         ImGui::Text("Item update index: %d %d", segment.left.index, segment.right.index);
 
@@ -460,19 +455,18 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::Player& player) {
 
     const auto selected_tile = player.world.GetMouseTileCoords();
 
-    auto* tile = world.GetTile(selected_tile);
+    auto* tile = world.GetTile(selected_tile, game::TileLayer::entity);
     if (tile == nullptr)
         return;
 
-    auto& layer = tile->GetLayer(game::TileLayer::entity);
-    if (layer.GetPrototype() == nullptr || layer.GetPrototype()->GetCategory() != proto::Category::inserter) {
+    if (tile->GetPrototype() == nullptr || tile->GetPrototype()->GetCategory() != proto::Category::inserter) {
         ImGui::Text("No inserter at selected tile");
         return;
     }
 
-    auto& inserter_data = *layer.GetUniqueData<proto::InserterData>();
+    auto& inserter_data = *tile->GetUniqueData<proto::InserterData>();
 
-    ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
+    ImGui::Text("Orientation %s", inserter_data.orientation.ToCstr());
 
     ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
 
@@ -546,7 +540,7 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
 
         for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
             for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
-                auto* chunk = world.GetChunkC(chunk_x, chunk_y);
+                auto* chunk = world.GetChunkC({chunk_x, chunk_y});
 
                 if (chunk == nullptr)
                     continue;

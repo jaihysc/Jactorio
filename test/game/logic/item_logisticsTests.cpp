@@ -20,18 +20,18 @@ namespace jactorio::game
         Logic logic_;
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
     };
 
     TEST_F(ItemLogisticsTest, Uninitialize) {
         ItemDropOff drop_off{Orientation::up};
 
-        auto& layer = world_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+        auto* tile = world_.GetTile({2, 4}, TileLayer::entity);
 
         proto::ContainerEntity container;
-        layer.SetPrototype(Orientation::up, &container);
-        layer.MakeUniqueData<proto::ContainerEntityData>(1);
+        tile->SetPrototype(Orientation::up, &container);
+        tile->MakeUniqueData<proto::ContainerEntityData>(1);
 
         ASSERT_TRUE(drop_off.Initialize(world_, {2, 4}));
         drop_off.Uninitialize();
@@ -70,13 +70,12 @@ namespace jactorio::game
 
     // ======================================================================
 
-    ///
     /// Inherits ItemDropOff to gain access to insertion methods
     class ItemDropOffTest : public testing::Test, public ItemDropOff
     {
     public:
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
 
         explicit ItemDropOffTest() : ItemDropOff(Orientation::up) {}
@@ -94,7 +93,6 @@ namespace jactorio::game
             return proto::ConveyorData{segment};
         }
 
-        ///
         /// \param orientation Inserter orientation to dropoff
         void ConveyorInsert(const Orientation orientation, proto::ConveyorData& line_data) {
             proto::Item item;
@@ -105,11 +103,11 @@ namespace jactorio::game
     };
 
     TEST_F(ItemDropOffTest, GetInsertFunc) {
-        world_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<proto::ContainerEntityData>(1);
+        world_.GetTile({2, 4}, TileLayer::entity)->MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer = world_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-            layer.SetPrototype(Orientation::up, &entity_proto);
+            auto* tile = world_.GetTile({2, 4}, TileLayer::entity);
+            tile->SetPrototype(Orientation::up, &entity_proto);
         };
 
         // No: Empty tile cannot be inserted into
@@ -143,7 +141,7 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine; // Will also make unique data, so it needs to be on another tile
-        assembly_machine.SetDimensions(2, 2);
+        assembly_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(world_, {3, 5}));
@@ -154,11 +152,11 @@ namespace jactorio::game
     // ======================================================================
 
     TEST_F(ItemDropOffTest, InsertContainerEntity) {
-        auto& layer = world_.GetTile(3, 1)->GetLayer(TileLayer::entity);
+        auto* tile = world_.GetTile({3, 1}, TileLayer::entity);
 
-        layer.MakeUniqueData<proto::ContainerEntityData>(10);
+        tile->MakeUniqueData<proto::ContainerEntityData>(10);
 
-        auto* container_data = layer.GetUniqueData<proto::ContainerEntityData>();
+        auto* container_data = tile->GetUniqueData<proto::ContainerEntityData>();
 
 
         proto::Item item;
@@ -348,7 +346,7 @@ namespace jactorio::game
         const auto recipe_pack = TestSetupRecipe(proto);
 
         proto::AssemblyMachineData asm_data;
-        asm_data.ingredientInv.resize(2);
+        asm_data.ingredientInv.Resize(2);
         asm_data.ingredientInv[0] = {recipe_pack.item1, 49, recipe_pack.item1};
         asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 
@@ -400,7 +398,7 @@ namespace jactorio::game
         explicit InserterPickupTest() : InserterPickup(Orientation::up) {}
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
 
     protected:
@@ -440,11 +438,11 @@ namespace jactorio::game
     };
 
     TEST_F(InserterPickupTest, GetPickupFunc) {
-        world_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<proto::ContainerEntityData>(1);
+        world_.GetTile({2, 4}, TileLayer::entity)->MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer = world_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-            layer.SetPrototype(Orientation::up, &entity_proto);
+            auto* tile = world_.GetTile({2, 4}, TileLayer::entity);
+            tile->SetPrototype(Orientation::up, &entity_proto);
         };
 
 
@@ -479,7 +477,7 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine;
-        assembly_machine.SetDimensions(2, 2);
+        assembly_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(world_, {4, 5}));
@@ -683,8 +681,8 @@ namespace jactorio::game
         data::PrototypeManager proto;
 
         proto::AssemblyMachine asm_machine;
-        auto& layer = TestSetupAssemblyMachine(world_, {0, 0}, Orientation::up, asm_machine);
-        auto* data  = layer.GetUniqueData<proto::AssemblyMachineData>();
+        auto& tile = TestSetupAssemblyMachine(world_, {0, 0}, Orientation::up, asm_machine);
+        auto* data = tile.GetUniqueData<proto::AssemblyMachineData>();
 
         // Does nothing as there is no recipe yet
         PickupAssemblyMachine({logic_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up});

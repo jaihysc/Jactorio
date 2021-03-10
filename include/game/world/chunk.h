@@ -13,13 +13,13 @@
 #include "game/world/chunk_tile.h"
 #include "game/world/logic_group.h"
 #include "game/world/overlay_element.h"
+#include "game/world/tile_layer.h"
 
 #include <cereal/types/array.hpp>
 #include <cereal/types/vector.hpp>
 
 namespace jactorio::game
 {
-    ///
     /// A chunk within the game
     ///
     /// Made up of tiles and objects:
@@ -29,7 +29,7 @@ namespace jactorio::game
     {
     public:
         using OverlayContainerT    = std::vector<OverlayElement>;
-        using LogicGroupContainerT = std::vector<ChunkTileLayer*>;
+        using LogicGroupContainerT = std::vector<ChunkTile*>;
 
 
         static constexpr uint8_t kChunkWidth = 32;
@@ -41,7 +41,7 @@ namespace jactorio::game
         using LogicGroupArrayT = std::array<LogicGroupContainerT, kLogicGroupCount>;
 
 
-        struct TileLayerInfo
+        struct TileInfo
         {
             ChunkTileCoord coord;
             TileLayer tileLayer;
@@ -52,16 +52,14 @@ namespace jactorio::game
         };
 
         /// LogicGroupArrayT converted to this to be serialized
-        using SerialLogicGroupArrayT = std::array<std::vector<TileLayerInfo>, kLogicGroupCount>;
+        using SerialLogicGroupArrayT = std::array<std::vector<TileInfo>, kLogicGroupCount>;
 
     public:
-        ///
         /// \remark For cereal deserialization only
         Chunk() = default;
 
-        ///
         /// Default initialization of chunk tiles
-        Chunk(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) : position_({chunk_x, chunk_y}) {}
+        explicit Chunk(const ChunkCoord& c_coord) : position_(c_coord) {}
 
         ~Chunk() = default;
 
@@ -78,7 +76,7 @@ namespace jactorio::game
             swap(lhs.overlays, rhs.overlays);
             swap(lhs.logicGroups, rhs.logicGroups);
             swap(lhs.position_, rhs.position_);
-            swap(lhs.tiles_, rhs.tiles_);
+            swap(lhs.layers_, rhs.layers_);
         }
 
 
@@ -89,16 +87,13 @@ namespace jactorio::game
             return position_;
         }
 
-        J_NODISCARD TileArrayT& Tiles();
-        J_NODISCARD const TileArrayT& Tiles() const;
+        /// Tiles at provided tlayer
+        J_NODISCARD TileArrayT& Tiles(TileLayer tlayer);
+        J_NODISCARD const TileArrayT& Tiles(TileLayer tlayer) const;
 
-        ///
         /// Gets tile at x, y offset from top left of chunk
-        J_NODISCARD ChunkTile& GetCTile(ChunkTileCoordAxis x, ChunkTileCoordAxis y);
-        J_NODISCARD const ChunkTile& GetCTile(ChunkTileCoordAxis x, ChunkTileCoordAxis y) const;
-
-        J_NODISCARD ChunkTile& GetCTile(const ChunkTileCoord& coord);
-        J_NODISCARD const ChunkTile& GetCTile(const ChunkTileCoord& coord) const;
+        J_NODISCARD ChunkTile& GetCTile(const ChunkTileCoord& coord, TileLayer tlayer);
+        J_NODISCARD const ChunkTile& GetCTile(const ChunkTileCoord& coord, TileLayer tlayer) const;
 
 
         // Overlays - Rendered without being fixed to a tile position
@@ -109,20 +104,20 @@ namespace jactorio::game
 
         // Items requiring logic updates
 
-        J_NODISCARD LogicGroupContainerT& GetLogicGroup(LogicGroup layer);
-        J_NODISCARD const LogicGroupContainerT& GetLogicGroup(LogicGroup layer) const;
+        J_NODISCARD LogicGroupContainerT& GetLogicGroup(LogicGroup l_group);
+        J_NODISCARD const LogicGroupContainerT& GetLogicGroup(LogicGroup l_group) const;
 
 
         CEREAL_LOAD(archive) {
             SerialLogicGroupArrayT serial_logic;
-            archive(position_, tiles_, serial_logic);
+            archive(position_, layers_, serial_logic);
 
             FromSerializeLogicGroupArray(serial_logic);
         }
 
         CEREAL_SAVE(archive) {
             auto serial_logic = ToSerializeLogicGroupArray();
-            archive(position_, tiles_, serial_logic);
+            archive(position_, layers_, serial_logic);
         }
 
 
@@ -133,14 +128,13 @@ namespace jactorio::game
 
     private:
         ChunkCoord position_;
-        TileArrayT tiles_;
+        std::array<TileArrayT, kTileLayerCount> layers_;
 
-        ///
         /// Other chunk has logic entries pointing to tiles within itself,
         /// this will recreate the entries, pointing to this chunk's tiles
         void ResolveLogicEntries(const Chunk& other) noexcept;
 
-        J_NODISCARD TileLayerInfo GetLayerInfo(const ChunkTileLayer& ctl) const noexcept;
+        J_NODISCARD TileInfo GetTileInfo(const ChunkTile& tile) const noexcept;
 
         J_NODISCARD SerialLogicGroupArrayT ToSerializeLogicGroupArray() const;
         void FromSerializeLogicGroupArray(const SerialLogicGroupArrayT& serial_logic);

@@ -4,20 +4,14 @@
 #define JACTORIO_INCLUDE_CORE_DATA_TYPE_H
 #pragma once
 
-#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
 #include <decimal.h>
 
-namespace jactorio
-{
-    template <typename TVal>
-    struct Position2;
+#include "jactorio.h"
 
-    template <typename TPosition>
-    struct QuadPosition;
-} // namespace jactorio
+#include "core/coordinate_tuple.h"
 
 namespace jactorio::game
 {
@@ -55,7 +49,31 @@ namespace jactorio
 
     /// Tiles in the world
     using WorldCoordAxis = int32_t;
-    using WorldCoord     = Position2<WorldCoordAxis>;
+
+    class WorldCoord : public Position2<WorldCoordAxis>
+    {
+    public:
+        using Position2<WorldCoordAxis>::Position2;
+
+        /// Increments coordinate
+        /// \param val Used to select specialization of Position2Increment to increment coordinate
+        /// \param increment Amount to increment by, negative to decrement
+        template <typename T, typename TInc = int>
+        void Increment(T&& val, const TInc increment = 1) {
+            Position2Increment(std::forward<T>(val), *this, increment);
+        }
+
+        /// \return Incremented form of current coordinate
+        /// \param val Used to select specialization of Position2Increment to increment coordinate
+        /// \param increment Amount to increment by, negative to decrement
+        template <typename T, typename TInc = int>
+        J_NODISCARD WorldCoord Incremented(T&& val, const TInc increment = 1) const {
+            auto coord = *this;
+            Position2Increment(std::forward<T>(val), coord, increment);
+            return coord;
+        }
+    };
+
     /// World currently in
     using WorldId = std::size_t;
 

@@ -6,8 +6,8 @@
 
 #include "data/cereal/serialization_type.h"
 #include "game/logic/deferral_timer.h"
+#include "game/logistic/inventory.h"
 #include "proto/abstract/health_entity.h"
-#include "proto/item.h"
 #include "proto/recipe.h"
 
 namespace jactorio::proto
@@ -23,20 +23,16 @@ namespace jactorio::proto
             return recipe_.Get();
         }
 
-        ///
         /// Changes recipe to provided recipe, nullptr for no recipe
         void ChangeRecipe(game::Logic& logic, const data::PrototypeManager& proto, const Recipe* new_recipe);
 
-        ///
         /// Checks if necessary ingredients are present to begin crafting
         /// \return true if recipe crafting has begun
         J_NODISCARD bool CanBeginCrafting() const;
 
-        ///
         /// Deducts items from ingredient inventory equal to amount specified by recipe
         void CraftRemoveIngredients();
 
-        ///
         /// Outputs recipe product to product inventory
         void CraftAddProduct();
 
@@ -44,8 +40,8 @@ namespace jactorio::proto
         /// Callback called when recipe is finished crafting
         game::DeferralTimer::DeferralEntry deferralEntry;
 
-        Item::Inventory ingredientInv;
-        Item::Inventory productInv;
+        game::Inventory ingredientInv;
+        game::Inventory productInv;
 
 
         CEREAL_SERIALIZE(archive) {
@@ -73,12 +69,11 @@ namespace jactorio::proto
                                                    GameTickT game_tick) const override;
 
 
-        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const override;
 
 
         // ======================================================================
 
-        ///
         /// Begins crafting if ingredients are met
         /// \return true if crafting has begun
         bool TryBeginCrafting(game::Logic& logic, AssemblyMachineData& data) const;
@@ -88,13 +83,13 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::ChunkTileLayer& tile_layer,
+                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
         void OnRemove(game::World& world,
                       game::Logic& logic,
                       const WorldCoord& coord,
-                      game::ChunkTileLayer& tile_layer) const override;
+                      game::TileLayer tlayer) const override;
 
         void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
             J_PROTO_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");

@@ -75,7 +75,6 @@ LONG WINAPI TopLevelExceptionHandler(const PEXCEPTION_POINTERS pExceptionInfo) {
 
 #endif
 
-///
 /// \param file Will be closed on function return
 void PrintStackTrace(FILE* file) {
     // Log to both file and stderr

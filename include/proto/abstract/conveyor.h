@@ -21,7 +21,6 @@ namespace jactorio::proto
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : structure(std::move(line_segment)) {}
 
-        ///
         /// Updates orientation and member set for rendering
         void SetOrientation(LineOrientation orientation) {
             this->lOrien = orientation;
@@ -54,7 +53,6 @@ namespace jactorio::proto
     };
 
 
-    ///
     /// Abstract class for all everything which moves items (belts, underground belts, splitters)
     class Conveyor : public HealthEntity
     {
@@ -62,7 +60,6 @@ namespace jactorio::proto
         Conveyor() = default;
 
     public:
-        ///
         /// Number of tiles traveled by each item on the belt per tick
         /// \remark For Python API use only
         PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
@@ -90,7 +87,7 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::ChunkTileLayer& tile_layer,
+                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
         void OnNeighborUpdate(game::World& world,
@@ -102,11 +99,9 @@ namespace jactorio::proto
         void OnRemove(game::World& world,
                       game::Logic& logic,
                       const WorldCoord& coord,
-                      game::ChunkTileLayer& tile_layer) const override;
+                      game::TileLayer tlayer) const override;
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override;
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
 
         // ======================================================================

@@ -41,10 +41,9 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/logic/conveyor_utility.cpp
         ${JACTORIO_DIR}/game/logic/deferral_timer.cpp
         ${JACTORIO_DIR}/game/logic/inserter_controller.cpp
-        ${JACTORIO_DIR}/game/logic/inventory_controller.cpp
         ${JACTORIO_DIR}/game/logic/item_logistics.cpp
-        ${JACTORIO_DIR}/game/logic/placement_controller.cpp
-        ${JACTORIO_DIR}/game/logic_loop.cpp
+
+        ${JACTORIO_DIR}/game/logistic/inventory.cpp
 
         ${JACTORIO_DIR}/game/player/keybind_manager.cpp
         ${JACTORIO_DIR}/game/player/player_action.cpp
@@ -52,9 +51,11 @@ set(JACTORIO_SRC_FILES
 
         ${JACTORIO_DIR}/game/world/chunk.cpp
         ${JACTORIO_DIR}/game/world/chunk_tile.cpp
-        ${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
         ${JACTORIO_DIR}/game/world/update_dispatcher.cpp
         ${JACTORIO_DIR}/game/world/world.cpp
+
+        ${JACTORIO_DIR}/game/game_controller.cpp
+        ${JACTORIO_DIR}/game/logic_loop.cpp
 
 
         ${JACTORIO_DIR}/gui/components.cpp

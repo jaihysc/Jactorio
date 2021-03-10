@@ -2,39 +2,178 @@
 
 #include "game/world/chunk_tile.h"
 
-#include "proto/abstract/entity.h"
-#include "proto/tile.h"
+#include "core/coordinate_tuple.h"
 
 using namespace jactorio;
 
+game::ChunkTile::~ChunkTile() {
+    if (IsTopLeft()) {
+        data_.DestructTopLeft();
+    }
+    else {
+        data_.DestructNonTopLeft();
+    }
+}
+
+game::ChunkTile::ChunkTile(const ChunkTile& other) : common_(other.common_) {
+    if (other.IsTopLeft()) {
+        AsTopLeft() = other.AsTopLeft();
+        other.AsTopLeft().CopyUniqueData(AsTopLeft(), GetPrototype());
+    }
+    else {
+        AsNonTopLeft() = other.AsNonTopLeft();
+    }
+}
+
+game::ChunkTile::ChunkTile(ChunkTile&& other) noexcept : common_(other.common_) {
+    if (IsTopLeft()) {
+        AsTopLeft() = std::move(other.AsTopLeft());
+    }
+    else {
+        AsNonTopLeft() = std::move(other.AsNonTopLeft());
+    }
+}
+
+
+void game::ChunkTile::Clear() noexcept {
+    if (IsTopLeft()) {
+        data_.DestructTopLeft();
+    }
+    else {
+        data_.DestructNonTopLeft();
+    }
+
+    data_.ConstructTopLeft();
+
+    common_.~Common();
+    new (&common_) Common();
+}
+
+void game::ChunkTile::SetOrientation(const Orientation orientation) noexcept {
+    common_.orientation = orientation;
+}
+
+Orientation game::ChunkTile::GetOrientation() const noexcept {
+    return common_.orientation;
+}
+
+void game::ChunkTile::SetPrototype(const Orientation orientation, PrototypeT& prototype) noexcept {
+    SetPrototype(orientation, &prototype);
+}
+
+void game::ChunkTile::SetPrototype(const Orientation orientation, PrototypeT* prototype) noexcept {
+    SetOrientation(orientation);
+    common_.prototype = prototype;
+}
+
+void game::ChunkTile::SetPrototype(std::nullptr_t) noexcept {
+    common_.prototype = nullptr;
+}
+
 // ======================================================================
-// Tile
-const proto::Tile* game::ChunkTile::GetTilePrototype(const TileLayer category) const {
 
-    assert(category == TileLayer::base);
-    return static_cast<const proto::Tile*>(layers[GetLayerIndex(category)].GetPrototype());
+bool game::ChunkTile::IsTopLeft() const noexcept {
+    return IsTopLeft(common_.multiTileIndex);
 }
 
-void game::ChunkTile::SetTilePrototype(const Orientation orientation,
-                                       const proto::Tile* tile_prototype,
-                                       const TileLayer category) {
+bool game::ChunkTile::IsMultiTile() const noexcept {
+    if (GetMultiTileIndex() > 0)
+        return true;
 
-    assert(category == TileLayer::base);
-    layers[GetLayerIndex(category)].SetPrototype(orientation, tile_prototype);
+    return GetDimension().x != 1 || GetDimension().y != 1;
+}
+
+bool game::ChunkTile::IsMultiTileTopLeft() const noexcept {
+    return IsMultiTile() && IsTopLeft();
+}
+
+proto::FWorldObject::Dimension game::ChunkTile::GetDimension() const noexcept {
+    if (GetPrototype() == nullptr) {
+        return {1, 1};
+    }
+    return {GetPrototype()->GetWidth(GetOrientation()), GetPrototype()->GetHeight(GetOrientation())};
+}
+
+void game::ChunkTile::SetupMultiTile(const TileDistanceT multi_tile_index, ChunkTile& top_left) noexcept {
+    assert(multi_tile_index > 0);
+
+    data_.DestructTopLeft();
+    data_.ConstructNonTopLeft();
+
+    common_.multiTileIndex = multi_tile_index;
+
+    assert(!IsTopLeft());
+    assert(&top_left != this);
+    AsNonTopLeft().topLeft = &top_left;
+}
+
+
+game::ChunkTile::TileDistanceT game::ChunkTile::GetMultiTileIndex() const noexcept {
+    return common_.multiTileIndex;
+}
+
+game::ChunkTile* game::ChunkTile::GetTopLeft() noexcept {
+    return const_cast<ChunkTile*>(static_cast<const ChunkTile*>(this)->GetTopLeft());
+}
+
+const game::ChunkTile* game::ChunkTile::GetTopLeft() const noexcept {
+    if (IsTopLeft())
+        return this;
+
+    assert(!IsTopLeft());
+    return AsNonTopLeft().topLeft;
+}
+
+
+// ======================================================================
+
+
+game::ChunkTile::TileDistanceT game::ChunkTile::GetOffsetX() const noexcept {
+    const auto& data = GetDimension();
+    return GetMultiTileIndex() % data.x;
+}
+
+game::ChunkTile::TileDistanceT game::ChunkTile::GetOffsetY() const noexcept {
+    const auto& data = GetDimension();
+    return GetMultiTileIndex() / data.x;
+}
+
+bool game::ChunkTile::IsTopLeft(const TileDistanceT multi_tile_index) noexcept {
+    return multi_tile_index == 0;
+}
+
+game::ChunkTile::TopLeft& game::ChunkTile::AsTopLeft() noexcept {
+    assert(IsTopLeft());
+    return data_.topLeft;
+}
+
+const game::ChunkTile::TopLeft& game::ChunkTile::AsTopLeft() const noexcept {
+    assert(IsTopLeft());
+    return data_.topLeft;
+}
+
+game::ChunkTile::NonTopLeft& game::ChunkTile::AsNonTopLeft() noexcept {
+    assert(!IsTopLeft());
+    return data_.nonTopLeft;
+}
+
+const game::ChunkTile::NonTopLeft& game::ChunkTile::AsNonTopLeft() const noexcept {
+    assert(!IsTopLeft());
+    return data_.nonTopLeft;
 }
 
 // ======================================================================
-// Entity
-const proto::Entity* game::ChunkTile::GetEntityPrototype(const TileLayer category) const {
 
-    assert(category == TileLayer::resource || category == TileLayer::entity);
-    return static_cast<const proto::Entity*>(layers[GetLayerIndex(category)].GetPrototype());
+game::ChunkTile::TopLeft::TopLeft(const TopLeft& /*other*/) noexcept {}
+
+void game::ChunkTile::TopLeft::CopyUniqueData(TopLeft& to, PrototypeT* prototype) const {
+    // Use prototype defined method for copying uniqueData_ if other has data to copy
+    if (uniqueData != nullptr) {
+        assert(prototype != nullptr); // No prototype available for copying unique data
+
+        auto copied_unique = prototype->CopyUniqueData(uniqueData.get());
+        to.uniqueData      = std::unique_ptr<UniqueDataT>(static_cast<UniqueDataT*>(copied_unique.release()));
+    }
 }
 
-void game::ChunkTile::SetEntityPrototype(const Orientation orientation,
-                                         const proto::Entity* tile_prototype,
-                                         const TileLayer category) {
-
-    assert(category == TileLayer::resource || category == TileLayer::entity);
-    layers[GetLayerIndex(category)].SetPrototype(orientation, tile_prototype);
-}
+game::ChunkTile::NonTopLeft::NonTopLeft(const NonTopLeft& /*other*/) : topLeft(nullptr) {}

@@ -11,7 +11,6 @@ namespace jactorio::proto
     class RecipeCategory;
     class Sprite;
 
-    ///
     /// Each Recipe_group gets its own tab within the recipe menu at the top, clicking one displays the recipes
     /// within that group
     class RecipeGroup final : public FrameworkBase

@@ -16,7 +16,6 @@ namespace jactorio::game
             ++gameTick_;
         }
 
-        ///
         /// Number of logic updates since the world was created
         J_NODISCARD GameTickT GameTick() const {
             return gameTick_;
@@ -24,7 +23,6 @@ namespace jactorio::game
 
         // ======================================================================
 
-        ///
         /// Forwards args to deferralTimer.DeferralUpdate with itself being logic data
         template <typename... TArgs>
         auto DeferralUpdate(TArgs&&... args) {

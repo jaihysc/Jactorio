@@ -11,7 +11,7 @@ namespace jactorio::render
     class SpritemapCreationTest : public testing::Test
     {
     protected:
-        RendererSprites rendererSprites_{};
+        RendererSprites rendererSprites_;
         data::PrototypeManager proto_;
     };
 
@@ -73,7 +73,7 @@ namespace jactorio::render
         using RgbaPair = std::tuple<ColorT, ColorT, ColorT, ColorT>;
         using ImgPos   = std::tuple<ImageCoord, ImageCoord>;
 
-        RendererSprites rendererSprites_{};
+        RendererSprites rendererSprites_;
 
         /// \return true if pixel contains specified color
         static bool GetPixelColor(const unsigned char* img_ptr,

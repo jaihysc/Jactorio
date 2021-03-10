@@ -14,15 +14,12 @@ using namespace jactorio;
 
 constexpr float kPixelZ = 0.1f;
 
-///
-/// \param tile_x Tile offset (for distance after each item)
-/// \param tile_y Tile offset
+/// \param tile_offset Tile offset (for distance after each item)
 void PrepareConveyorSegmentData(render::RendererLayer& layer,
                                 const SpriteUvCoordsT& uv_coords,
                                 const game::ConveyorStruct& line_segment,
                                 std::deque<game::ConveyorItem>& line_segment_side,
-                                double tile_x,
-                                double tile_y,
+                                Position2<double> tile_offset,
                                 const Position2<OverlayOffsetAxis>& pixel_offset) {
     using namespace game;
 
@@ -32,29 +29,29 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
 
     switch (line_segment.direction) {
     case Orientation::up:
-        target_offset = &tile_y;
+        target_offset = &tile_offset.y;
         break;
     case Orientation::right:
-        target_offset = &tile_x;
+        target_offset = &tile_offset.x;
         multiplier    = -1;
         break;
     case Orientation::down:
-        target_offset = &tile_y;
+        target_offset = &tile_offset.y;
         multiplier    = -1;
         break;
     case Orientation::left:
-        target_offset = &tile_x;
+        target_offset = &tile_offset.x;
         break;
 
     default:
         assert(false); // Missing switch case
-        target_offset = &tile_y;
+        target_offset = &tile_offset.y;
         break;
     }
 
     // Shift items 1 tile forwards if segment bends
     if (line_segment.terminationType != ConveyorStruct::TerminationType::straight) {
-        OrientationIncrement(line_segment.direction, tile_x, tile_y);
+        Position2Increment(line_segment.direction, tile_offset, 1);
     }
 
     for (const auto& line_item : line_segment_side) {
@@ -68,15 +65,15 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
         layer.PushBack(
             {{
                  {
-                     pixel_offset.x + LossyCast<float>(tile_x) * SafeCast<float>(render::Renderer::tileWidth),
-                     pixel_offset.y + LossyCast<float>(tile_y) * SafeCast<float>(render::Renderer::tileWidth),
+                     pixel_offset.x + LossyCast<float>(tile_offset.x) * SafeCast<float>(render::Renderer::tileWidth),
+                     pixel_offset.y + LossyCast<float>(tile_offset.y) * SafeCast<float>(render::Renderer::tileWidth),
                  },
                  {
                      pixel_offset.x +
-                         LossyCast<float>(tile_x + ConveyorProp::kItemWidth) *
+                         LossyCast<float>(tile_offset.x + ConveyorProp::kItemWidth) *
                              SafeCast<float>(render::Renderer::tileWidth),
                      pixel_offset.y +
-                         LossyCast<float>(tile_y + ConveyorProp::kItemWidth) *
+                         LossyCast<float>(tile_offset.y + ConveyorProp::kItemWidth) *
                              SafeCast<float>(render::Renderer::tileWidth),
                  },
              },
@@ -89,8 +86,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
                                       const SpriteUvCoordsT& uv_coords,
                                       const Position2<OverlayOffsetAxis>& pixel_offset,
                                       game::ConveyorStruct& line_segment) {
-    double tile_x_offset = 0;
-    double tile_y_offset = 0;
+    Position2<double> tile_offset;
 
     // Don't render if items are not marked visible! Wow!
     if (!line_segment.left.visible)
@@ -100,16 +96,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     // The offsets for straight are always applied to bend left and right
     switch (line_segment.direction) {
     case Orientation::up:
-        tile_x_offset += ConveyorOffset::Up::kLX;
+        tile_offset.x += ConveyorOffset::Up::kLX;
         break;
     case Orientation::right:
-        tile_y_offset += ConveyorOffset::Right::kLY;
+        tile_offset.y += ConveyorOffset::Right::kLY;
         break;
     case Orientation::down:
-        tile_x_offset += ConveyorOffset::Down::kLX;
+        tile_offset.x += ConveyorOffset::Down::kLX;
         break;
     case Orientation::left:
-        tile_y_offset += ConveyorOffset::Left::kLY;
+        tile_offset.y += ConveyorOffset::Left::kLY;
         break;
     }
 
@@ -118,16 +114,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorStruct::TerminationType::straight:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset -= ConveyorOffset::Up::kSY;
+            tile_offset.y -= ConveyorOffset::Up::kSY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kSX;
+            tile_offset.x += ConveyorOffset::Right::kSX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kSY;
+            tile_offset.y += ConveyorOffset::Down::kSY;
             break;
         case Orientation::left:
-            tile_x_offset -= ConveyorOffset::Left::kSX;
+            tile_offset.x -= ConveyorOffset::Left::kSX;
             break;
         }
         break;
@@ -135,16 +131,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorStruct::TerminationType::bend_left:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset += ConveyorOffset::Up::kBlLY;
+            tile_offset.y += ConveyorOffset::Up::kBlLY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kBlLX;
+            tile_offset.x += ConveyorOffset::Right::kBlLX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kBlLY;
+            tile_offset.y += ConveyorOffset::Down::kBlLY;
             break;
         case Orientation::left:
-            tile_x_offset += ConveyorOffset::Left::kBlLX;
+            tile_offset.x += ConveyorOffset::Left::kBlLX;
             break;
         }
         break;
@@ -152,16 +148,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorStruct::TerminationType::bend_right:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset += ConveyorOffset::Up::kBrLY;
+            tile_offset.y += ConveyorOffset::Up::kBrLY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kBrLX;
+            tile_offset.x += ConveyorOffset::Right::kBrLX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kBrLY;
+            tile_offset.y += ConveyorOffset::Down::kBrLY;
             break;
         case Orientation::left:
-            tile_x_offset += ConveyorOffset::Left::kBrLX;
+            tile_offset.x += ConveyorOffset::Left::kBrLX;
             break;
         }
         break;
@@ -171,44 +167,43 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorStruct::TerminationType::left_only:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset += ConveyorOffset::Up::kSfY;
+            tile_offset.y += ConveyorOffset::Up::kSfY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kSfX;
+            tile_offset.x += ConveyorOffset::Right::kSfX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kSfY;
+            tile_offset.y += ConveyorOffset::Down::kSfY;
             break;
         case Orientation::left:
-            tile_x_offset += ConveyorOffset::Left::kSfX;
+            tile_offset.x += ConveyorOffset::Left::kSfX;
             break;
         }
         break;
     }
-    PrepareConveyorSegmentData(
-        layer, uv_coords, line_segment, line_segment.left.lane, tile_x_offset, tile_y_offset, pixel_offset);
+    PrepareConveyorSegmentData(layer, uv_coords, line_segment, line_segment.left.lane, tile_offset, pixel_offset);
 
 prepare_right:
     if (!line_segment.right.visible)
         return;
 
     // Right
-    tile_x_offset = 0;
-    tile_y_offset = 0;
+    tile_offset.x = 0;
+    tile_offset.y = 0;
 
     // The offsets for straight are always applied to bend left and right
     switch (line_segment.direction) {
     case Orientation::up:
-        tile_x_offset += ConveyorOffset::Up::kRX;
+        tile_offset.x += ConveyorOffset::Up::kRX;
         break;
     case Orientation::right:
-        tile_y_offset += ConveyorOffset::Right::kRY;
+        tile_offset.y += ConveyorOffset::Right::kRY;
         break;
     case Orientation::down:
-        tile_x_offset += ConveyorOffset::Down::kRX;
+        tile_offset.x += ConveyorOffset::Down::kRX;
         break;
     case Orientation::left:
-        tile_y_offset += ConveyorOffset::Left::kRY;
+        tile_offset.y += ConveyorOffset::Left::kRY;
         break;
     }
 
@@ -218,16 +213,16 @@ prepare_right:
     case game::ConveyorStruct::TerminationType::straight:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset -= ConveyorOffset::Up::kSY;
+            tile_offset.y -= ConveyorOffset::Up::kSY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kSX;
+            tile_offset.x += ConveyorOffset::Right::kSX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kSY;
+            tile_offset.y += ConveyorOffset::Down::kSY;
             break;
         case Orientation::left:
-            tile_x_offset -= ConveyorOffset::Left::kSX;
+            tile_offset.x -= ConveyorOffset::Left::kSX;
             break;
         }
         break;
@@ -235,16 +230,16 @@ prepare_right:
     case game::ConveyorStruct::TerminationType::bend_left:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset += ConveyorOffset::Up::kBlRY;
+            tile_offset.y += ConveyorOffset::Up::kBlRY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kBlRX;
+            tile_offset.x += ConveyorOffset::Right::kBlRX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kBlRY;
+            tile_offset.y += ConveyorOffset::Down::kBlRY;
             break;
         case Orientation::left:
-            tile_x_offset += ConveyorOffset::Left::kBlRX;
+            tile_offset.x += ConveyorOffset::Left::kBlRX;
             break;
         }
         break;
@@ -252,16 +247,16 @@ prepare_right:
     case game::ConveyorStruct::TerminationType::bend_right:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset += ConveyorOffset::Up::kBrRY;
+            tile_offset.y += ConveyorOffset::Up::kBrRY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kBrRX;
+            tile_offset.x += ConveyorOffset::Right::kBrRX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kBrRY;
+            tile_offset.y += ConveyorOffset::Down::kBrRY;
             break;
         case Orientation::left:
-            tile_x_offset += ConveyorOffset::Left::kBrRX;
+            tile_offset.x += ConveyorOffset::Left::kBrRX;
             break;
         }
         break;
@@ -271,22 +266,21 @@ prepare_right:
     case game::ConveyorStruct::TerminationType::left_only:
         switch (line_segment.direction) {
         case Orientation::up:
-            tile_y_offset += ConveyorOffset::Up::kSfY;
+            tile_offset.y += ConveyorOffset::Up::kSfY;
             break;
         case Orientation::right:
-            tile_x_offset += ConveyorOffset::Right::kSfX;
+            tile_offset.x += ConveyorOffset::Right::kSfX;
             break;
         case Orientation::down:
-            tile_y_offset += ConveyorOffset::Down::kSfY;
+            tile_offset.y += ConveyorOffset::Down::kSfY;
             break;
         case Orientation::left:
-            tile_x_offset += ConveyorOffset::Left::kSfX;
+            tile_offset.x += ConveyorOffset::Left::kSfX;
             break;
         }
         break;
     }
-    PrepareConveyorSegmentData(
-        layer, uv_coords, line_segment, line_segment.right.lane, tile_x_offset, tile_y_offset, pixel_offset);
+    PrepareConveyorSegmentData(layer, uv_coords, line_segment, line_segment.right.lane, tile_offset, pixel_offset);
 }
 
 // ======================================================================

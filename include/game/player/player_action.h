@@ -10,7 +10,7 @@
 
 namespace jactorio::game
 {
-    struct GameDataGlobal;
+    class GameController;
 
     /// Associates enum key (action) with method (executor)
     /// \remark Do NOT reorder as order here is referenced by localized names in local files
@@ -23,7 +23,7 @@ namespace jactorio::game
     J_CREATE_ACTION(deselect_held_item, DeselectHeldItem)                          \
                                                                                    \
     J_CREATE_ACTION(place_entity, PlaceEntity)                                     \
-    J_CREATE_ACTION(activate_layer, ActivateLayer)                                 \
+    J_CREATE_ACTION(activate_layer, ActivateTile)                                  \
     J_CREATE_ACTION(pickup_or_mine_entity, PickupOrMineEntity)                     \
                                                                                    \
     J_CREATE_ACTION(rotate_entity_clockwise, RotateEntityClockwise)                \
@@ -37,7 +37,7 @@ namespace jactorio::game
 
     struct PlayerAction
     {
-        using Executor = void (*)(GameDataGlobal& data_global);
+        using Executor = void (*)(GameController& game_controller);
 
 #define J_CREATE_ACTION(enum_name__, executor__) enum_name__,
         enum class Type
@@ -50,36 +50,35 @@ namespace jactorio::game
 
         static constexpr auto kActionCount_ = static_cast<int>(Type::count_);
 
-        ///
         /// \return Function which performs (executes) given PlayerAction::Type
         J_NODISCARD static Executor& GetExecutor(Type type);
 
     private:
         // Executors for the actions
 
-        static void PlayerMoveUp(GameDataGlobal& data_global);
-        static void PlayerMoveRight(GameDataGlobal& data_global);
-        static void PlayerMoveDown(GameDataGlobal& data_global);
-        static void PlayerMoveLeft(GameDataGlobal& data_global);
+        static void PlayerMoveUp(GameController& game_controller);
+        static void PlayerMoveRight(GameController& game_controller);
+        static void PlayerMoveDown(GameController& game_controller);
+        static void PlayerMoveLeft(GameController& game_controller);
 
-        static void DeselectHeldItem(GameDataGlobal& data_global);
+        static void DeselectHeldItem(GameController& game_controller);
 
-        static void PlaceEntity(GameDataGlobal& data_global);
-        static void ActivateLayer(GameDataGlobal& data_global);
-        static void PickupOrMineEntity(GameDataGlobal& data_global);
+        static void PlaceEntity(GameController& game_controller);
+        static void ActivateTile(GameController& game_controller);
+        static void PickupOrMineEntity(GameController& game_controller);
 
-        static void RotateEntityClockwise(GameDataGlobal& data_global);
-        static void RotateEntityCounterClockwise(GameDataGlobal& data_global);
+        static void RotateEntityClockwise(GameController& game_controller);
+        static void RotateEntityCounterClockwise(GameController& game_controller);
 
-        static void ToggleMainMenu(GameDataGlobal& data_global);
-        static void ToggleDebugMenu(GameDataGlobal& data_global);
-        static void ToggleCharacterMenu(GameDataGlobal& data_global);
+        static void ToggleMainMenu(GameController& game_controller);
+        static void ToggleDebugMenu(GameController& game_controller);
+        static void ToggleCharacterMenu(GameController& game_controller);
 
         /// For test use only, sets player position to -100, 120
-        static void ActionTest(GameDataGlobal& data_global);
+        static void ActionTest(GameController& game_controller);
 
 
-#define J_CREATE_ACTION(enum_name__, executor__) [](auto& data_global) { executor__(data_global); },
+#define J_CREATE_ACTION(enum_name__, executor__) [](auto& game_controller) { executor__(game_controller); },
         inline static std::array<Executor, kActionCount_> executors_{J_PLAYER_ACTIONS};
 #undef J_CREATE_ACTION
     };

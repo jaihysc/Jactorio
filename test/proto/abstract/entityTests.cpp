@@ -8,7 +8,6 @@
 
 namespace jactorio::proto
 {
-    ///
     /// Entity non rotatable, PostLoad() should also set rotateDimensions to false
     TEST(Entity, NonRotatable) {
         TestMockEntity e;
@@ -34,7 +33,6 @@ namespace jactorio::proto
         EXPECT_EQ(e.GetHeight(Orientation::left), 2);
     }
 
-    ///
     /// Entity rotatable, PostLoad() should keep rotateDimensions true
     TEST(Entity, Rotatable) {
         TestMockEntity e;

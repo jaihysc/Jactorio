@@ -16,8 +16,8 @@
 #include "proto/sprite.h"
 
 #include "game/input/mouse_selection.h"
-#include "game/logic/inventory_controller.h"
 #include "game/logic/logic.h"
+#include "game/logistic/inventory.h"
 #include "game/player/player.h"
 
 #include "gui/components.h"
@@ -26,14 +26,13 @@
 
 using namespace jactorio;
 
-///
 /// Implements ImGui::IsItemClicked() for left and right mouse buttons
 /// \param on_click Called after inventory actions were handled
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
 void HandleInvClicked(
     game::Player& player,
     const data::PrototypeManager& proto,
-    proto::Item::Inventory& inv,
+    game::Inventory& inv,
     const size_t index,
     const std::function<void()>& on_click = []() {}) {
     if (ImGui::IsItemClicked()) {
@@ -49,7 +48,7 @@ void HandleInvClicked(
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
 void HandleInvClicked(
     const render::GuiRenderer& g_rendr,
-    proto::Item::Inventory& inv,
+    game::Inventory& inv,
     const size_t index,
     const std::function<void()>& on_click = []() {}) {
 
@@ -69,7 +68,6 @@ float GetProgressBarFraction(const GameTickT game_tick,
 // ==========================================================================================
 // Player menus (Excluding entity menus)
 
-///
 /// Draws the player's inventory menu
 void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
     const gui::GuiMenu menu;
@@ -82,7 +80,7 @@ void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
     auto& player_inv = g_rendr.player.inventory.inventory;
 
     auto item_slots = g_rendr.MakeComponent<gui::GuiItemSlots>();
-    item_slots.Begin(player_inv.size(), [&](auto index) {
+    item_slots.Begin(player_inv.Size(), [&](auto index) {
         const auto& stack = player_inv[index];
 
         item_slots.DrawSlot(stack, [&]() {
@@ -150,7 +148,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     };
 
     // Menu groups
-    auto groups = proto.GetAllSorted<proto::RecipeGroup>(proto::Category::recipe_group);
+    auto groups = proto.GetAllSorted<proto::RecipeGroup>();
 
     auto group_slots     = g_rendr.MakeComponent<gui::GuiItemSlots>();
     group_slots.slotSpan = 5;
@@ -210,7 +208,6 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     }
 }
 
-///
 /// Draws preview tooltip for a recipe
 /// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
 template <bool IsPlayerCrafting>
@@ -239,7 +236,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
 
             ImGui::SameLine(gui::kInventorySlotWidth * 1.5);
 
-            const auto player_item_count = game::GetInvItemCount(player.inventory.inventory, item);
+            const auto player_item_count = player.inventory.inventory.Count(*item);
             // Does not have ingredient
             if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
                 const bool can_be_recurse_crafted = player.crafting.RecipeCanCraft(proto, recipe, 1);
@@ -311,7 +308,7 @@ void gui::CharacterMenu(const render::GuiRenderer& g_rendr) {
         if (ImGui::IsItemClicked()) {
             if (player.crafting.RecipeCanCraft(proto, recipe, 1)) {
                 player.crafting.RecipeCraftR(proto, recipe);
-                player.inventory.InventorySort(player.inventory.inventory);
+                player.inventory.inventory.Sort();
             }
         }
 
@@ -451,7 +448,7 @@ void gui::ContainerEntity(const render::GuiRenderer& g_rendr) {
     title.Begin(prototype->GetLocalizedName());
 
     auto inv_slots = g_rendr.MakeComponent<GuiItemSlots>();
-    inv_slots.Begin(container_data.inventory.size(), [&](auto index) {
+    inv_slots.Begin(container_data.inventory.Size(), [&](auto index) {
         inv_slots.DrawSlot(container_data.inventory[index],
                            [&]() { HandleInvClicked(g_rendr, container_data.inventory, index); });
     });
@@ -512,9 +509,9 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
 
         // Ingredients
         auto ingredient_slots = g_rendr.MakeComponent<GuiItemSlots>();
-        ingredient_slots.Begin(machine_data.ingredientInv.size() + 1, [&](auto index) {
+        ingredient_slots.Begin(machine_data.ingredientInv.Size() + 1, [&](auto index) {
             // Recipe change button
-            if (index == machine_data.ingredientInv.size()) {
+            if (index == machine_data.ingredientInv.Size()) {
                 auto* reset_icon = proto.Get<proto::Item>(proto::Item::kResetIname);
                 assert(reset_icon != nullptr);
 

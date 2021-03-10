@@ -10,7 +10,6 @@
 
 using namespace jactorio;
 
-///
 /// Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of conveyor
 /// \return true if an item was decremented
@@ -164,16 +163,14 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
     }
 }
 
-///
 /// Moves items for conveyors
 /// \param l_chunk Chunk to update
 void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
-    const auto& layers = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
+    const auto& logic_group = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
-    // Each object layer holds a conveyor segment
-    for (const auto& tile_layer : layers) {
-        const auto& line_proto = *tile_layer->GetPrototype<proto::Conveyor>();
-        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
+    for (const auto& tile : logic_group) {
+        const auto& line_proto = *tile->GetPrototype<proto::Conveyor>();
+        auto& line_segment     = *tile->GetUniqueData<proto::ConveyorData>()->structure;
 
         // Left
         {
@@ -199,16 +196,14 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
     }
 }
 
-///
 /// Transitions items on conveyors to other lines and modifies whether of not the line is active
 /// \param l_chunk Chunk to update
 void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
-    const auto& layers = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
+    const auto& logic_group = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
-    // Each object layer holds a conveyor segment
-    for (const auto& tile_layer : layers) {
-        const auto* line_proto = tile_layer->GetPrototype<proto::Conveyor>();
-        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
+    for (const auto& tile : logic_group) {
+        const auto* line_proto = tile->GetPrototype<proto::Conveyor>();
+        auto& line_segment     = *tile->GetUniqueData<proto::ConveyorData>()->structure;
 
         auto tiles_moved = line_proto->speed;
 

@@ -58,7 +58,6 @@ set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/convertTests.cpp
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
-	${JACTORIO_TEST_DIR}/core/loop_commonTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
 	${JACTORIO_TEST_DIR}/core/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
@@ -77,7 +76,7 @@ set(JACTORIO_TEST_FILES
 
 
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
-	${JACTORIO_TEST_DIR}/game/game_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/game_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
@@ -87,10 +86,10 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/logic/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/conveyor_utilityTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/logicTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/logistic/inventoryTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/keybind_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_actionTests.cpp
@@ -101,10 +100,10 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/worldTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/worldTests_placement.cpp
 
 
 	${JACTORIO_TEST_DIR}/proto/assembly_machineTests.cpp
@@ -140,6 +139,7 @@ target_include_directories(jactorioTest
 	${JACTORIO_TEST_DIR}
 )
 
+add_test(NAME jactorioTest COMMAND jactorioTest)
 
 # MSVC complains that it introduced reference to symbol _fltused which was previously compiled with /GL
 # This can be ignored since _fltused just means that floating point was used

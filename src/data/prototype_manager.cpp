@@ -134,7 +134,12 @@ void data::PrototypeManager::Load(const std::string& folder_path) {
             }
 
             auto local_contents = ReadFile(cfg_file_path.str());
-            LocalParseNoThrow(*this, local_contents, directory_name);
+            try {
+                LocalParse(*this, local_contents, directory_name);
+            }
+            catch (proto::ProtoError& e) {
+                LOG_MESSAGE_F(error, "%s", e.what());
+            }
         }
 
         LOG_MESSAGE_F(info, "Directory %s loaded", current_directory.c_str());

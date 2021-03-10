@@ -56,7 +56,6 @@ namespace jactorio::gui
 #undef J_GUI_WINDOW_SUB
 #define J_GUI_WINDOW_SUB(name__) {name__},
 
-    ///
     /// \remark Index with menu
     struct GuiWindow
     {

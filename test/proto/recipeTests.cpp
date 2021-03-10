@@ -24,7 +24,6 @@ namespace jactorio::proto
         EXPECT_EQ(recipe, &laptop_recipe);
     }
 
-    ///
     /// Returns true if iname exists in array and matches count
     bool VectorGetVal(std::vector<RecipeItem>& vector, const std::string& iname, const uint16_t val) {
         for (auto& i : vector) {
@@ -66,7 +65,7 @@ namespace jactorio::proto
     }
 
     TEST_F(RecipeTest, GetCraftingTime) {
-        Recipe recipe{};
+        Recipe recipe;
         recipe.craftingTime = 1.5;
 
         EXPECT_EQ(recipe.GetCraftingTime(), 90);
@@ -75,7 +74,7 @@ namespace jactorio::proto
     }
 
     TEST_F(RecipeTest, PostLoadValidate) {
-        const auto recipe = Recipe();
+        const Recipe recipe;
 
         // Not specifying any ingredients or products should throw an data exception
         bool caught = false;

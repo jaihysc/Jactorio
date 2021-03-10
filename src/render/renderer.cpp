@@ -286,12 +286,12 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
     for (int x = 0; x < chunk_span; ++x) {
         const auto chunk_x = x + row_start.x;
 
-        const auto* chunk = world.GetChunkC(chunk_x, row_start.y);
+        const auto* chunk = world.GetChunkC({chunk_x, row_start.y});
 
         // Queue chunk for generation if it does not exist
         if (chunk == nullptr) {
             std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
-            world.QueueChunkGeneration(chunk_x, row_start.y);
+            world.QueueChunkGeneration({chunk_x, row_start.y});
             continue;
         }
 
@@ -305,13 +305,13 @@ void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                     const Position2<int> render_tile_offset,
                                     const GameTickT game_tick) const noexcept {
     // Iterate through and load tiles of a chunk into layer for rendering
-    for (uint8_t tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
+    for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
         const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
 
-        for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
+        for (ChunkTileCoordAxis tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
             const auto pixel_x = SafeCast<float>(render_tile_offset.x + tile_x) * SafeCast<float>(tileWidth);
 
-            PrepareTileLayers(r_layer, chunk.GetCTile(tile_x, tile_y), {pixel_x, pixel_y}, game_tick);
+            PrepareTileLayers(r_layer, chunk, {tile_x, tile_y}, {pixel_x, pixel_y}, game_tick);
         }
     }
 
@@ -319,18 +319,18 @@ void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 }
 
 void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
-                                         const game::ChunkTile& tile,
+                                         const game::Chunk& chunk,
+                                         const ChunkTileCoord ct_coord,
                                          const Position2<float>& pixel_pos,
                                          const GameTickT game_tick) const noexcept {
-    for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
-        const auto& tile_layer = tile.GetLayer(layer_index);
+    for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
+        const auto& tile = chunk.GetCTile(ct_coord, static_cast<game::TileLayer>(layer_index));
 
-
-        const auto* proto = tile_layer.GetPrototype();
+        const auto* proto = tile.GetPrototype();
         if (proto == nullptr) // Layer not initialized
             continue;
 
-        const auto* unique_data = tile_layer.GetUniqueData();
+        const auto* unique_data = tile.GetUniqueData();
 
         // Unique data can be nullptr for certain layers
 
@@ -352,8 +352,8 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
             uv                 = GetSpriteUvCoords(sprite->internalId);
         }
 
-        if (tile_layer.IsMultiTile())
-            ApplyMultiTileUvAdjustment(uv, tile_layer);
+        if (tile.IsMultiTile())
+            ApplyMultiTileUvAdjustment(uv, tile);
 
         const float pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
 
@@ -407,18 +407,18 @@ void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPosition
     uv.topLeft.y += diff_y * uv_offset.topLeft.y;
 }
 
-void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTileLayer& tile_layer) noexcept {
-    const auto& mt_data = tile_layer.GetDimensions();
+void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept {
+    const auto& mt_data = tile.GetDimension();
 
     // Calculate the correct UV coordinates for multi-tile entities
     // Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
     // Total length of the sprite, to be split among the different tiles
-    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / SafeCast<float>(mt_data.span);
-    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / SafeCast<float>(mt_data.height);
+    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / SafeCast<float>(mt_data.x);
+    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / SafeCast<float>(mt_data.y);
 
-    const double x_multiplier = tile_layer.GetOffsetX();
-    const double y_multiplier = tile_layer.GetOffsetY();
+    const double x_multiplier = tile.GetOffsetX();
+    const double y_multiplier = tile.GetOffsetY();
 
     // Opengl flips vertically, thus the y multiplier is inverted
     uv.bottomRight.x = uv.topLeft.x + LossyCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));

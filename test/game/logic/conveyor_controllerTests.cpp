@@ -26,18 +26,17 @@ namespace jactorio::game
 
         Chunk* chunk_ = nullptr;
 
-        proto::Item itemProto_{};
-        const std::unique_ptr<proto::TransportBelt> transportBeltProto_ = std::make_unique<proto::TransportBelt>();
+        proto::Item itemProto_;
+        proto::TransportBelt transportBelt_;
 
-        ///
         /// Creates a world, chunk and logic chunk at 0, 0
         void SetUp() override {
-            chunk_ = &world_.EmplaceChunk(0, 0);
+            chunk_ = &world_.EmplaceChunk({0, 0});
             world_.LogicAddChunk(*chunk_);
         }
 
         void CreateSegment(const WorldCoord& coord, const std::shared_ptr<ConveyorStruct>& segment) {
-            TestCreateConveyorSegment(world_, coord, segment, *transportBeltProto_);
+            TestCreateConveyorSegment(world_, coord, segment, transportBelt_);
         }
     };
 
@@ -46,7 +45,7 @@ namespace jactorio::game
         // writing
         const auto j_belt_speed = 0.06;
 
-        transportBeltProto_->speed = j_belt_speed; // <---
+        transportBelt_.speed = j_belt_speed; // <---
 
         // Segments (Logic chunk must be created first)
         auto up_segment =
@@ -115,7 +114,7 @@ namespace jactorio::game
         // Validates the correct handling of multiple items across conveyors
         // The spacing between items should be maintained
 
-        transportBeltProto_->speed = 0.01f;
+        transportBelt_.speed = 0.01f;
 
         /*
          *    --------- RIGHT -------- >
@@ -182,7 +181,7 @@ namespace jactorio::game
     TEST_F(ConveyorControllerTest, LineLogicCompressedRightBend) {
         // Same as line_logic_right_bend, but items are compressed
 
-        transportBeltProto_->speed = 0.01f;
+        transportBelt_.speed = 0.01f;
 
         /*
          * COMPRESSED
@@ -237,7 +236,7 @@ namespace jactorio::game
         // First Item will stop at the end of line (Distance is 0)
         // Trailing items will stop at item_width from the previous item
 
-        transportBeltProto_->speed = 0.01f;
+        transportBelt_.speed = 0.01f;
 
         auto segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 10);
@@ -289,7 +288,7 @@ namespace jactorio::game
     TEST_F(ConveyorControllerTest, LineLogicStopAtFilledTargetSegment) {
         // For the right lane:
 
-        transportBeltProto_->speed = 0.01f;
+        transportBelt_.speed = 0.01f;
 
         /*
          *    --------- RIGHT -------- >
@@ -330,7 +329,7 @@ namespace jactorio::game
         //     2      1
         // < ----- < -----
 
-        transportBeltProto_->speed = 0.04f;
+        transportBelt_.speed = 0.04f;
 
         // Segments (Logic chunk must be created first)
         auto left_segment =
@@ -357,7 +356,7 @@ namespace jactorio::game
         CreateSegment({1, 1}, left_segment_2);
 
         // Update neighboring segments as a new segment was placed
-        transportBeltProto_->OnNeighborUpdate(world_, logic_, {1, 1}, {2, 1}, Orientation::right);
+        transportBelt_.OnNeighborUpdate(world_, logic_, {1, 1}, {2, 1}, Orientation::right);
 
         EXPECT_EQ(left_segment.get()->left.index, 0);
     }
@@ -368,7 +367,7 @@ namespace jactorio::game
         //     1      2
         // < ----- < -----
 
-        transportBeltProto_->speed = 0.04f;
+        transportBelt_.speed = 0.04f;
 
         const auto left_segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 1);
@@ -430,7 +429,7 @@ namespace jactorio::game
          * |
          */
 
-        transportBeltProto_->speed = 0.05;
+        transportBelt_.speed = 0.05;
 
 
         // Segments (Logic chunk must be created first)
@@ -494,7 +493,7 @@ namespace jactorio::game
          * < ------ LEFT (1) ------		< ------ LEFT (2) -------
          */
 
-        transportBeltProto_->speed = 0.01f;
+        transportBelt_.speed = 0.01f;
 
         auto segment_1 =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 4);
@@ -536,7 +535,7 @@ namespace jactorio::game
          */
         // A first, fill entire lane, if A is not compressed, B moves
 
-        transportBeltProto_->speed = 0.05;
+        transportBelt_.speed = 0.05;
 
 
         // Segments (Logic chunk must be created first)
@@ -633,7 +632,7 @@ namespace jactorio::game
          */
         // B first, fill entire lane, if B is not compressed, A moves
 
-        transportBeltProto_->speed = 0.05;
+        transportBelt_.speed = 0.05;
 
 
         // Segments (Logic chunk must be created first)
@@ -722,7 +721,7 @@ namespace jactorio::game
         // < < <
         //     ^
 
-        transportBeltProto_->speed = 0.06;
+        transportBelt_.speed = 0.06;
 
         auto left_segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::bend_right, 4);
@@ -809,7 +808,7 @@ namespace jactorio::game
         //   v
         // < < <
 
-        transportBeltProto_->speed = 0.06;
+        transportBelt_.speed = 0.06;
 
         auto down_segment =
             std::make_shared<ConveyorStruct>(Orientation::down, ConveyorStruct::TerminationType::right_only, 3);

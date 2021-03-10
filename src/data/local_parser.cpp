@@ -24,7 +24,6 @@ struct ParserData
     bool inLVal = false; // Left of equals sign
     bool inRVal = false; // Right of equals sign
 
-    ///
     /// Call this when entering a new line to reset variables and buffers
     void ResetVariables() {
         charNumber = 0;
@@ -34,20 +33,17 @@ struct ParserData
         currentLineBuffer.clear();
     }
 
-    ///
     /// Logs parsing error message and throws
-    /// \exception Data_exception Thrown when this function is called
+    /// \exception ProtoError Thrown when this function is called
     [[noreturn]] void ParseError(const std::string& message) const {
         std::stringstream str_s;
-        str_s << "Localization parse failed " << lineNumber << ":" << charNumber << "\n" << message;
-        LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
+        str_s << "Localization parse failed " << lineNumber << ":" << charNumber << " '" << message << "'";
 
-        throw proto::ProtoError(str_s.str().c_str());
+        throw proto::ProtoError(str_s.str());
     }
 };
 
 
-///
 /// Helper for parse, handles end of line actions
 void ParseEol(data::PrototypeManager& proto, ParserData& parser_data, const std::string& directory_prefix) {
     // R val was not specified or empty
@@ -130,15 +126,4 @@ void data::LocalParse(PrototypeManager& proto, const std::string& file_str, cons
     }
 
     ParseEol(proto, parser_data, directory_prefix);
-}
-
-int data::LocalParseNoThrow(PrototypeManager& proto, const std::string& file_str, const std::string& directory_prefix) {
-    try {
-        LocalParse(proto, file_str, directory_prefix);
-    }
-    catch (proto::ProtoError&) {
-        return 1;
-    }
-
-    return 0;
 }

@@ -13,23 +13,18 @@ namespace jactorio::render
     class MvpManager
     {
     public:
-        ///
         /// Uniform location for "u_model_view_projection_matrix"
         /// Must be set before MVP can be updated
         void SetMvpUniformLocation(int location);
 
-        ///
         /// Sends current mvp matrices to GPU
         void UpdateShaderMvp();
 
-        ///
         /// Returns mvp matrix if calculated, otherwise invalid call
         J_NODISCARD const glm::mat4& GetMvpMatrix() const;
-        ///
         /// Calculates mvp matrix if not already calculated
         J_NODISCARD const glm::mat4& CalculateGetMvpMatrix();
 
-        ///
         /// Calculates MVP matrix if calculate_matrix is true
         void CalculateMvpMatrix();
 
@@ -38,17 +33,14 @@ namespace jactorio::render
         void GlSetViewMatrix(const glm::mat4& matrix);
         void GlSetProjectionMatrix(const glm::mat4& matrix);
 
-        ///
         /// Modifying the returned pointer will change the location of the camera
         glm::vec3* GetViewTransform() noexcept {
             return &cameraTransform_;
         }
 
-        ///
         /// Sets the current view transform
         void UpdateViewTransform();
 
-        ///
         /// Converts provided parameters into a matrix, guarantees a zoom of minimum of offset on all axis
         /// May offset more in a certain axis to preserve aspect ratio
         /// \param window_width width of display area in pixels

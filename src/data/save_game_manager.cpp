@@ -7,7 +7,7 @@
 #include <functional>
 
 #include "data/cereal/register_type.h"
-#include "game/game_data.h"
+#include "game/game_controller.h"
 #include "game/player/keybind_manager.h"
 
 #include <cereal/archives/json.hpp>
@@ -18,35 +18,33 @@ using namespace jactorio;
 static constexpr auto kSaveGameFolder  = "saves";
 static constexpr auto kSaveGameFileExt = "dat";
 
-void data::SerializeGameData(const game::GameDataGlobal& game_data, const std::string& save_name) {
+void data::SerializeGameController(const game::GameController& game_controller, const std::string& save_name) {
     LOG_MESSAGE_F(info, "Saving savegame as %s", save_name.c_str());
 
     std::ofstream out_cereal_stream(ResolveSavePath(save_name), std::ios_base::binary);
     cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
-    output_archive(game_data);
+    output_archive(game_controller);
 
     LOG_MESSAGE(info, "Saving savegame Done");
 }
 
-void data::DeserializeGameData(game::GameDataLocal& data_local,
-                               game::GameDataGlobal& out_data_global,
-                               const std::string& save_name) {
+void data::DeserializeGameController(game::GameController& out_game_controller, const std::string& save_name) {
     LOG_MESSAGE_F(info, "Loading savegame %s", save_name.c_str());
 
     const std::vector<std::function<void()>> pre_load_hooks{
         [&]() {
-            data_local.proto.GenerateRelocationTable();
-            active_prototype_manager = &data_local.proto;
+            out_game_controller.proto.GenerateRelocationTable();
+            active_prototype_manager = &out_game_controller.proto;
         },
-        [&]() { out_data_global.ClearRefsToWorld(data_local); },
+        [&]() { out_game_controller.ResetGame(); }, // Remove any dangling pointers (activatedTile)
     };
     const std::vector<std::function<void()>> post_load_hooks{
         [&]() {
-            for (auto& world : out_data_global.worlds) {
+            for (auto& world : out_game_controller.worlds) {
                 world.DeserializePostProcess();
             }
         },
-        [&]() { data_local.unique.Clear(); },
+        [&]() { out_game_controller.unique.Clear(); },
     };
 
 
@@ -69,7 +67,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
     std::ifstream in_cereal_stream(ResolveSavePath(save_name), std::ios_base::binary);
     cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
 
-    iarchive(out_data_global);
+    iarchive(out_game_controller);
 
     run_hooks(post_load_hooks, "Post load hook");
 
@@ -104,7 +102,6 @@ bool data::IsValidSaveName(const std::string& save_name) {
 }
 
 
-///
 /// If save directory does not exist, a directory is made
 void CheckExistsSaveDirectory() {
     if (!std::filesystem::exists(kSaveGameFolder)) {

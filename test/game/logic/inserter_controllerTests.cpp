@@ -17,21 +17,20 @@ namespace jactorio::game
         World world_;
         Logic logic_;
 
-        proto::Inserter inserterProto_{};
+        proto::Inserter inserterProto_;
 
-        proto::ContainerEntity containerProto_{};
-        proto::Item containerItemProto_{};
+        proto::ContainerEntity containerProto_;
+        proto::Item containerItemProto_;
 
         void SetUp() override {
-            auto& chunk = world_.EmplaceChunk(0, 0);
+            auto& chunk = world_.EmplaceChunk({0, 0});
             world_.LogicAddChunk(chunk);
         }
 
-        ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
+        ChunkTile& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
             return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
         }
 
-        ///
         /// Creates chest with, emits OnNeighborUpdate
         /// \param orientation Orientation to chest from inserter
         /// \param stack_count Amount of items chest starts with
@@ -39,14 +38,14 @@ namespace jactorio::game
                                                const Orientation orientation,
                                                const proto::Item::StackCount stack_count,
                                                const WorldCoord& neighbor_update_coord = {1, 2}) {
-            auto& layer = TestSetupContainer(world_, coords, Orientation::up, containerProto_);
+            auto& tile = TestSetupContainer(world_, coords, Orientation::up, containerProto_);
 
-            auto* unique_data = layer.GetUniqueData<proto::ContainerEntityData>();
+            auto* unique_data = tile.GetUniqueData<proto::ContainerEntityData>();
 
             // Emit neighbor update
             {
-                auto& neighbor_layer       = world_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
-                const auto* neighbor_proto = neighbor_layer.GetPrototype<proto::ContainerEntity>();
+                auto* neighbor_tile        = world_.GetTile(neighbor_update_coord, TileLayer::entity);
+                const auto* neighbor_proto = neighbor_tile->GetPrototype<proto::ContainerEntity>();
 
                 if (neighbor_proto != nullptr)
                     neighbor_proto->OnNeighborUpdate(world_, logic_, coords, neighbor_update_coord, orientation);
@@ -116,8 +115,8 @@ namespace jactorio::game
         inserterProto_.tileReach     = 1;
 
         // Setup conveyor segment
-        proto::Item item{};
-        proto::TransportBelt segment_proto{};
+        proto::Item item;
+        proto::TransportBelt segment_proto;
 
         auto dropoff =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
@@ -168,7 +167,7 @@ namespace jactorio::game
         // Inserter will not pick up items that it can never drop off
 
         // Cannot drop into assembly machine since it has no recipe
-        proto::AssemblyMachine asm_machine{};
+        proto::AssemblyMachine asm_machine;
         TestSetupAssemblyMachine(world_, {0, 1}, Orientation::up, asm_machine);
 
         auto* pickup = BuildChest({3, 2}, Orientation::right, 10);

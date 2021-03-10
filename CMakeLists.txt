@@ -108,6 +108,7 @@ add_compile_definitions(JACTORIO_VERSION="0.1.0")
 add_compile_definitions(JACTORIO_LOG_LEVEL=0)
 # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 
+enable_testing()
 
 add_subdirectory("src")
 if (JACTORIO_BUILD_TESTS)

@@ -13,11 +13,11 @@ void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
                                               const data::PrototypeManager& proto,
                                               const Recipe* new_recipe) {
     if (new_recipe != nullptr) {
-        ingredientInv.resize(new_recipe->ingredients.size());
-        productInv.resize(1);
+        ingredientInv.Resize(new_recipe->ingredients.size());
+        productInv.Resize(1);
 
         // Set filters
-        for (size_t i = 0; i < ingredientInv.size(); ++i) {
+        for (size_t i = 0; i < ingredientInv.Size(); ++i) {
             const auto* ingredient = proto.Get<Item>(new_recipe->ingredients[i].first);
             assert(ingredient != nullptr);
             ingredientInv[i].filter = ingredient;
@@ -31,8 +31,8 @@ void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
         // Remove recipe
         logic.deferralTimer.RemoveDeferralEntry(deferralEntry);
 
-        ingredientInv.resize(0);
-        productInv.resize(0);
+        ingredientInv.Resize(0);
+        productInv.Resize(0);
     }
 
     recipe_ = new_recipe;
@@ -88,8 +88,8 @@ SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& uni
     return AllOfSprite(*sprite, game_tick, 1. / 6);
 }
 
-bool proto::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
-    gui::AssemblyMachine({g_rendr, this, tile_layer->GetUniqueData()});
+bool proto::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
+    gui::AssemblyMachine({g_rendr, this, tile->GetUniqueData()});
     return true;
 }
 
@@ -118,19 +118,19 @@ void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
     TryBeginCrafting(logic, *machine_data);
 }
 
-void proto::AssemblyMachine::OnBuild(game::World& /*world*/,
+void proto::AssemblyMachine::OnBuild(game::World& world,
                                      game::Logic& /*logic*/,
-                                     const WorldCoord& /*coord*/,
-                                     game::ChunkTileLayer& tile_layer,
+                                     const WorldCoord& coord,
+                                     const game::TileLayer tlayer,
                                      const Orientation /*orientation*/) const {
-    tile_layer.MakeUniqueData<AssemblyMachineData>();
+    world.GetTile(coord, tlayer)->MakeUniqueData<AssemblyMachineData>();
 }
 
-void proto::AssemblyMachine::OnRemove(game::World& /*world*/,
+void proto::AssemblyMachine::OnRemove(game::World& world,
                                       game::Logic& logic,
-                                      const WorldCoord& /*coord*/,
-                                      game::ChunkTileLayer& tile_layer) const {
-    auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
+                                      const WorldCoord& coord,
+                                      const game::TileLayer tlayer) const {
+    auto& machine_data = *world.GetTile(coord, tlayer)->GetUniqueData<AssemblyMachineData>();
 
     logic.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }
