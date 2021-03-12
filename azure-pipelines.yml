@@ -72,3 +72,4 @@ stages:
 
     steps:
     - template: CI/AzurePipelines/ContinuousBuild.yml
+    - template: CI/AzurePipelines/PublishArtifacts.yml

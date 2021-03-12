@@ -1,0 +1,8 @@
+steps:
+- publish: out/$(buildConfiguration)/bin/src
+  artifact: jactorio_src_$(Agent.MachineName)
+  displayName: Publish Jactorio src
+
+# - publish: out/$(buildConfiguration)/bin/test
+#   artifact: jactorio_test_$(Agent.MachineName)
+#   displayName: Publish Jactorio test
