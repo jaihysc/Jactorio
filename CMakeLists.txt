@@ -27,12 +27,12 @@ function(log_msg message)
 	message(" - ${message}")
 endfunction()
 
-# Copies from data/ folder to output folder
-function(jactorio_copy_data_files)
+function(jactorio_copy_runtime_files)
+	# Copies from data/ folder to output folder
 	set(JACTORIO_DATA_FOLDER data)
 
 	set(COPY_DESTINATION_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-	log_msg("Copying data files to: ${COPY_DESTINATION_DIR}")
+	log_msg("Copying runtime files to: ${COPY_DESTINATION_DIR}")
 
 	file(GLOB_RECURSE
 		DATA_FILES
@@ -44,7 +44,38 @@ function(jactorio_copy_data_files)
 		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${COPY_DESTINATION_DIR}/${DATA_FILE} COPYONLY)
 	endforeach(DATA_FILE)
 
-	log_msg("DONE Copying files to output directory")
+
+
+	# Copy Python embed files over to executable directory. User does not need to download anything
+	if (WIN32)
+		set(GLOB_EXPRESSIONS
+			python*.zip
+			python*.dll
+			vcruntime*.dll
+		)
+
+		foreach (GLOB_EXPRESSION ${GLOB_EXPRESSIONS})
+			file(GLOB 
+				 GLOBBED_FILES
+				 RELATIVE ${Python_EMBED_DIR}
+				 ${Python_EMBED_DIR}/${GLOB_EXPRESSION}
+			)
+
+			foreach(FILE ${GLOBBED_FILES})
+				configure_file(${Python_EMBED_DIR}/${FILE} ${COPY_DESTINATION_DIR}/${FILE} COPYONLY)
+			endforeach()
+		endforeach ()
+	endif()
+
+
+	# Save Python versio used to compile, thus user need to download if not on Windows
+	if (DEFINED Python_VERSION)
+		file(WRITE ${COPY_DESTINATION_DIR}/python_version ${Python_VERSION})
+	else()
+		message(FATAL_ERROR "No Python version set")
+	endif()
+
+
 endfunction()
 
 
@@ -88,7 +119,26 @@ else (OPENGL_FOUND)
 endif()
 
 
+# Find Python for pybind11 and writing Python version
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
+# Download python embed for Windows, Windows users do not need to manually install Python
+if (WIN32)
+	log_msg("Download Python ${Python_VERSION}")
+
+	set(Python_EMBED_DIR ${CMAKE_BINARY_DIR}/python-embed/${Python_VERSION}/)
+
+	file(MAKE_DIRECTORY ${Python_EMBED_DIR})
+	file(DOWNLOAD
+		 "https://www.python.org/ftp/python/${Python_VERSION}/python-${Python_VERSION}-embed-amd64.zip"
+		 ${Python_EMBED_DIR}/embed-download.zip
+		 TLS_VERIFY ON
+	)
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} -E tar xzf ${Python_EMBED_DIR}/embed-download.zip 
+		WORKING_DIRECTORY ${Python_EMBED_DIR}
+	)
+endif()
 
 
 # Dependencies build arguments
