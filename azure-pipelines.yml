@@ -67,8 +67,10 @@ stages:
       vmImage: windows-2019
 
     variables:
+      buildNumber: $[counter('win_build', 1)]
       compiler: vc142
       installCommand: ''
 
     steps:
     - template: CI/AzurePipelines/ContinuousBuild.yml
+    - template: CI/AzurePipelines/PublishArtifacts.yml

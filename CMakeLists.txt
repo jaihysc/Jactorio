@@ -27,16 +27,12 @@ function(log_msg message)
 	message(" - ${message}")
 endfunction()
 
-# Shows properties for a subdirectory
-function(jactorio_show_properties)
-	log_msg("Binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
-endfunction()
-
-# Copies from data/ folder to output folder
-function(jactorio_copy_data_files)
+function(jactorio_copy_runtime_files)
+	# Copies from data/ folder to output folder
 	set(JACTORIO_DATA_FOLDER data)
 
-	log_msg("Copying files to output directory: ${CMAKE_CURRENT_BINARY_DIR}/${JACTORIO_DATA_FOLDER}")
+	set(COPY_DESTINATION_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+	log_msg("Copying runtime files to: ${COPY_DESTINATION_DIR}")
 
 	file(GLOB_RECURSE
 		DATA_FILES
@@ -45,10 +41,41 @@ function(jactorio_copy_data_files)
 	)
 
 	foreach(DATA_FILE ${DATA_FILES})
-		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${DATA_FILE} COPYONLY)
+		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${COPY_DESTINATION_DIR}/${DATA_FILE} COPYONLY)
 	endforeach(DATA_FILE)
 
-	log_msg("DONE Copying files to output directory")
+
+
+	# Copy Python embed files over to executable directory. User does not need to download anything
+	if (WIN32)
+		set(GLOB_EXPRESSIONS
+			python*.zip
+			python*.dll
+			vcruntime*.dll
+		)
+
+		foreach (GLOB_EXPRESSION ${GLOB_EXPRESSIONS})
+			file(GLOB 
+				 GLOBBED_FILES
+				 RELATIVE ${Python_EMBED_DIR}
+				 ${Python_EMBED_DIR}/${GLOB_EXPRESSION}
+			)
+
+			foreach(FILE ${GLOBBED_FILES})
+				configure_file(${Python_EMBED_DIR}/${FILE} ${COPY_DESTINATION_DIR}/${FILE} COPYONLY)
+			endforeach()
+		endforeach ()
+	endif()
+
+
+	# Save Python versio used to compile, thus user need to download if not on Windows
+	if (DEFINED Python_VERSION)
+		file(WRITE ${COPY_DESTINATION_DIR}/python_version ${Python_VERSION})
+	else()
+		message(FATAL_ERROR "No Python version set")
+	endif()
+
+
 endfunction()
 
 
@@ -80,7 +107,7 @@ ENDIF()
 
 
 
-# Ensure OpenGL exists
+# Find Required packages
 find_package(OpenGL REQUIRED)
 
 if (OPENGL_FOUND)
@@ -92,21 +119,80 @@ else (OPENGL_FOUND)
 endif()
 
 
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Git REQUIRED)
 
+
+# Download python embed for Windows, Windows users do not need to manually install Python
+if (WIN32)
+	log_msg("Download Python ${Python_VERSION}")
+
+	set(Python_EMBED_DIR ${CMAKE_BINARY_DIR}/python-embed/${Python_VERSION}/)
+
+	file(MAKE_DIRECTORY ${Python_EMBED_DIR})
+	file(DOWNLOAD
+		 "https://www.python.org/ftp/python/${Python_VERSION}/python-${Python_VERSION}-embed-amd64.zip"
+		 ${Python_EMBED_DIR}/embed-download.zip
+		 TLS_VERIFY ON
+	)
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} -E tar xzf ${Python_EMBED_DIR}/embed-download.zip 
+		WORKING_DIRECTORY ${Python_EMBED_DIR}
+	)
+endif()
+
+
+# Save program configuration values into include/ to avoid recompiling entire project as with macros
+log_msg("Write Jactorio compile time program configuration files")
+
+function(jactorio_c_config_val PROP_NAME CONFIG_VAL)
+	log_msg("${PROP_NAME} = ${CONFIG_VAL}")
+
+	set(FILE_PATH ${CMAKE_SOURCE_DIR}/include/_config/${PROP_NAME})
+
+
+	# Do not write if value has not changed, avoids recompilation
+	set(WRITE_TO_PATH False)
+
+	if (EXISTS ${FILE_PATH})
+		file(READ ${FILE_PATH} EXISTING_CONFIG_VAL)
+
+		if (NOT ${EXISTING_CONFIG_VAL} STREQUAL ${CONFIG_VAL})
+			set(WRITE_TO_PATH True)
+		endif ()
+	else ()
+		set(WRITE_TO_PATH True)
+	endif ()
+
+	if (WRITE_TO_PATH)
+		file(WRITE ${FILE_PATH} ${CONFIG_VAL})
+	endif ()
+
+endfunction()
+
+
+execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --always
+			    OUTPUT_VARIABLE GIT_REPO_VERSION 
+				OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set(JACTORIO_BUILD_NUMBER 0) # 0 if no build number defined
+if (DEFINED ENV{buildNumber})
+	set(JACTORIO_BUILD_NUMBER $ENV{buildNumber})
+endif ()
+
+jactorio_c_config_val("version" "\"${GIT_REPO_VERSION}\"")
+jactorio_c_config_val("log_level" 0) # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
+jactorio_c_config_val("build_target_platform" \"${CMAKE_SYSTEM_NAME}\")
+jactorio_c_config_val("build_number" ${JACTORIO_BUILD_NUMBER})
 
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
 
+
+#
 add_subdirectory("lib")
 
-# ======================================== Defines
-add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
-
-# ======================================== Options
-add_compile_definitions(JACTORIO_VERSION="0.1.0")
-add_compile_definitions(JACTORIO_LOG_LEVEL=0)
-# 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 
 enable_testing()
 

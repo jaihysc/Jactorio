@@ -82,38 +82,32 @@ void PrintStackTrace(FILE* file) {
     CRASH_LOG_MESSAGE("\nStacktrace: %c", '\n');
 
     // Print stacktrace
-    if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Windows") {
 #ifdef _MSC_VER
 
-        JactorioStackWalker sw{file};
-        sw.ShowCallstack();
+    JactorioStackWalker sw{file};
+    sw.ShowCallstack();
+
+#elif defined(__linux__) || defined(__APPLE__)
+
+    using namespace backward;
+    StackTrace st;
+
+    st.load_here(99); // Limit the number of trace depth
+    // st.skip_n_firsts(3);  // Skip some backward internal function from the trace
+
+    // To console
+    Printer p;
+    p.snippet    = true;
+    p.object     = true;
+    p.address    = true;
+    p.color_mode = ColorMode::automatic;
+    p.print(st, stderr);
+
+    // To log file
+    p.color_mode = ColorMode::never;
+    p.print(st, file);
 
 #endif
-    }
-    else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Darwin" ||
-                       std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Linux") {
-#if defined(__linux__) || defined(__APPLE__)
-
-        using namespace backward;
-        StackTrace st;
-
-        st.load_here(99); // Limit the number of trace depth
-        // st.skip_n_firsts(3);  // Skip some backward internal function from the trace
-
-        // To console
-        Printer p;
-        p.snippet    = true;
-        p.object     = true;
-        p.address    = true;
-        p.color_mode = ColorMode::automatic;
-        p.print(st, stderr);
-
-        // To log file
-        p.color_mode = ColorMode::never;
-        p.print(st, file);
-
-#endif
-    }
 
     CRASH_LOG_MESSAGE("\n\nPlease report this with the current log at %s\n", kCrashContactInfo);
 

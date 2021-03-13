@@ -10,3 +10,6 @@ out/
 # Program generated files
 imgui.ini
 **/TEST-*.xml
+
+# CMake generated Jactorio compile time program config files
+include/_config

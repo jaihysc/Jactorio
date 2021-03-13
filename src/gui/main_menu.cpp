@@ -7,6 +7,7 @@
 
 #include "jactorio.h"
 
+#include "config.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 #include "data/save_game_manager.h"
@@ -540,7 +541,7 @@ void gui::StartMenu(ThreadedLoopCommon& common) {
     menu.Begin("_start_menu");
 
     const GuiTitle title;
-    title.Begin("Jactorio | " JACTORIO_VERSION);
+    title.Begin(std::string("Jactorio | ") + CConfig::kVersion + " Build: " + std::to_string(CConfig::kBuildNumber));
 
 #ifdef JACTORIO_DEBUG_BUILD
     ImGui::TextUnformatted("NOTE: Debug build");

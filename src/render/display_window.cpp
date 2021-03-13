@@ -8,15 +8,13 @@
 
 #include "jactorio.h"
 
+#include "config.h"
 #include "core/loop_common.h"
-
-#include "proto/sprite.h"
-
 #include "game/event/hardware_events.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-
 #include "gui/imgui_manager.h"
+#include "proto/sprite.h"
 #include "render/render_loop.h"
 #include "render/renderer.h"
 
@@ -64,13 +62,12 @@ int render::DisplayWindow::Init(const int width, const int height) {
     }
 
     // Window initialization
-
-    sdlWindow_ = SDL_CreateWindow("Jactorio " JACTORIO_VERSION, // window title
-                                  SDL_WINDOWPOS_UNDEFINED,      // initial x position
-                                  SDL_WINDOWPOS_UNDEFINED,      // initial y position
-                                  width,                        // width, in pixels
-                                  height,                       // height, in pixels
-                                  SDL_WINDOW_OPENGL             // flags - see below
+    sdlWindow_ = SDL_CreateWindow((std::string("Jactorio ") + CConfig::kVersion).c_str(), // window title
+                                  SDL_WINDOWPOS_UNDEFINED,                                // initial x position
+                                  SDL_WINDOWPOS_UNDEFINED,                                // initial y position
+                                  width,                                                  // width, in pixels
+                                  height,                                                 // height, in pixels
+                                  SDL_WINDOW_OPENGL                                       // flags - see below
     );
     if (sdlWindow_ == nullptr) {
         SDL_Quit();
