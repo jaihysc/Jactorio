@@ -9,7 +9,7 @@ function(validate_dependency DEPENDENCY_PATH)
 	if((NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
 		log_msg("Installing missing dependency ${DEPENDENCY_PATH}")
 
-		execute_process(COMMAND git submodule update --init --recursive -- lib/${DEPENDENCY_PATH}
+		execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive -- lib/${DEPENDENCY_PATH}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	else()
 		log_msg("Found dependency: ${DEPENDENCY_PATH}")

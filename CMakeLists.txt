@@ -107,7 +107,7 @@ ENDIF()
 
 
 
-# Ensure OpenGL exists
+# Find Required packages
 find_package(OpenGL REQUIRED)
 
 if (OPENGL_FOUND)
@@ -119,8 +119,9 @@ else (OPENGL_FOUND)
 endif()
 
 
-# Find Python for pybind11 and writing Python version
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Git REQUIRED)
+
 
 # Download python embed for Windows, Windows users do not need to manually install Python
 if (WIN32)
@@ -141,18 +142,51 @@ if (WIN32)
 endif()
 
 
+# Save program configuration values into include/ to avoid recompiling entire project as with macros
+log_msg("Write Jactorio compile time program configuration files")
+
+function(jactorio_c_config_val PROP_NAME CONFIG_VAL)
+	log_msg("${PROP_NAME} = ${CONFIG_VAL}")
+
+	set(FILE_PATH ${CMAKE_SOURCE_DIR}/include/_config/${PROP_NAME})
+
+
+	# Do not write if value has not changed, avoids recompilation
+	set(WRITE_TO_PATH False)
+
+	if (EXISTS ${FILE_PATH})
+		file(READ ${FILE_PATH} EXISTING_CONFIG_VAL)
+
+		if (NOT ${EXISTING_CONFIG_VAL} STREQUAL ${CONFIG_VAL})
+			set(WRITE_TO_PATH True)
+		endif ()
+	else ()
+		set(WRITE_TO_PATH True)
+	endif ()
+
+	if (WRITE_TO_PATH)
+		file(WRITE ${FILE_PATH} ${CONFIG_VAL})
+	endif ()
+
+endfunction()
+
+
+execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --always
+			    OUTPUT_VARIABLE GIT_REPO_VERSION 
+				OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+jactorio_c_config_val("version" "\"${GIT_REPO_VERSION}\"")
+jactorio_c_config_val("log_level" 0) # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
+jactorio_c_config_val("build_target_platform" \"${CMAKE_SYSTEM_NAME}\")
+
+
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
 
+
+#
 add_subdirectory("lib")
 
-# ======================================== Defines
-add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
-
-# ======================================== Options
-add_compile_definitions(JACTORIO_VERSION="0.1.0")
-add_compile_definitions(JACTORIO_LOG_LEVEL=0)
-# 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 
 enable_testing()
 

@@ -12,11 +12,4 @@
 #define J_NODISCARD  [[nodiscard]]
 #define J_DEPRECATED [[deprecated]]
 
-// Build type
-#ifdef JACTORIO_DEBUG_BUILD
-#define JACTORIO_BUILD_TYPE "Debug"
-#else
-#define JACTORIO_BUILD_TYPE "Release"
-#endif
-
 #endif // JACTORIO_INCLUDE_JACTORIO_H

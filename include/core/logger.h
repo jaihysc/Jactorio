@@ -67,7 +67,9 @@ namespace jactorio
     /// Creates a formatted log message if log level permits
     template <LogSeverity Severity, typename... Args, typename = std::common_type<Args...>>
     void MakeLogMessage(const char* format, const char* file, const int line, Args&&... args) {
-        if constexpr (static_cast<int>(Severity) >= JACTORIO_LOG_LEVEL) {
+        if constexpr (static_cast<int>(Severity) >=
+#include "_config/log_level"
+        ) {
             char buffer[kMaxLogMsgLength + 1];
             snprintf(buffer, kMaxLogMsgLength, format, args...);
             LogMessage(Severity, file, line, buffer);

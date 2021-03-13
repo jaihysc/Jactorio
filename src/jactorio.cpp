@@ -5,10 +5,10 @@
 
 #include "jactorio.h"
 
+#include "config.h"
 #include "core/crash_handler.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
-
 #include "game/logic_loop.h"
 #include "render/render_loop.h"
 
@@ -41,7 +41,7 @@ int main(int ac, char* av[]) {
 
     // Initial startup message
     LOG_MESSAGE_F(
-        info, "%s | %s build, version: %s\n\n", JACTORIO_BUILD_TARGET_PLATFORM, JACTORIO_BUILD_TYPE, JACTORIO_VERSION);
+        info, "%s | %s build, version: %s\n\n", CConfig::kBuildTargetPlatform, CConfig::kBuildType, CConfig::kVersion);
 
     InitializeGame();
 
