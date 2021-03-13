@@ -40,8 +40,12 @@ int main(int ac, char* av[]) {
     RegisterCrashHandler();
 
     // Initial startup message
-    LOG_MESSAGE_F(
-        info, "%s | %s build, version: %s\n\n", CConfig::kBuildTargetPlatform, CConfig::kBuildType, CConfig::kVersion);
+    LOG_MESSAGE_F(info,
+                  "%s | %s build %d, version: %s\n\n",
+                  CConfig::kBuildTargetPlatform,
+                  CConfig::kBuildType,
+                  CConfig::kBuildNumber,
+                  CConfig::kVersion);
 
     InitializeGame();
 

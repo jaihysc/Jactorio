@@ -17,6 +17,10 @@ namespace jactorio
 #include "_config/build_target_platform"
             ;
 
+        static constexpr auto kBuildNumber =
+#include "_config/build_number"
+            ;
+
 #ifdef JACTORIO_DEBUG_BUILD
         static constexpr auto kBuildType = "Debug";
 #else
