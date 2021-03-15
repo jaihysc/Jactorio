@@ -7,21 +7,6 @@
 #include <string>
 #include <type_traits>
 
-// Damn Windows has to use backslashes for paths
-// Cuts away paths, keeps only the filename
-#ifdef _MSC_VER
-#define FILENAME (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#endif
-
-#ifdef __GNUC__
-#include <cstring>
-#define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#undef _MSC_VER
-#endif
-
-// Logging macros
-//
-// Prefer calling LOG_MESSAGE to log a message over log_message()
 #define LOG_MESSAGE(severity__, format__) \
     jactorio::MakeLogMessage<jactorio::LogSeverity::severity__>(format__, FILENAME, __LINE__)
 

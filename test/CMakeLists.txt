@@ -139,6 +139,9 @@ target_include_directories(jactorioTest
 	${JACTORIO_TEST_DIR}
 )
 
+define_filename_for_sources(jactorioTest)
+
+
 add_test(NAME jactorioTest COMMAND jactorioTest)
 
 # MSVC complains that it introduced reference to symbol _fltused which was previously compiled with /GL

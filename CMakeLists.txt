@@ -78,6 +78,20 @@ function(jactorio_copy_runtime_files)
 
 endfunction()
 
+# Add preprocesor definition of FILENAME to pass the filename without directory path
+# For each source file depended on by TARGET_NAME, where FILENAME is the name of the file.
+function(define_filename_for_sources TARGET_NAME)
+    get_target_property(SOURCE_FILES "${TARGET_NAME}" SOURCES)
+
+    foreach(SOURCE_FILE ${SOURCE_FILES})
+        get_filename_component(FILE_BASE_NAME "${SOURCE_FILE}" NAME)
+
+        # Set the updated compile definitions on the source file.
+        set_property(SOURCE "${SOURCE_FILE}" APPEND
+					 PROPERTY COMPILE_DEFINITIONS "FILENAME=\"${FILE_BASE_NAME}\""
+		)
+    endforeach()
+endfunction()
 
 
 
