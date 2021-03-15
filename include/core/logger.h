@@ -4,7 +4,6 @@
 #define JACTORIO_INCLUDE_CORE_LOGGER_H
 #pragma once
 
-#include <string>
 #include <type_traits>
 
 #define LOG_MESSAGE(severity__, format__) \
@@ -38,15 +37,15 @@ namespace jactorio
 
     /// Logs a message to console
     /// Format: Timestamp [severity] - [group] message
-    void LogMessage(LogSeverity severity, const std::string& group, int line, const std::string& message);
+    void LogMessage(LogSeverity severity, const char* group, int line, const char* message);
 
     /// Converts log_severity to a string
     /// \return The log severity as string
-    std::string LogSeverityStr(LogSeverity severity);
+    const char* LogSeverityStr(LogSeverity severity);
 
     /// Converts log_severity to a string with color
     /// \return The log severity as string
-    std::string LogSeverityStrColored(LogSeverity severity);
+    const char* LogSeverityStrColored(LogSeverity severity);
 
 
     /// Creates a formatted log message if log level permits

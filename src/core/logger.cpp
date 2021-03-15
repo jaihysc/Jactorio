@@ -5,7 +5,6 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <string>
 
 using namespace jactorio;
 
@@ -25,10 +24,7 @@ void jactorio::CloseLogFile() {
 
 constexpr char kLogFmt[] = "%10.3f %s [%s:%d] %s";
 
-void jactorio::LogMessage(const LogSeverity severity,
-                          const std::string& group,
-                          const int line,
-                          const std::string& message) {
+void jactorio::LogMessage(const LogSeverity severity, const char* group, const int line, const char* message) {
 
     const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
 
@@ -38,33 +34,19 @@ void jactorio::LogMessage(const LogSeverity severity,
 
     // Console
 
-    snprintf(s,
-             buf_count * sizeof(char),
-             kLogFmt,
-             time,
-             LogSeverityStrColored(severity).c_str(),
-             group.c_str(),
-             line,
-             message.c_str());
+    snprintf(s, buf_count * sizeof(char), kLogFmt, time, LogSeverityStrColored(severity), group, line, message);
 
     std::cout << s << "\033[0m\n";
 
     // Log file
 
-    snprintf(s,
-             buf_count * sizeof(char),
-             kLogFmt,
-             time,
-             LogSeverityStr(severity).c_str(),
-             group.c_str(),
-             line,
-             message.c_str());
+    snprintf(s, buf_count * sizeof(char), kLogFmt, time, LogSeverityStr(severity), group, line, message);
 
     log_file << s << "\n";
 }
 
-std::string jactorio::LogSeverityStr(const LogSeverity severity) {
-    std::string severity_str;
+const char* jactorio::LogSeverityStr(const LogSeverity severity) {
+    const char* severity_str;
 
     switch (severity) {
     case LogSeverity::debug:
@@ -89,8 +71,8 @@ std::string jactorio::LogSeverityStr(const LogSeverity severity) {
     return severity_str;
 }
 
-std::string jactorio::LogSeverityStrColored(const LogSeverity severity) {
-    std::string severity_str;
+const char* jactorio::LogSeverityStrColored(const LogSeverity severity) {
+    const char* severity_str;
 
     switch (severity) {
     case LogSeverity::debug:
