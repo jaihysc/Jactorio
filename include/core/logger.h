@@ -4,6 +4,8 @@
 #define JACTORIO_INCLUDE_CORE_LOGGER_H
 #pragma once
 
+#include <cstdint>
+#include <cstdio>
 #include <type_traits>
 
 #define LOG_MESSAGE(severity__, format__) \
