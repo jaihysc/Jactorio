@@ -234,18 +234,18 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
         return false;
 
     // Does not have item, or placeable item
-    auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
-    if (entity_ptr == nullptr || !entity_ptr->placeable)
+    auto* entity = stack->item->entityPrototype;
+    if (entity == nullptr || !entity->placeable)
         return false;
 
 
-    assert(entity_ptr != nullptr);
+    assert(entity != nullptr);
     // Prototypes can perform additional checking on whether the location can be placed on or not
-    if (!entity_ptr->OnCanBuild(world, coord, orientation))
+    if (!entity->OnCanBuild(world, coord, orientation))
         return false;
 
     // Do not take item away from player unless item was successfully placed
-    if (!world.Place(coord, orientation, *entity_ptr))
+    if (!world.Place(coord, orientation, *entity))
         // Failed to place because an entity already exists
         return false;
 
@@ -259,9 +259,14 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
 
     // Call events
 
-    entity_ptr->OnBuild(world, logic, coord, TileLayer::entity, orientation);
-    UpdateNeighboringEntities(world, logic, coord, orientation, entity_ptr);
-    world.UpdateDispatch(coord, proto::UpdateType::place);
+    entity->OnBuild(world, logic, coord, TileLayer::entity, orientation);
+    UpdateNeighboringEntities(world, logic, coord, orientation, entity);
+
+    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+            world.UpdateDispatch({coord.x + x_offset, coord.y + y_offset}, proto::UpdateType::place);
+        }
+    }
 
     return true;
 }
@@ -275,6 +280,7 @@ bool game::Player::Placement::TryActivateTile(game::World& world, const WorldCoo
 
     // Can activate if: No selected item OR selected item is not placeable
     if (stack != nullptr) {
+        assert(!stack->Empty());
         // Ensure item attempting to place is an entity
         auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
 
@@ -384,6 +390,14 @@ void game::Player::Placement::TryPickup(game::World& world,
             UpdateNeighboringEntities(world, logic, tl_coord, entity_tile->GetOrientation(), entity_proto);
 
             world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
+
+            for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity_proto->GetHeight(orientation);
+                 ++y_offset) {
+                for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity_proto->GetWidth(orientation);
+                     ++x_offset) {
+                    world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
+                }
+            }
         }
     }
 }
