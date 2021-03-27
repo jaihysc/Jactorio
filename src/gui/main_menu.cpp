@@ -11,6 +11,7 @@
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 #include "data/save_game_manager.h"
+#include "game/event/game_events.h"
 #include "game/event/hardware_events.h"
 #include "gui/components.h"
 #include "gui/layout.h"
@@ -497,6 +498,15 @@ void OptionsMenu(ThreadedLoopCommon& common) {
 
     if (MenuButton("Keybinds")) {
         common.mainMenuData.currentMenu = MainMenuData::Window::option_change_keybind;
+    }
+
+    if (MenuButton("Toggle fullscreen")) {
+        common.gameController.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
+            const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
+            auto& window         = render_e.windows[0].get();
+
+            window.SetFullscreen(!window.IsFullscreen());
+        });
     }
 
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);

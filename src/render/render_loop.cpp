@@ -230,20 +230,6 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // ======================================================================
 
-    common.gameController.input.key.Register(
-        [&]() {
-            common.gameController.event.SubscribeOnce(
-                game::EventType::renderer_tick, [&renderer](const game::EventBase& e) {
-                    const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
-                    auto& window         = render_e.windows[0].get();
-
-                    window.SetFullscreen(!window.IsFullscreen());
-                    renderer->GlResizeWindow(window_x, window_y);
-                });
-        },
-        SDLK_SPACE,
-        game::InputAction::key_down);
-
     RenderingLoop(common, display_window);
 
     LOG_MESSAGE(info, "Renderer thread exited");
