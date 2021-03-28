@@ -46,6 +46,51 @@ namespace jactorio
         l_val = SafeCast<std::remove_reference_t<decltype(l_val)>>(r_val);
     }
 
+    /// Performs downcast of pointer safely
+    /// \remark Same behavior as static cast if non debug
+    template <typename TTarget, typename TOriginal>
+    J_NODISCARD constexpr auto* SafeCast(
+        TOriginal* ptr,
+        std::enable_if_t<std::is_pointer_v<TTarget> &&                                       //
+                             std::is_base_of_v<TOriginal, std::remove_pointer_t<TTarget>> && //
+                             std::is_polymorphic_v<TOriginal>,
+                         int> = 0) noexcept {
+
+#ifdef JACTORIO_DEBUG_BUILD
+        auto* cast_ptr = dynamic_cast<TTarget>(ptr);
+
+        if (ptr != nullptr) {
+            assert(cast_ptr != nullptr);
+        }
+        return cast_ptr;
+#else
+        return static_cast<TTarget>(ptr);
+#endif
+    }
+
+    /// Performs downcast of reference safely
+    /// \remark Same behavior as static cast if non debug
+    template <typename TTarget, typename TOriginal>
+    J_NODISCARD constexpr auto& SafeCast(
+        TOriginal& ref,
+        std::enable_if_t<std::is_reference_v<TTarget> &&                                       //
+                             std::is_base_of_v<TOriginal, std::remove_reference_t<TTarget>> && //
+                             std::is_polymorphic_v<TOriginal>,
+                         int> = 0) noexcept {
+
+#ifdef JACTORIO_DEBUG_BUILD
+        try {
+            auto& cast_ref = dynamic_cast<TTarget>(ref);
+            return cast_ref;
+        }
+        catch (std::bad_cast&) {
+            assert(false);
+            return static_cast<TTarget>(ref); // Return something to make the compiler happy
+        }
+#else
+        return static_cast<TTarget>(ref);
+#endif
+    }
 } // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_CONVERT_H
