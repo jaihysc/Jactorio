@@ -282,7 +282,7 @@ bool game::Player::Placement::TryActivateTile(game::World& world, const WorldCoo
     if (stack != nullptr) {
         assert(!stack->Empty());
         // Ensure item attempting to place is an entity
-        auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
+        auto* entity_ptr = stack->item->entityPrototype;
 
         if (entity_ptr != nullptr && entity_ptr->placeable)
             return false;

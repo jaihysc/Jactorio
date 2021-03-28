@@ -80,7 +80,7 @@ void proto::AssemblyMachineData::CraftAddProduct() {
 // ======================================================================
 
 SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
+    const auto& machine_data = SafeCast<const AssemblyMachineData&>(unique_data);
 
     if (!machine_data.deferralEntry.Valid())
         game_tick = 0;
@@ -110,7 +110,7 @@ bool proto::AssemblyMachine::TryBeginCrafting(game::Logic& logic, AssemblyMachin
 void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
                                                 game::Logic& logic,
                                                 UniqueDataBase* unique_data) const {
-    auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
+    auto* machine_data = SafeCast<AssemblyMachineData*>(unique_data);
 
     machine_data->CraftAddProduct();
 

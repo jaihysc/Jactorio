@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/convert.h"
 #include "proto/detail/category.h"
 #include "proto/framework/framework_base.h"
 
@@ -166,7 +167,7 @@ namespace jactorio::data
 
         try {
             proto::FrameworkBase* base = category->at(iname);
-            return static_cast<TProto*>(base);
+            return SafeCast<TProto*>(base);
         }
         catch (std::out_of_range&) {
             LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
@@ -185,7 +186,7 @@ namespace jactorio::data
 
         for (auto& it : category_items) {
             proto::FrameworkBase* base_ptr = it.second;
-            items.push_back(static_cast<TProto*>(base_ptr));
+            items.push_back(SafeCast<TProto*>(base_ptr));
         }
 
         return items;
@@ -233,7 +234,7 @@ namespace jactorio::data
         for (const auto& map : dataRaw_) {
             auto i = map.find(iname);
             if (i != map.end()) {
-                return static_cast<TProto*>(i->second);
+                return SafeCast<TProto*>(i->second);
             }
         }
         return nullptr;
@@ -250,7 +251,7 @@ namespace jactorio::data
         assert(relocationTable_.at(prototype_id));
 
         const auto* proto = relocationTable_[prototype_id];
-        return static_cast<const TProto&>(*proto);
+        return SafeCast<const TProto&>(*proto);
     }
 } // namespace jactorio::data
 

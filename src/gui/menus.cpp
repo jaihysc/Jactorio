@@ -434,7 +434,7 @@ void gui::ContainerEntity(const render::GuiRenderer& g_rendr) {
 
     auto* unique_data = g_rendr.uniqueData;
     assert(unique_data != nullptr);
-    auto& container_data = *static_cast<proto::ContainerEntityData*>(unique_data);
+    auto& container_data = *SafeCast<proto::ContainerEntityData*>(unique_data);
 
 
     SetupNextWindowLeft();
@@ -460,7 +460,7 @@ void gui::MiningDrill(const render::GuiRenderer& g_rendr) {
 
     auto* unique_data = g_rendr.uniqueData;
     assert(unique_data != nullptr);
-    const auto& drill_data = *static_cast<const proto::MiningDrillData*>(unique_data);
+    const auto& drill_data = *SafeCast<const proto::MiningDrillData*>(unique_data);
 
 
     SetupNextWindowLeft();
@@ -489,8 +489,8 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
     assert(unique_data != nullptr);
 
 
-    const auto& machine_proto = *static_cast<const proto::AssemblyMachine*>(prototype);
-    auto& machine_data        = *static_cast<proto::AssemblyMachineData*>(unique_data);
+    const auto& machine_proto = *SafeCast<const proto::AssemblyMachine*>(prototype);
+    auto& machine_data        = *SafeCast<proto::AssemblyMachineData*>(unique_data);
 
     if (machine_data.HasRecipe()) {
         const auto window_size = GetWindowSize();

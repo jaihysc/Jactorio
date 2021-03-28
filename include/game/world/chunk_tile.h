@@ -4,6 +4,7 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
 #pragma once
 
+#include "core/convert.h"
 #include "data/cereal/serialization_type.h"
 #include "data/cereal/serialize.h"
 #include "data/unique_data_manager.h"
@@ -291,7 +292,7 @@ namespace jactorio::game
 
     template <typename T>
     const T* ChunkTile::GetPrototype() const noexcept {
-        return static_cast<const T*>(common_.prototype.Get());
+        return SafeCast<const T*>(common_.prototype.Get());
     }
 
 
@@ -308,7 +309,7 @@ namespace jactorio::game
         self.uniqueData = std::make_unique<TData>(std::forward<Args>(args)...);
 
         assert(self.uniqueData != nullptr);
-        return static_cast<TData&>(*self.uniqueData.get());
+        return SafeCast<TData&>(*self.uniqueData.get());
     }
 
     template <typename T>
@@ -317,10 +318,10 @@ namespace jactorio::game
             auto* tl_layer = AsNonTopLeft().topLeft;
             assert(tl_layer != nullptr);
 
-            return static_cast<T*>(tl_layer->AsTopLeft().uniqueData.get());
+            return SafeCast<T*>(tl_layer->AsTopLeft().uniqueData.get());
         }
 
-        return static_cast<T*>(AsTopLeft().uniqueData.get());
+        return SafeCast<T*>(AsTopLeft().uniqueData.get());
     }
 
     template <typename T>

@@ -2,6 +2,7 @@
 
 #include "game/logic/item_logistics.h"
 
+#include "core/convert.h"
 #include "proto/abstract/conveyor.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
@@ -54,7 +55,7 @@ bool game::ItemDropOff::CanInsertContainerEntity(const DropOffParams& /*params*/
 }
 
 bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& params) const {
-    auto& container_data = static_cast<proto::ContainerEntityData&>(params.uniqueData);
+    auto& container_data = SafeCast<proto::ContainerEntityData&>(params.uniqueData);
     if (!container_data.inventory.CanAdd(params.itemStack).first)
         return false;
 
@@ -78,7 +79,7 @@ bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams& /*params*/) 
 bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
     assert(params.itemStack.count == 1); // Can only insert 1 at a time
 
-    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
+    auto& line_data = SafeCast<proto::ConveyorData&>(params.uniqueData);
 
     bool use_line_left = false;
     // Decide whether to add item to left side or right side
@@ -165,7 +166,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
 }
 
 bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& params) const {
-    auto& machine_data = static_cast<proto::AssemblyMachineData&>(params.uniqueData);
+    auto& machine_data = SafeCast<proto::AssemblyMachineData&>(params.uniqueData);
 
     constexpr int max_ingredient_sets = 2; // Will allow filling to (ingredient count for crafting) * 2
     static_assert(max_ingredient_sets >= 1);
@@ -193,7 +194,7 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
     assert(!params.itemStack.Empty());
     assert(params.itemStack.count > 0);
 
-    auto& machine_data = static_cast<proto::AssemblyMachineData&>(params.uniqueData);
+    auto& machine_data = SafeCast<proto::AssemblyMachineData&>(params.uniqueData);
 
     for (auto& slot : machine_data.ingredientInv) {
         if (slot.filter == params.itemStack.item) {
@@ -204,7 +205,7 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
             slot.count += params.itemStack.count;
 
             assert(targetProtoData_);
-            static_cast<const proto::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(params.logic, machine_data);
+            SafeCast<const proto::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(params.logic, machine_data);
             return true;
         }
     }
@@ -249,7 +250,7 @@ bool game::InserterPickup::Initialize(World& world, const WorldCoord& coord) {
 }
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupContainerEntity(const PickupParams& params) const {
-    auto& container = static_cast<proto::ContainerEntityData&>(params.uniqueData);
+    auto& container = SafeCast<proto::ContainerEntityData&>(params.uniqueData);
     return container.inventory.First();
 }
 
@@ -257,7 +258,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
     if (!IsAtMaxDegree(params.degree))
         return {false, {}};
 
-    auto& container = static_cast<proto::ContainerEntityData&>(params.uniqueData);
+    auto& container = SafeCast<proto::ContainerEntityData&>(params.uniqueData);
 
 
     const auto* target_item = container.inventory.First();
@@ -267,7 +268,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
 
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBelt(const PickupParams& params) const {
-    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
+    auto& line_data = SafeCast<proto::ConveyorData&>(params.uniqueData);
 
     const auto props         = GetBeltPickupProps(params);
     const bool use_line_left = props.first;
@@ -293,7 +294,7 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 
 
 game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(const PickupParams& params) const {
-    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
+    auto& line_data = SafeCast<proto::ConveyorData&>(params.uniqueData);
 
     const auto props          = GetBeltPickupProps(params);
     bool use_line_left        = props.first;
@@ -328,7 +329,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupAssemblyMachine(const PickupParams& params) const {
     assert(params.amount > 0);
 
-    auto& machine_data = static_cast<proto::AssemblyMachineData&>(params.uniqueData);
+    auto& machine_data = SafeCast<proto::AssemblyMachineData&>(params.uniqueData);
 
     if (!machine_data.HasRecipe())
         return nullptr;
@@ -344,7 +345,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
         return {false, {}};
 
 
-    auto& machine_data = static_cast<proto::AssemblyMachineData&>(params.uniqueData);
+    auto& machine_data = SafeCast<proto::AssemblyMachineData&>(params.uniqueData);
 
     if (!machine_data.HasRecipe())
         return {false, {}};
@@ -357,7 +358,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
 
     product_stack.count -= params.amount;
 
-    const auto* asm_machine = static_cast<const proto::AssemblyMachine*>(targetProtoData_);
+    const auto* asm_machine = SafeCast<const proto::AssemblyMachine*>(targetProtoData_);
     assert(asm_machine);
     asm_machine->TryBeginCrafting(params.logic, machine_data);
 
@@ -370,7 +371,7 @@ bool game::InserterPickup::IsAtMaxDegree(const proto::RotationDegreeT& degree) {
 }
 
 std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const PickupParams& params) {
-    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
+    auto& line_data = SafeCast<proto::ConveyorData&>(params.uniqueData);
 
     bool use_line_left = false;
     switch (line_data.structure->direction) {

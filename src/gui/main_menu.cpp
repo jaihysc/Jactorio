@@ -8,6 +8,7 @@
 #include "jactorio.h"
 
 #include "config.h"
+#include "core/convert.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 #include "data/save_game_manager.h"
@@ -262,7 +263,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 /// Changes player_action's keybind to next key up
 static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::Type player_action) {
     common.gameController.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
-        const auto& input_variant = static_cast<const game::InputActivityEvent&>(e).input;
+        const auto& input_variant = SafeCast<const game::InputActivityEvent&>(e).input;
 
         if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
             const auto& kb_event = std::get<game::KeyboardActivityEvent>(input_variant);
@@ -502,7 +503,7 @@ void OptionsMenu(ThreadedLoopCommon& common) {
 
     if (MenuButton("Toggle fullscreen")) {
         common.gameController.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
-            const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
+            const auto& render_e = SafeCast<const game::RendererTickEvent&>(e);
             auto& window         = render_e.windows[0].get();
 
             window.SetFullscreen(!window.IsFullscreen());

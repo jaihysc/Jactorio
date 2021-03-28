@@ -12,7 +12,7 @@ void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteUvCoordsT& uv_coords,
                                         const Position2<float>& pixel_offset,
                                         const UniqueDataBase* unique_data) const {
-    DrawInserterArm(layer, uv_coords, pixel_offset, *this, *static_cast<const InserterData*>(unique_data));
+    DrawInserterArm(layer, uv_coords, pixel_offset, *this, *SafeCast<const InserterData*>(unique_data));
 }
 
 SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,

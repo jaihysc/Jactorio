@@ -49,7 +49,7 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteUvCoordsT& uv_coords,
                                         const Position2<float>& pixel_offset,
                                         const UniqueDataBase* unique_data) const {
-    const auto& line_data = *static_cast<const ConveyorData*>(unique_data);
+    const auto& line_data = *SafeCast<const ConveyorData*>(unique_data);
 
     // Only draw for the head of segments
     if (line_data.structure->terminationType == game::ConveyorStruct::TerminationType::straight &&
