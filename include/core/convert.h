@@ -11,8 +11,8 @@
 namespace jactorio
 {
     /// Performs cast, data may be lost
-    template <class TTarget, class TOriginal>
-    constexpr TTarget LossyCast(
+    template <typename TTarget, typename TOriginal>
+    J_NODISCARD constexpr TTarget LossyCast(
         TOriginal val,
         std::enable_if_t<std::is_integral_v<TOriginal> || std::is_floating_point_v<TOriginal>, int> = 0,
         std::enable_if_t<std::is_integral_v<TTarget> || std::is_floating_point_v<TTarget>, int>     = 0) noexcept {
@@ -22,8 +22,8 @@ namespace jactorio
 
     /// Performs cast ensuring no data is lost
     /// \remark Same behavior as static cast if assertions are disabled
-    template <class TTargetInt, class TOriginalInt>
-    constexpr TTargetInt SafeCast(
+    template <typename TTargetInt, typename TOriginalInt>
+    J_NODISCARD constexpr TTargetInt SafeCast(
         TOriginalInt val,
         std::enable_if_t<std::is_integral_v<TOriginalInt>, int>                                       = 0,
         std::enable_if_t<std::is_integral_v<TTargetInt> || std::is_floating_point_v<TTargetInt>, int> = 0) noexcept {
