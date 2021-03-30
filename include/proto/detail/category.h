@@ -10,31 +10,32 @@ namespace jactorio::proto
     {
         none = 0,
 
-        label,
-
-        tile,
-        sprite,
-        noise_layer_tile,
-        noise_layer_entity,
-        sound,
-        item,
-
+        // Abstract
         entity,
-        resource_entity,
-        enemy_entity,
-
         health_entity,
-        container_entity,
 
-        assembly_machine,
-        transport_belt,
-        splitter,
-        mining_drill,
-        inserter,
-
+        // Non entities
+        item,
+        label,
+        localization,
+        noise_layer_entity,
+        noise_layer_tile,
         recipe,
         recipe_category,
         recipe_group,
+        sound,
+        sprite,
+        tile,
+
+        // Entities
+        assembly_machine,
+        container_entity,
+        enemy_entity,
+        inserter,
+        mining_drill,
+        resource_entity,
+        splitter,
+        transport_belt,
 
 
         // For test use only
