@@ -49,6 +49,9 @@ namespace jactorio::game
 
         KeybindManager keybindManager{input.key, *this};
 
+        // TODO we serialize this on application wide basis, not per world
+        std::string localIdentifier = "en";
+
         // Serialized
 
         GameWorlds worlds{kDefaultWorldCount};

@@ -72,77 +72,35 @@ void data::PrototypeManager::Add(const std::string& iname, proto::FrameworkBase*
     LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void data::PrototypeManager::Load(const std::string& folder_path) {
-    // Get all sub-folders in ~/data/
-    // Read data.cfg files within each sub-folder
-    // Load extracted data into loaded_data
-
-    // Terminate the interpreter after loading prototypes
+void data::PrototypeManager::LoadProto(const char* data_folder_path) {
     auto py_guard = ResourceGuard(PyInterpreterTerminate);
     PyInterpreterInit();
 
+    for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
+        const auto current_dir_name = entry.path().filename().u8string();
+        const auto current_dir_path = std::string(data_folder_path) + "/" + current_dir_name;
 
-    for (const auto& entry : std::filesystem::directory_iterator(folder_path)) {
-        const std::string directory_name = entry.path().filename().u8string();
+        const auto py_file_path = current_dir_path + "/data.py";
 
-        // Directory including current folder: eg: /data/base
-        std::string current_directory;
-        {
-            std::stringstream ss;
-            ss << folder_path << "/" << directory_name;
-            current_directory = ss.str();
+        const auto py_file_contents = ReadFile(py_file_path);
+        if (py_file_contents.empty()) {
+            LOG_MESSAGE_F(warning,
+                          "Directory '%s' has no or empty data.py file at '%s'",
+                          current_dir_path.c_str(),
+                          py_file_path.c_str());
+            continue;
         }
 
-        // Python file
-        {
-            std::stringstream py_file_path;
-            py_file_path << current_directory << "/data.py";
-
-            const std::string py_file_contents = ReadFile(py_file_path.str());
-            // data.py file does not exist
-            if (py_file_contents.empty()) {
-                LOG_MESSAGE_F(
-                    warning, "Directory %s has no or empty data.py file. Ignoring", current_directory.c_str());
-                continue;
-            }
-
-
-            SetDirectoryPrefix(directory_name);
-            try {
-                PyExec(py_file_contents, py_file_path.str());
-            }
-            catch (proto::ProtoError& e) {
-                LOG_MESSAGE_F(error, "%s", e.what());
-                throw;
-            }
+        SetDirectoryPrefix(current_dir_name);
+        try {
+            PyExec(py_file_contents, py_file_path);
+        }
+        catch (proto::ProtoError& e) {
+            LOG_MESSAGE_F(error, "%s", e.what());
+            throw;
         }
 
-
-        // Load local file for the directory
-        {
-            std::stringstream cfg_file_path;
-            // TODO selectable language
-            cfg_file_path << current_directory << "/local/" << kLanguageIdentifier[static_cast<int>(Language::en)]
-                          << ".cfg";
-
-            if (!std::filesystem::exists(cfg_file_path.str())) {
-                LOG_MESSAGE_F(warning,
-                              "Directory %s missing local at %s",
-                              current_directory.c_str(),
-                              cfg_file_path.str().c_str());
-                continue;
-            }
-
-            auto local_contents = ReadFile(cfg_file_path.str());
-            try {
-                LocalParse(*this, local_contents, directory_name);
-            }
-            catch (proto::ProtoError& e) {
-                LOG_MESSAGE_F(error, "%s", e.what());
-            }
-        }
-
-        LOG_MESSAGE_F(info, "Directory %s loaded", current_directory.c_str());
+        LOG_MESSAGE_F(info, "Directory '%s' prototype loaded", current_dir_path.c_str());
     }
 
     LOG_MESSAGE(info, "Validating loaded prototypes");
@@ -163,6 +121,31 @@ void data::PrototypeManager::Load(const std::string& folder_path) {
 
             LOG_MESSAGE_F(debug, "Validating prototype %d %s Success\n", prototype.internalId, prototype.name.c_str());
         }
+    }
+}
+
+void data::PrototypeManager::LoadLocal(const char* data_folder_path, const char* local_identifier) {
+    for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
+        const auto current_dir_name = entry.path().filename().u8string();
+        const auto current_dir_path = std::string(data_folder_path) + "/" + current_dir_name;
+
+        const auto local_file_path = current_dir_path + "/local/" + local_identifier + ".cfg";
+
+        if (!std::filesystem::exists(local_file_path)) {
+            LOG_MESSAGE_F(
+                warning, "Directory '%s' missing local at '%s'", current_dir_path.c_str(), local_file_path.c_str());
+            continue;
+        }
+
+        auto local_contents = ReadFile(local_file_path);
+        try {
+            LocalParse(*this, local_contents, current_dir_name);
+        }
+        catch (proto::ProtoError& e) {
+            LOG_MESSAGE_F(error, "%s", e.what()); // Do not rethrow. Recover in case of localization errors
+        }
+
+        LOG_MESSAGE_F(info, "Directory '%s' localization loaded", current_dir_path.c_str());
     }
 }
 

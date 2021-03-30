@@ -70,7 +70,8 @@ void game::GameController::LogicUpdate() {
 
 bool game::GameController::InitPrototypes() {
     try {
-        proto.Load(data::PrototypeManager::kDataFolder);
+        proto.LoadProto(data::PrototypeManager::kDataFolder);
+        proto.LoadLocal(data::PrototypeManager::kDataFolder, localIdentifier.c_str());
         return true;
     }
     catch (proto::ProtoError&) {

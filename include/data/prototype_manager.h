@@ -99,11 +99,16 @@ namespace jactorio::data
         // ======================================================================
 
 
-        /// Loads prototypes and their properties from provided directory path
-        /// \remark This is how the game loads prototypes normally
-        /// \param folder_path Do not include a / at the end (Valid usage: dc/xy/data)
+        /// Loads prototypes and their properties from provided directory path,
+        /// Validates loaded prototypes
+        /// \param data_folder_path Path to data folder (data folder has subdirectories, each sub-directory has data.py)
         /// \exception ProtoError Prototype validation failed or Pybind error
-        void Load(const std::string& folder_path);
+        void LoadProto(const char* data_folder_path);
+
+        /// Loads localization for prototypes
+        /// \param data_folder_path Path to data folder (data folder has subdirectories, each sub-directory has data.py)
+        /// \param local_identifier Identifier for locale to load
+        void LoadLocal(const char* data_folder_path, const char* local_identifier);
 
 
         /// Clears all prototype data

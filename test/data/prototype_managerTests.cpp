@@ -119,12 +119,12 @@ namespace jactorio::data
 
 
     /// This test excluded in Valgrind
-    TEST_F(PrototypeManagerTest, Load) {
+    TEST_F(PrototypeManagerTest, LoadProto) {
         active_prototype_manager = &proto_;
         proto_.SetDirectoryPrefix("asdf");
 
         // Load_data should set the directory prefix based on the subfolder
-        proto_.Load(PrototypeManager::kDataFolder);
+        proto_.LoadProto(PrototypeManager::kDataFolder);
 
         const auto* proto = proto_.Get<proto::Sprite>("__test__/test_tile");
 
@@ -144,12 +144,22 @@ namespace jactorio::data
 
         // Load_data should set the directory prefix based on the subfolder
         try {
-            proto_.Load("yeet");
+            proto_.LoadProto("yeet");
             FAIL();
         }
         catch (std::filesystem::filesystem_error&) {
             SUCCEED();
         }
+    }
+
+    TEST_F(PrototypeManagerTest, LoadLocaliation) {
+        proto_.Make<proto::Sprite>("__test__/test_tile");
+
+        proto_.LoadLocal(PrototypeManager::kDataFolder, "test");
+        const auto* proto = proto_.Get<proto::Sprite>("__test__/test_tile");
+
+        ASSERT_NE(proto, nullptr);
+        EXPECT_EQ(proto->GetLocalizedName(), "Localized Test Tile");
     }
 
     TEST_F(PrototypeManagerTest, GetInvalid) {
