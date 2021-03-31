@@ -2,14 +2,15 @@
 
 #include <gtest/gtest.h>
 
-#include "data/save_game_manager.h"
 #include "game/player/keybind_manager.h"
 
+#include "jactorioTests.h"
+
 #include <cereal/archives/json.hpp>
-#include <fstream>
 
 #include "game/game_controller.h"
 #include "game/input/input_manager.h"
+
 
 namespace jactorio::game
 {
@@ -33,13 +34,13 @@ namespace jactorio::game
 
         /// Serializes KeybindManager to JSON
         void Serialize() const {
-            data::SerializeKeybinds(keybindManager_);
+            TestSerialize<KeybindManager, cereal::JSONOutputArchive>(keybindManager_);
         }
 
         /// Deserializes KeybindManager from JSON
         void Deserialize() {
             KeybindManager keybind_manager(input_, gameController_);
-            data::DeserializeKeybinds(keybind_manager);
+            TestDeserialize<KeybindManager, cereal::JSONInputArchive>(keybind_manager);
 
             keybindManager_ = std::move(keybind_manager);
         }

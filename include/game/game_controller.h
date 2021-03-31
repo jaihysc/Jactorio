@@ -21,6 +21,8 @@ namespace jactorio::game
     {
         static constexpr auto kDefaultWorldCount = 1;
 
+        static constexpr auto kSettingsPath = "settings.json";
+
     public:
         /// Clears worlds, logic, player
         void ResetGame();
@@ -47,12 +49,12 @@ namespace jactorio::game
         GameInput input;
         EventData event;
 
-        KeybindManager keybindManager{input.key, *this};
+        // Serialized settings
 
-        // TODO we serialize this on application wide basis, not per world
+        KeybindManager keybindManager{input.key, *this};
         std::string localIdentifier = "en";
 
-        // Serialized
+        // Serialized per game
 
         GameWorlds worlds{kDefaultWorldCount};
         Logic logic;
@@ -60,17 +62,39 @@ namespace jactorio::game
 
         static_assert(std::is_same_v<GameWorlds::size_type, WorldId>);
 
-        CEREAL_SERIALIZE(archive) {
+
+        /// \exception std::runtime_error Failed to save
+        void SaveSetting() const;
+
+        /// \exception std::runtime_error Failed to load
+        void LoadSetting();
+
+        /// \param save_name name of save, no extensions. E.g: "first world"
+        /// \exception std::runtime_error Failed to save
+        void SaveGame(const char* save_name) const;
+
+        /// \param save_name name of save, no extensions. E.g: "first world"
+        /// \exception std::runtime_error Failed to load
+        void LoadGame(const char* save_name);
+
+    private:
+        /// \return false if error
+        J_NODISCARD bool InitPrototypes();
+
+
+        template <typename T>
+        void SerializeSetting(T& archive) {
+            archive(keybindManager);
+            archive(localIdentifier);
+        }
+
+        template <typename T>
+        void SerializeGame(T& archive) {
             // Order must be: world, logic, player
             archive(worlds);
             archive(logic);
             archive(player);
         }
-
-    private:
-        /// \return false if error
-        J_NODISCARD bool InitPrototypes();
-        void InitKeybinds();
     };
 } // namespace jactorio::game
 

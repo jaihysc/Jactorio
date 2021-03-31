@@ -200,7 +200,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
 
         if (MenuButton(filename.c_str())) {
             try {
-                data::DeserializeGameController(common.gameController, filename);
+                common.gameController.LoadGame(filename.c_str());
             }
             catch (cereal::Exception& e) {
                 last_load_error = e.what();
@@ -247,7 +247,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
     if (data::IsValidSaveName(save_name)) {
         if (MenuButtonMini("Save")) {
             try {
-                data::SerializeGameController(common.gameController, save_name);
+                common.gameController.SaveGame(save_name);
                 common.mainMenuData.currentMenu = MainMenuData::Window::main;
             }
             catch (cereal::Exception& e) {
@@ -476,7 +476,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     }
 
     if (MenuBackButton(common.mainMenuData, MainMenuData::Window::options)) {
-        data::SerializeKeybinds(common.gameController.keybindManager);
+        common.gameController.SaveSetting();
     }
 
     SameLineMenuButtonMini(2);
