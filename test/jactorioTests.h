@@ -296,16 +296,6 @@ namespace jactorio
         output_archive(object);
     }
 
-    /// Returns deserialized T
-    template <typename T, typename TArchiver = cereal::PortableBinaryInputArchive>
-    J_NODISCARD T TestDeserialize() {
-        static_assert(std::is_default_constructible_v<T>);
-
-        T deserialized_val;
-        TestDeserialize<T, TArchiver>(deserialized_val);
-        return deserialized_val;
-    }
-
     /// Returns deserialized T into provided object
     template <typename T, typename TArchiver = cereal::PortableBinaryInputArchive>
     void TestDeserialize(T& out) {
@@ -316,6 +306,17 @@ namespace jactorio
 
         iarchive(out);
     }
+
+    /// Returns deserialized T
+    template <typename T, typename TArchiver = cereal::PortableBinaryInputArchive>
+    J_NODISCARD T TestDeserialize() {
+        static_assert(std::is_default_constructible_v<T>);
+
+        T deserialized_val;
+        TestDeserialize<T, TArchiver>(deserialized_val);
+        return deserialized_val;
+    }
+
 
     /// Serializes T and returns deserialized T
     template <typename T>

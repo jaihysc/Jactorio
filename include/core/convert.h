@@ -5,6 +5,7 @@
 #pragma once
 
 #include <type_traits>
+#include <typeinfo>
 
 #include "jactorio.h"
 
@@ -71,7 +72,11 @@ namespace jactorio
     /// Performs downcast of reference safely
     /// \remark Same behavior as static cast if non debug
     template <typename TTarget, typename TOriginal>
-    J_NODISCARD constexpr auto& SafeCast(
+    J_NODISCARD
+#ifndef JACTORIO_DEBUG_BUILD
+    constexpr
+#endif
+    auto& SafeCast(
         TOriginal& ref,
         std::enable_if_t<std::is_reference_v<TTarget> &&                                       //
                              std::is_base_of_v<TOriginal, std::remove_reference_t<TTarget>> && //
