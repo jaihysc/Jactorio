@@ -2,5 +2,6 @@ import jactorioData as j
 
 (j.Localization()
     .identifier("en")
-    .fontPath("base/fonts/NotoSans-Regular.ttf")
+    .fontPath("base/font/NotoSans-Regular.ttf")
+    .fontSize(16)
 )

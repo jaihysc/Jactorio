@@ -4,6 +4,7 @@
 
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_sdl.h>
+#include <exception>
 #include <imgui.h>
 
 #include "jactorio.h"
@@ -11,6 +12,7 @@
 #include "core/execution_timer.h"
 
 #include "proto/abstract/entity.h"
+#include "proto/localization.h"
 
 #include "game/player/player.h"
 #include "game/world/chunk_tile.h"
@@ -115,6 +117,21 @@ void gui::Setup(const render::DisplayWindow& display_window) {
     ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, kGuiStyleScrollBarSize);
 
     LOG_MESSAGE(info, "Imgui initialized");
+}
+
+void gui::LoadFont(const proto::Localization& localization) {
+    auto& io = ImGui::GetIO();
+
+    const auto font_path = std::string(data::PrototypeManager::kDataFolder) + "/" + localization.fontPath;
+    ImWchar glyph_ranges[]{1, 0xFFFF, 0};
+
+    LOG_MESSAGE_F(
+        info, "Loading '%s' %f font '%s'", localization.identifier.c_str(), localization.fontSize, font_path.c_str());
+
+    if (io.Fonts->AddFontFromFileTTF(font_path.c_str(), localization.fontSize, nullptr, glyph_ranges) == nullptr) {
+        throw std::runtime_error("Failed to load font " + font_path);
+    }
+    io.Fonts->Build();
 }
 
 void gui::ImguiBeginFrame(const render::DisplayWindow& display_window) {

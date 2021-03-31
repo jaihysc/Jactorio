@@ -7,11 +7,13 @@
 
 #include <SDL.h>
 #include <examples/imgui_impl_sdl.h>
+#include <exception>
 
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 
+#include "proto/localization.h"
 #include "proto/sprite.h"
 
 #include "game/event/game_events.h"
@@ -171,15 +173,13 @@ void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_wi
     }
 }
 
-void render::RenderInit(ThreadedLoopCommon& common) {
+void Init(ThreadedLoopCommon& common) {
+    using namespace render;
+
     // Init window
-    DisplayWindow display_window{};
-    try {
-        if (display_window.Init(840, 490) != 0)
-            return;
-    }
-    catch (proto::ProtoError&) {
-        return;
+    DisplayWindow display_window;
+    if (display_window.Init(840, 490) != 0) {
+        throw std::runtime_error("Failed to initialize display window");
     }
 
 
@@ -211,6 +211,20 @@ void render::RenderInit(ThreadedLoopCommon& common) {
     LOG_MESSAGE(debug, "Continuing render initialization");
 
 
+    // Load gui font
+    bool loaded_local  = false;
+    auto localizations = common.gameController.proto.GetAll<proto::Localization>();
+    for (const auto& local : localizations) {
+        assert(local != nullptr);
+        if (local->identifier == common.gameController.localIdentifier) {
+            gui::LoadFont(*local);
+            loaded_local = true;
+        }
+    }
+    if (!loaded_local) {
+        throw std::runtime_error("No font was loaded");
+    }
+
     // Loading textures
     auto renderer_sprites = RendererSprites();
     renderer_sprites.GInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, true);
@@ -231,6 +245,15 @@ void render::RenderInit(ThreadedLoopCommon& common) {
     // ======================================================================
 
     RenderingLoop(common, display_window);
+}
+
+void render::RenderInit(ThreadedLoopCommon& common) {
+    try {
+        Init(common);
+    }
+    catch (std::exception& e) {
+        LOG_MESSAGE_F(error, "Render thread exception '%s'", e.what());
+    }
 
     LOG_MESSAGE(info, "Renderer thread exited");
 }
