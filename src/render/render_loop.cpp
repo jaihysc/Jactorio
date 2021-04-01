@@ -87,7 +87,7 @@ void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& displ
 
     SDL_Event e;
 
-    while (common.gameState == main_menu_game_state) {
+    while (common.gameState == main_menu_game_state && common.gameState != ThreadedLoopCommon::GameState::quit) {
         common.gameController.event.Raise<game::RendererTickEvent>(
             game::EventType::renderer_tick, game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
@@ -118,7 +118,7 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
     SDL_Event e;
 
-    while (common.gameState == world_render_game_state) {
+    while (common.gameState == world_render_game_state && common.gameState != ThreadedLoopCommon::GameState::quit) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
         auto& player       = common.gameController.player;
@@ -173,7 +173,7 @@ void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_wi
     }
 }
 
-void Init(ThreadedLoopCommon& common) {
+static void Init(ThreadedLoopCommon& common) {
     using namespace render;
 
     // Init window
@@ -206,8 +206,12 @@ void Init(ThreadedLoopCommon& common) {
 
     // Since game data will be now accessed, wait until prototype loading is complete
     LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
-    while (!common.prototypeLoadingComplete) // BUG if logic exits while render is waiting, it will never exit
-        ;
+    while (!common.prototypeLoadingComplete) {
+        if (common.gameState == ThreadedLoopCommon::GameState::quit) {
+            return;
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
     LOG_MESSAGE(debug, "Continuing render initialization");
 
 
@@ -255,5 +259,6 @@ void render::RenderInit(ThreadedLoopCommon& common) {
         LOG_MESSAGE_F(error, "Render thread exception '%s'", e.what());
     }
 
+    common.gameState = ThreadedLoopCommon::GameState::quit;
     LOG_MESSAGE(info, "Renderer thread exited");
 }

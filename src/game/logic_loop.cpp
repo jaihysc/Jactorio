@@ -43,9 +43,7 @@ void LogicLoop(ThreadedLoopCommon& common) {
 }
 
 
-void game::InitLogicLoop(ThreadedLoopCommon& common) {
-    ResourceGuard guard(+[]() { LOG_MESSAGE(info, "Logic thread exited"); });
-
+static void Init(ThreadedLoopCommon& common) {
     data::active_prototype_manager   = &common.gameController.proto;
     data::active_unique_data_manager = &common.gameController.unique;
 
@@ -57,4 +55,16 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
 
 
     LogicLoop(common);
+}
+
+void game::InitLogicLoop(ThreadedLoopCommon& common) {
+    try {
+        Init(common);
+    }
+    catch (std::exception& e) {
+        LOG_MESSAGE_F(error, "Logic thread exception '%s'", e.what());
+    }
+
+    common.gameState = ThreadedLoopCommon::GameState::quit;
+    LOG_MESSAGE(info, "Logic thread exited");
 }
