@@ -11,6 +11,17 @@ using namespace jactorio;
 std::ofstream log_file;
 time_t start_time = clock();
 
+#ifdef _WIN32
+#include <Windows.h>
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
+
+#define LABEL_DEBUG    "Debug   "
+#define LABEL_INFO     "Info    "
+#define LABEL_WARNING  "Warning "
+#define LABEL_ERROR    "ERROR   "
+#define LABEL_CRITICAL "CRITICAL"
+#define LABEL_NONE     "        "
 
 void jactorio::OpenLogFile() {
     log_file.open(kLogFileName);
@@ -36,7 +47,11 @@ void jactorio::LogMessage(const LogSeverity severity, const char* group, const i
 
     snprintf(s, buf_count * sizeof(char), kLogFmt, time, LogSeverityStrColored(severity), group, line, message);
 
+#ifdef _WIN32
+    std::cout << s << "\n";
+#else
     std::cout << s << "\033[0m\n";
+#endif
 
     // Log file
 
@@ -46,53 +61,56 @@ void jactorio::LogMessage(const LogSeverity severity, const char* group, const i
 }
 
 const char* jactorio::LogSeverityStr(const LogSeverity severity) {
-    const char* severity_str;
-
     switch (severity) {
     case LogSeverity::debug:
-        severity_str = "Debug   ";
-        break;
+        return LABEL_DEBUG;
     case LogSeverity::info:
-        severity_str = "Info    ";
-        break;
+        return LABEL_INFO;
     case LogSeverity::warning:
-        severity_str = "Warning ";
-        break;
+        return LABEL_WARNING;
     case LogSeverity::error:
-        severity_str = "ERROR   ";
-        break;
+        return LABEL_ERROR;
     case LogSeverity::critical:
-        severity_str = "CRITICAL";
-        break;
+        return LABEL_CRITICAL;
     default:
-        severity_str = "        ";
+        return LABEL_NONE;
     }
-
-    return severity_str;
 }
 
 const char* jactorio::LogSeverityStrColored(const LogSeverity severity) {
-    const char* severity_str;
-
+#ifdef _WIN32
     switch (severity) {
     case LogSeverity::debug:
-        severity_str = "\033[1;90mDebug   "; // Gray
-        break;
+        SetConsoleTextAttribute(hConsole, 8); // Gray
+        return LABEL_DEBUG;
     case LogSeverity::info:
-        severity_str = "Info    ";
-        break;
+        return LABEL_INFO;
     case LogSeverity::warning:
-        severity_str = "\033[1;33mWarning "; // Yellow
-        break;
+        SetConsoleTextAttribute(hConsole, 14); // Yellow
+        return LABEL_WARNING;
     case LogSeverity::error:
-        severity_str = "\033[1;31mERROR   "; // Red
-        break;
+        SetConsoleTextAttribute(hConsole, 12); // Red
+        return LABEL_ERROR;
     case LogSeverity::critical:
-        severity_str = "\033[1;31mCRITICAL"; // Red
-        break;
+        SetConsoleTextAttribute(hConsole, 12); // Red
+        return LABEL_CRITICAL;
     default:
-        severity_str = "        ";
+        return LABEL_NONE;
     }
-
-    return severity_str;
+#else
+    switch (severity) {
+    case LogSeverity::debug:
+        return "\033[1;90m" LABEL_DEBUG; // Gray
+    case LogSeverity::info:
+        return LABEL_INFO;
+    case LogSeverity::warning:
+        return "\033[1;33m" LABEL_WARNING; // Yellow
+    case LogSeverity::error:
+        return "\033[1;31m" LABEL_ERROR; // Red
+    case LogSeverity::critical:
+        return "\033[1;31m" LABEL_CRITICAL; // Red
+    default:
+        return LABEL_NONE;
+    }
+#endif
 }
