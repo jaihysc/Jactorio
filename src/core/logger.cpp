@@ -49,6 +49,7 @@ void jactorio::LogMessage(const LogSeverity severity, const char* group, const i
 
 #ifdef _WIN32
     std::cout << s << "\n";
+    SetConsoleTextAttribute(hConsole, 15); // White
 #else
     std::cout << s << "\033[0m\n";
 #endif
