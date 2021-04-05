@@ -11,6 +11,7 @@
 #include "core/resource_guard.h"
 
 #include "proto/inserter.h"
+#include "proto/label.h"
 #include "proto/sprite.h"
 #include "proto/transport_belt.h"
 
@@ -96,6 +97,17 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
 
                 auto& object_layer = chunk->GetOverlay(game::OverlayLayer::debug);
                 object_layer.clear();
+            }
+        }
+    }
+
+    if (ImGui::CollapsingHeader("Data")) {
+        if (ImGui::Button("Mark localization labels")) {
+            // Appends a ~ so localized text can be identified from hard coded text
+
+            auto labels = params.proto.GetAll<proto::Label>();
+            for (auto* label : labels) {
+                label->SetLocalizedName(label->GetLocalizedName() + "~");
             }
         }
     }

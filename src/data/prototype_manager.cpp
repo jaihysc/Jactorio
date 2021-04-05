@@ -9,6 +9,7 @@
 #include "core/resource_guard.h"
 #include "data/local_parser.h"
 #include "data/pybind_manager.h"
+#include "proto/label.h"
 
 using namespace jactorio;
 
@@ -70,6 +71,14 @@ void data::PrototypeManager::Add(const std::string& iname, proto::FrameworkBase*
 
     dataRaw_[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
     LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
+}
+
+const std::string& data::PrototypeManager::GetLocalText(const std::string& label_name) const {
+    const auto* label = Get<proto::Label>(label_name);
+    if (label == nullptr) {
+        return defaultLocalization_;
+    }
+    return label->GetLocalizedName();
 }
 
 void data::PrototypeManager::LoadProto(const char* data_folder_path) {

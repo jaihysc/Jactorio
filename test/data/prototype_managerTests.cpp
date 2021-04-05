@@ -4,8 +4,10 @@
 
 #include <filesystem>
 
-#include "data/globals.h"
 #include "data/prototype_manager.h"
+
+#include "data/globals.h"
+#include "proto/label.h"
 #include "proto/sprite.h"
 
 namespace jactorio::data
@@ -220,6 +222,16 @@ namespace jactorio::data
         const std::vector<proto::Sprite*> data_all = proto_.GetAll<proto::Sprite>();
 
         EXPECT_EQ(data_all.size(), 0);
+    }
+
+    TEST_F(PrototypeManagerTest, GetValidLabel) {
+        auto& label = proto_.Make<proto::Label>("label-1");
+        label.SetLocalizedName("April");
+
+        EXPECT_EQ(proto_.GetLocalText("label-1"), "April");
+    }
+    TEST_F(PrototypeManagerTest, GetInvalidLabel) {
+        EXPECT_EQ(proto_.GetLocalText("Creeper aw man"), "???");
     }
 
 

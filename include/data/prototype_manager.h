@@ -95,6 +95,9 @@ namespace jactorio::data
         template <typename TProto = proto::FrameworkBase>
         J_NODISCARD TProto* Find(const std::string& iname) const noexcept;
 
+        /// Short form: Fetches localized text for provided label's internal name
+        J_NODISCARD const std::string& GetLocalText(const std::string& label_name) const;
+
 
         // ======================================================================
 
@@ -154,6 +157,9 @@ namespace jactorio::data
 
         /// Appended to the beginning of each new prototype
         std::string directoryPrefix_;
+
+        /// Returned when no label exists in GetLocalText
+        std::string defaultLocalization_ = "???";
     };
 
     template <typename TProto>
