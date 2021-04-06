@@ -35,6 +35,7 @@ bool game::GameController::Init() {
     try {
         LoadSetting();
 
+        proto.LoadLocal(data::PrototypeManager::kDataFolder, localIdentifier.c_str());
         keybindManager.RegisterAllKeyData();
     }
     catch (std::runtime_error& e) {
@@ -185,7 +186,6 @@ void game::GameController::LoadGame(const char* save_name) {
 bool game::GameController::InitPrototypes() {
     try {
         proto.LoadProto(data::PrototypeManager::kDataFolder);
-        proto.LoadLocal(data::PrototypeManager::kDataFolder, localIdentifier.c_str());
         return true;
     }
     catch (proto::ProtoError&) {

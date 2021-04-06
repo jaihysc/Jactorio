@@ -18,6 +18,7 @@
 #include "gui/layout.h"
 #include "gui/menus.h"
 #include "proto/label.h"
+#include "proto/localization.h"
 #include "render/renderer.h"
 
 using namespace jactorio;
@@ -85,10 +86,12 @@ J_NODISCARD static bool MenuButtonMini(const char* label) {
 }
 
 /// Menu button for heading back to previous menu when clicked
+/// Clears any outstanding error messages on backwards click
 /// \return true if clicked
 static bool MenuBackButton(gui::MainMenuData& menu_data, const gui::MainMenuData::Window new_menu) {
     if (MenuButtonMini("<")) {
         menu_data.currentMenu = new_menu;
+        menu_data.lastError.clear();
         return true;
     }
 
@@ -196,8 +199,7 @@ static void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     const GuiTitle title;
     title.Begin(GetLocalText(common, proto::LabelNames::kMenuLoadGame));
 
-    auto& last_load_error = common.mainMenuData.lastLoadError;
-    ErrorTextDismissible(last_load_error);
+    ErrorTextDismissible(common.mainMenuData.lastError);
 
     for (const auto& save_game : data::GetSaveDirIt()) {
         const auto filename = save_game.path().stem().string();
@@ -207,7 +209,7 @@ static void LoadSaveGameMenu(ThreadedLoopCommon& common) {
                 common.gameController.LoadGame(filename.c_str());
             }
             catch (cereal::Exception& e) {
-                last_load_error = e.what();
+                common.mainMenuData.lastError = e.what();
                 LOG_MESSAGE_F(error, "Failed to load game %s : %s", filename.c_str(), e.what());
             }
         }
@@ -233,10 +235,9 @@ static void SaveGameMenu(ThreadedLoopCommon& common) {
     title.Begin(GetLocalText(common, proto::LabelNames::kMenuSaveGame));
 
 
-    auto* save_name       = common.mainMenuData.saveName;
-    auto& last_save_error = common.mainMenuData.lastSaveError;
+    auto* save_name = common.mainMenuData.saveName;
 
-    ErrorTextDismissible(last_save_error);
+    ErrorTextDismissible(common.mainMenuData.lastError);
 
     if (!data::IsValidSaveName(save_name)) {
         ErrorText(GetLocalText(common, proto::LabelNames::kMenuSaveGameInvalidName));
@@ -256,7 +257,7 @@ static void SaveGameMenu(ThreadedLoopCommon& common) {
                 common.mainMenuData.currentMenu = MainMenuData::Window::main;
             }
             catch (cereal::Exception& e) {
-                last_save_error = e.what();
+                common.mainMenuData.lastError = e.what();
                 LOG_MESSAGE_F(error, "Failed to save game as %s : %s", save_name, e.what());
             }
         }
@@ -486,6 +487,44 @@ static void OptionKeybindMenu(ThreadedLoopCommon& common) {
     }
 }
 
+/// Allows user to change languages
+static void OptionLanguageMenu(ThreadedLoopCommon& common) {
+    using namespace gui;
+
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_language_menu");
+
+    const GuiTitle title;
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuOptionChangeLanguage));
+
+
+    ErrorTextDismissible(common.mainMenuData.lastError);
+    ImGui::TextUnformatted(GetLocalText(common, proto::LabelNames::kMenuOptionChangeLanguageRestartNotice));
+
+    for (auto* local : common.gameController.proto.GetAll<proto::Localization>()) {
+        assert(local != nullptr);
+
+        const auto button_text = local->identifier + " | " + local->GetLocalizedName();
+        ImGuard guard;
+        guard.PushID(button_text.c_str());
+
+        if (MenuButton(button_text.c_str())) {
+            common.gameController.localIdentifier = local->identifier;
+
+            try {
+                common.gameController.SaveSetting();
+            }
+            catch (std::runtime_error& e) {
+                common.mainMenuData.lastError = e.what();
+                LOG_MESSAGE_F(error, "Failed to save settings: %s", e.what());
+            }
+        }
+    }
+
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::options);
+}
+
 /// Presents Various submenus for options of the game
 static void OptionsMenu(ThreadedLoopCommon& common) {
     using namespace gui;
@@ -508,6 +547,10 @@ static void OptionsMenu(ThreadedLoopCommon& common) {
 
             window.SetFullscreen(!window.IsFullscreen());
         });
+    }
+
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuOptionChangeLanguage))) {
+        common.mainMenuData.currentMenu = MainMenuData::Window::option_change_language;
     }
 
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
@@ -533,6 +576,9 @@ static bool DrawSubmenu(ThreadedLoopCommon& common) {
         return true;
     case gui::MainMenuData::Window::option_change_keybind:
         OptionKeybindMenu(common);
+        return true;
+    case gui::MainMenuData::Window::option_change_language:
+        OptionLanguageMenu(common);
         return true;
 
 

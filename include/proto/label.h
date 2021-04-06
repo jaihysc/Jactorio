@@ -48,7 +48,10 @@ namespace jactorio::proto
         static constexpr auto kMenuOptionChangeKeybindAction = "__core__/label:menu-option-change-keybind-action";
         static constexpr auto kMenuOptionChangeKeybindReset  = "__core__/label:menu-option-change-keybind-reset";
         static constexpr auto kMenuOptionToggleFullscreen    = "__core__/label:menu-option-toggle-fullscreen";
-        static constexpr auto kMenuQuit                      = "__core__/label:menu-quit";
+        static constexpr auto kMenuOptionChangeLanguage      = "__core__/label:menu-option-change-language";
+        static constexpr auto kMenuOptionChangeLanguageRestartNotice =
+            "__core__/label:menu-option-change-language-restart-notice";
+        static constexpr auto kMenuQuit = "__core__/label:menu-quit";
     };
 
     /// Stores localized text

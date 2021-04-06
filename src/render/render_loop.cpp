@@ -226,7 +226,7 @@ static void Init(ThreadedLoopCommon& common) {
         }
     }
     if (!loaded_local) {
-        throw std::runtime_error("No font was loaded");
+        LOG_MESSAGE(warning, "No font was loaded, using default font");
     }
 
     // Loading textures

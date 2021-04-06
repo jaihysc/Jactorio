@@ -18,15 +18,15 @@ namespace jactorio::gui
             save_game,
 
             options,
-            option_change_keybind
+            option_change_keybind,
+            option_change_language
         };
 
         static constexpr auto kMaxSaveNameLength = 100;
 
         char saveName[kMaxSaveNameLength + 1] = ""; // Holds user input for save name
 
-        std::string lastLoadError;
-        std::string lastSaveError;
+        std::string lastError;
 
         Window currentMenu = Window::main;
     };
