@@ -129,7 +129,7 @@ void ErrorText(const char* error_msg) {
 }
 
 /// \param error_str Cleared when user dismisses it
-void ErrorTextDismissible(std::string& error_str) {
+static void ErrorTextDismissible(std::string& error_str) {
     if (error_str.empty())
         return;
 
@@ -186,7 +186,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
 }
 
 /// Lists all save games, loads save game user clicks on
-void LoadSaveGameMenu(ThreadedLoopCommon& common) {
+static void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -222,7 +222,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
 }
 
 /// Asks for save name and saves current world
-void SaveGameMenu(ThreadedLoopCommon& common) {
+static void SaveGameMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -297,7 +297,7 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
 
 
 /// Allows the user to change keybinds
-void OptionKeybindMenu(ThreadedLoopCommon& common) {
+static void OptionKeybindMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -487,7 +487,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 }
 
 /// Presents Various submenus for options of the game
-void OptionsMenu(ThreadedLoopCommon& common) {
+static void OptionsMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -514,7 +514,7 @@ void OptionsMenu(ThreadedLoopCommon& common) {
 }
 
 /// \return true if a submenu was drawn
-bool DrawSubmenu(ThreadedLoopCommon& common) {
+static bool DrawSubmenu(ThreadedLoopCommon& common) {
     switch (common.mainMenuData.currentMenu) {
     case gui::MainMenuData::Window::main:
         break;
