@@ -120,7 +120,7 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
         ImGui::Text("Player position %f %f", player.world.GetPositionX(), player.world.GetPositionY());
 
         ImGui::Text("Game tick: %llu", logic.GameTick());
-        ImGui::Text("Chunk updates: %llu", world.LogicGetChunks().size());
+        ImGui::Text("Chunk updates: %zu", world.LogicGetChunks().size());
 
         ImGui::Separator();
 
@@ -503,7 +503,7 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
 
     if (ImGui::CollapsingHeader("Update dispatchers")) {
         const auto dispatcher_info = world.updateDispatcher.GetDebugInfo();
-        ImGui::Text("Update dispatchers: %lld", dispatcher_info.storedEntries.size());
+        ImGui::Text("Update dispatchers: %zu", dispatcher_info.storedEntries.size());
 
         // Format of data displayed
         ImGui::Text("Registered coordinate > Listener coordinate | Listener prototype");
@@ -534,12 +534,12 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
         auto show_chunk_info = [](game::Chunk& chunk) {
             for (std::size_t i = 0; i < chunk.logicGroups.size(); ++i) {
                 auto& logic_group = chunk.logicGroups[i];
-                ImGui::Text("Logic group %lld | Size: %lld", i, logic_group.size());
+                ImGui::Text("Logic group %zu | Size: %zu", i, logic_group.size());
             }
 
             for (std::size_t i = 0; i < chunk.overlays.size(); ++i) {
                 auto& overlay_group = chunk.overlays[i];
-                ImGui::Text("Overlay group %lld | Size: %lld", i, overlay_group.size());
+                ImGui::Text("Overlay group %zu | Size: %zu", i, overlay_group.size());
             }
         };
 
@@ -578,28 +578,22 @@ void gui::DebugLogicInfo(const game::Logic& logic) {
 
     const auto timer_info = logic.deferralTimer.GetDebugInfo();
 
-    ImGui::Text("Deferral timers: %llu", timer_info.callbacks.size());
+    ImGui::Text("Deferral timers: %zu", timer_info.callbacks.size());
     ImGui::Text("Current game tick: %llu", logic.GameTick());
 
     // Format of data displayed
     ImGui::Text("Due game tick > Registered prototype");
 
     size_t id = 0;
-    for (const auto& callback_tick : timer_info.callbacks) {
-
-        const auto due_tick = callback_tick.first;
-
+    for (const auto& [due_tick, callbacks] : timer_info.callbacks) {
         assert(due_tick >= logic.GameTick());
         const auto time_to_due = due_tick - logic.GameTick();
 
-        if (ImGui::TreeNode(reinterpret_cast<void*>(id),
-                            "%lld (T- %lld) | %lld",
-                            due_tick,
-                            time_to_due,
-                            callback_tick.second.size())) {
+        if (ImGui::TreeNode(
+                reinterpret_cast<void*>(id), "%llu (T- %lld) | %zu", due_tick, time_to_due, callbacks.size())) {
             ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
-            for (const auto& callback : callback_tick.second) {
+            for (const auto& callback : callbacks) {
                 ImGui::Text("%s", MemoryAddressToStr(callback.uniqueData.Get()).c_str());
             }
         }

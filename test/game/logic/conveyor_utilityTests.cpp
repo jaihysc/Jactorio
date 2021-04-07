@@ -522,7 +522,7 @@ namespace jactorio::game
 
 
         auto& con_data_h             = TestSetupConveyor(world_, {0, 0}, Orientation::left, transBelt_);
-        con_data_h.structure->length = 999; // Should use length of new con struct, not old
+        con_data_h.structure->length = 200; // Should use length of new con struct, not old
 
         TestSetupConveyor(world_, {1, 0}, transBelt_, con_data_h.structure);
         TestSetupConveyor(world_, {2, 0}, transBelt_, con_data_h.structure);

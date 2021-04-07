@@ -8,8 +8,8 @@
 #include <cstdio>
 #include <type_traits>
 
-#define LOG_MESSAGE(severity__, format__) \
-    jactorio::MakeLogMessage<jactorio::LogSeverity::severity__>(format__, FILENAME, __LINE__)
+#define LOG_MESSAGE(severity__, msg__) \
+    jactorio::MakeLogMessage<jactorio::LogSeverity::severity__>("%s", FILENAME, __LINE__, msg__)
 
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_F(severity__, format__, ...) \
