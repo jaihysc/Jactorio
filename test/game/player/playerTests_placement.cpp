@@ -221,33 +221,20 @@ namespace jactorio::game
         EXPECT_EQ(player_.placement.GetActivatedTile(), world_.GetTile({0, 0}, TileLayer::entity));
 
 
-        player_.placement.TryPickup(world_, logic_, {1, 2}, 1000);
+        player_.placement.TryPickup(world_, logic_, {1, 2});
         EXPECT_EQ(player_.placement.GetActivatedTile(), nullptr);
     }
 
-    /// Pick up an entity when progress bar is full
-    TEST_F(PlayerPlacementTest, PickupEntityProgress) {
-        auto* tile  = world_.GetTile({0, 0}, TileLayer::entity);
-        auto* tile2 = world_.GetTile({1, 0}, TileLayer::entity);
+    TEST_F(PlayerPlacementTest, PickupEntity) {
+        auto* tile = world_.GetTile({0, 0}, TileLayer::entity);
 
-        player_.inventory.SetSelectedItem({&item_, 2});
+        player_.inventory.SetSelectedItem({&item_, 1});
         EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {0, 0}));
-        EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {1, 0}));
 
 
-        EXPECT_EQ(player_.placement.GetPickupPercentage(), 0.f);  // Defaults to 0
-        player_.placement.TryPickup(world_, logic_, {0, 2}, 990); // Will not attempt to pickup non entity tiles
+        player_.placement.TryPickup(world_, logic_, {0, 2}); // Will not attempt to pickup non entity tiles
 
-        player_.placement.TryPickup(world_, logic_, {0, 0}, 30);
-        EXPECT_EQ(player_.placement.GetPickupPercentage(), 0.5f); // 50% picked up 30 ticks out of 60
-        EXPECT_EQ(tile->GetPrototype(), &container_); // Not picked up yet - 10 more ticks needed to reach 1 second
-
-        player_.placement.TryPickup(world_, logic_, {1, 0}, 30); // Selecting different tile will reset pickup counter
-        EXPECT_EQ(tile2->GetPrototype(), &container_); // Not picked up yet - 50 more to 1 second since counter reset
-
-
-        player_.placement.TryPickup(world_, logic_, {0, 0}, 50);
-        player_.placement.TryPickup(world_, logic_, {0, 0}, 10);
+        player_.placement.TryPickup(world_, logic_, {0, 0});
         EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
 
         EXPECT_EQ(player_.inventory.inventory[0].item, &item_);
@@ -277,11 +264,13 @@ namespace jactorio::game
         // All resources extracted from resource entity, should now become nullptr
         player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
         player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
+        EXPECT_EQ(tile->GetPrototype(), &resource);
+
         player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
         EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
 
         EXPECT_EQ(player_.inventory.inventory[0].item, &item);
-        EXPECT_EQ(player_.inventory.inventory[0].count, 2); // Player has 2 of resource
+        EXPECT_EQ(player_.inventory.inventory[0].count, 2);
     }
 
     /// For a tile, pickup entity first, then resource
@@ -301,13 +290,12 @@ namespace jactorio::game
         // Container entity
         proto::Item container_item;
         proto::ContainerEntity container_entity;
-        container_entity.pickupTime = 1.f;
         container_entity.SetItem(&container_item);
 
         tile_entity->SetPrototype(Orientation::up, &container_entity);
 
 
-        player_.placement.TryPickup(world_, logic_, {0, 0}, 60); // Container entity takes priority
+        player_.placement.TryPickup(world_, logic_, {0, 0}); // Container entity takes priority
         EXPECT_EQ(tile_entity->GetPrototype(), nullptr);
 
         player_.placement.TryPickup(world_, logic_, {0, 0}, 180);
@@ -319,7 +307,7 @@ namespace jactorio::game
         container_.SetDimension({1, 2});
         TestSetupContainer(world_, {1, 1}, Orientation::right, container_); // Tiles {1, 1}, {2, 1}
 
-        player_.placement.TryPickup(world_, logic_, {2, 1}, 9999);
+        player_.placement.TryPickup(world_, logic_, {2, 1});
 
         EXPECT_EQ(world_.GetTile({1, 1}, TileLayer::entity)->GetPrototype(), nullptr); // Left container
         EXPECT_EQ(world_.GetTile({2, 1}, TileLayer::entity)->GetPrototype(), nullptr); // Right container
@@ -373,7 +361,7 @@ namespace jactorio::game
         EXPECT_EQ(mock.onUpdateCalled, 1);
 
         // Pickup
-        player_.placement.TryPickup(world_, logic_, {1, 2}, 60);
+        player_.placement.TryPickup(world_, logic_, {1, 2});
         EXPECT_TRUE(mock.onRemoveCalled);
         EXPECT_EQ(mock.updateType, proto::UpdateType::remove);
         EXPECT_EQ(mock.onUpdateCalled, 2);
@@ -452,7 +440,7 @@ namespace jactorio::game
         validate_coords(9, {1, 1}, {0, 1});
 
         // Remove
-        player_.placement.TryPickup(world_, logic_, {2, 3}, 9999); // Bottom right corner
+        player_.placement.TryPickup(world_, logic_, {2, 3}); // Bottom right corner
         EXPECT_EQ(mock.emitCoords.size(), 20);
         EXPECT_EQ(mock.receiveCoords.size(), 20);
 

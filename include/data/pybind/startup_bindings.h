@@ -214,8 +214,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_PROP(Entity, placeable)
     PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)
     PYBIND_PROP_GET_SET(Entity, tileWidth, SetWidth, GetWidth)
-    PYBIND_PROP_GET_SET(Entity, tileHeight, SetHeight, GetHeight)
-    PYBIND_PROP(Entity, pickupTime);
+    PYBIND_PROP_GET_SET(Entity, tileHeight, SetHeight, GetHeight);
 
     PYBIND_DATA_CLASS_ABSTRACT(HealthEntity, HealthEntity, Entity)
     PYBIND_PROP(HealthEntity, maxHealth);
@@ -223,7 +222,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_DATA_CLASS(ContainerEntity, ContainerEntity, HealthEntity)
     PYBIND_PROP(ContainerEntity, inventorySize);
 
-    PYBIND_DATA_CLASS(ResourceEntity, ResourceEntity, Entity);
+    PYBIND_DATA_CLASS(ResourceEntity, ResourceEntity, Entity)
+    PYBIND_PROP(ResourceEntity, pickupTime);
 
 
     // Belts

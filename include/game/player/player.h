@@ -231,8 +231,7 @@ namespace jactorio::game
             /// \return true if tile was activated
             bool TryActivateTile(game::World& world, const WorldCoord& coord);
 
-            /// This will either pickup an entity, or mine resources from a resource tile
-            /// Call when the key for picking up entities is pressed
+            /// Pickup an entity, or mine resources from a resource tile
             /// If resource + entity exists on one tile, picking up entity takes priority
             void TryPickup(game::World& world, Logic& logic, const WorldCoord& coord, uint16_t ticks = 1);
 
@@ -243,6 +242,13 @@ namespace jactorio::game
             Orientation orientation = Orientation::up;
 
         private:
+            void PickupEntity(game::World& world,
+                              Logic& logic,
+                              const WorldCoord& coord,
+                              ChunkTile* entity_tile,
+                              const proto::Entity* entity);
+            static void PickupResource(ChunkTile* resource_tile);
+
             ChunkTile* activatedTile_ = nullptr;
 
             uint16_t pickupTickCounter_ = 0;

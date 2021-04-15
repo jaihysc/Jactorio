@@ -48,9 +48,6 @@ namespace jactorio::proto
         /// Can be placed by player?
         PYTHON_PROP_REF_I(bool, placeable, true);
 
-        /// Seconds to pickup entity
-        PYTHON_PROP_REF_I(float, pickupTime, 1);
-
         /// Item for this entity
         J_NODISCARD Item* GetItem() const {
             return item_;

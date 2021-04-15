@@ -19,7 +19,6 @@ def addAssemblyMachine(name, iconSpritePath, worldSpritePath):
         .tileWidth(3)
         .tileHeight(3)
         
-        .pickupTime(0.1)
         .assemblySpeed(1)
         .rotatable(True)
     )

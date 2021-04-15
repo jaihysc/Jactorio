@@ -328,82 +328,89 @@ void game::Player::Placement::TryPickup(game::World& world,
         }
         else if (resource_proto != nullptr) {
         }
-        else
+        else {
             // No valid pointers
             return;
+        }
     }
 
-    // Selecting a new tile different from the last selected tile will reset the counter
-    if (lastSelectedCoord_ != coord) {
-        pickupTickCounter_ = 0;
-    }
 
-    lastSelectedCoord_ = coord;
-    // Default coord is 0,0 so picking up at 0,0 fails lastCoord != currentCoord, thus set it every time
-    pickupTickTarget_ = LossyCast<uint16_t>(chosen_ptr->pickupTime * kGameHertz); // Seconds to ticks
-
-
-    pickupTickCounter_ += ticks;
-    if (pickupTickCounter_ >= pickupTickTarget_) {
-        // Entity picked up
-        LOG_MESSAGE(debug, "Player picked up entity");
-
-        // Give picked up item to player
+    auto give_item = [this, &chosen_ptr]() {
         assert(chosen_ptr->GetItem() != nullptr); // Entity prototype does not have an item prototype
-        const auto item_stack = ItemStack{chosen_ptr->GetItem(), 1};
+        const ItemStack item_stack{chosen_ptr->GetItem(), 1};
 
         // Failed to add item, likely because the inventory is full
-        if (!playerInv_->inventory.CanAdd(item_stack).first)
+        if (!playerInv_->inventory.CanAdd(item_stack).first) {
             return;
+        }
 
         playerInv_->inventory.Add(item_stack);
         playerInv_->inventory.Sort();
 
         pickupTickCounter_ = 0;
-        // Resource entity
-        if (is_resource_ptr) {
-            auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
+    };
 
-            assert(resource_data != nullptr); // Resource tiles should have valid data
-
-            // Delete resource tile if it is empty after extracting
-            if (--resource_data->resourceAmount == 0) {
-                resource_tile->Clear();
-            }
+    if (is_resource_ptr) {
+        // Selecting a new tile different from the last selected tile will reset the counter
+        if (lastSelectedCoord_ != coord) {
+            lastSelectedCoord_ = coord;
+            pickupTickCounter_ = 0;
         }
-        // Is normal entity
-        else {
-            // User may have hovered on another tile other than the top left
-            auto tl_coord = coord.Incremented(*entity_tile);
 
-
-            // Picking up an entity which is set in activated_layer will unset activated_layer
-            if (activatedTile_ == entity_tile->GetTopLeft())
-                activatedTile_ = nullptr;
-
-            // Call events
-            entity_proto->OnRemove(world, logic, tl_coord, TileLayer::entity);
-
-            const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
-            assert(result); // false indicates failed to remove entity
-
-            UpdateNeighboringEntities(world, logic, tl_coord, entity_tile->GetOrientation(), entity_proto);
-
-            world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
-
-            for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity_proto->GetHeight(orientation);
-                 ++y_offset) {
-                for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity_proto->GetWidth(orientation);
-                     ++x_offset) {
-                    world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
-                }
-            }
+        pickupTickCounter_ += ticks;
+        pickupTickTarget_ = LossyCast<uint16_t>(SafeCast<const proto::ResourceEntity*>(chosen_ptr)->pickupTime *
+                                                kGameHertz); // Seconds to ticks
+        if (pickupTickCounter_ >= pickupTickTarget_) {
+            PickupResource(resource_tile);
+            give_item();
         }
+    }
+    else {
+        PickupEntity(world, logic, coord, entity_tile, entity_proto);
+        give_item();
     }
 }
 
 float game::Player::Placement::GetPickupPercentage() const {
     return SafeCast<float>(pickupTickCounter_) / SafeCast<float>(pickupTickTarget_);
+}
+
+void game::Player::Placement::PickupEntity(
+    game::World& world, Logic& logic, const WorldCoord& coord, ChunkTile* entity_tile, const proto::Entity* entity) {
+    // User may have hovered on another tile other than the top left
+    auto tl_coord = coord.Incremented(*entity_tile);
+
+    // Picking up an entity which is set in activated_layer will unset activated_layer
+    if (activatedTile_ == entity_tile->GetTopLeft())
+        activatedTile_ = nullptr;
+
+
+    // Call events
+    entity->OnRemove(world, logic, tl_coord, TileLayer::entity);
+
+    const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
+    assert(result); // false indicates failed to remove entity
+
+    UpdateNeighboringEntities(world, logic, tl_coord, entity_tile->GetOrientation(), entity);
+
+    world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
+
+    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+            world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
+        }
+    }
+}
+
+void game::Player::Placement::PickupResource(ChunkTile* resource_tile) {
+    auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
+
+    assert(resource_data != nullptr); // Resource tiles should have valid data
+
+    // Delete resource tile if it is empty after extracting
+    if (--resource_data->resourceAmount == 0) {
+        resource_tile->Clear();
+    }
 }
 
 // ============================================================================================

@@ -5,7 +5,6 @@ def addInserter(name, itemSprite,
                 worldSprite, handSprite, armSprite,
                 rotationSpeed, tileReach):
     (j.Inserter(name)
-        .pickupTime(0.1)
         .rotationSpeed(rotationSpeed)
 
         .rotatable(True)

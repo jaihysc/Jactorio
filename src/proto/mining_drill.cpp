@@ -168,7 +168,8 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
     // Do not register callback to mine items if there is no valid entity to output items to
     if (InitializeOutput(world, emit_coord, drill_data)) {
         drill_data->miningTicks =
-            LossyCast<uint16_t>(SafeCast<float>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
+            LossyCast<uint16_t>(SafeCast<float>(kGameHertz) *
+                                SafeCast<const ResourceEntity*>(drill_data->outputItem->entityPrototype)->pickupTime);
 
         const bool success = DeductResource(world, self_tile.GetOrientation(), *drill_data);
         assert(success);
