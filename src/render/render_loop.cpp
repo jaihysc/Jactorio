@@ -142,6 +142,11 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
                                                     player.world.GetPositionY());
 
 
+            common.gameController.player.world.SetMouseSelectedTile( //
+                common.renderer->ScreenPosToWorldCoord({common.gameController.player.world.GetPosition()},
+                                                       {game::MouseSelection::GetCursor()}));
+
+
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
 
             ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });

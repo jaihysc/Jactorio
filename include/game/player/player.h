@@ -61,12 +61,9 @@ namespace jactorio::game
 
         public:
             /// Call on game tick to calculate the coordinates of mouse selected tile
-            void CalculateMouseSelectedTile(const glm::mat4& mvp_matrix);
-
-            /// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
-            J_NODISCARD WorldCoord GetMouseTileCoords() const {
-                return mouseSelectedTile_;
-            }
+            void SetMouseSelectedTile(const WorldCoord& coord) noexcept;
+            /// Gets the world coord of the tile the mouse is hovered over,
+            J_NODISCARD WorldCoord GetMouseTileCoords() const noexcept;
 
             /// \return true if selected tile is within placement range
             J_NODISCARD bool MouseSelectedTileInRange() const;
@@ -82,12 +79,9 @@ namespace jactorio::game
 
 
             /// The tile the player is on, decimals indicate partial tile
-            J_NODISCARD PlayerPosT GetPositionX() const {
-                return positionX_;
-            }
-            J_NODISCARD PlayerPosT GetPositionY() const {
-                return positionY_;
-            }
+            J_NODISCARD PlayerPosT GetPositionX() const noexcept;
+            J_NODISCARD PlayerPosT GetPositionY() const noexcept;
+            J_NODISCARD Position2<PlayerPosT> GetPosition() const noexcept;
 
             /// If the tile at the specified amount is valid, the player will be moved to that tile
             void MovePlayerX(PlayerPosT amount);

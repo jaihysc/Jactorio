@@ -192,6 +192,58 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     await_thread_completion();
 }
 
+WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& player_pos,
+                                                   const Position2<int32_t>& screen_pos) const {
+    const auto& mvp_matrix = mvpManager_.GetMvpMatrix();
+
+    const auto window_width  = GetWindowWidth();
+    const auto window_height = GetWindowHeight();
+
+    // Normalized screen position of the screen center
+    auto calc_center_pos = [&mvp_matrix, &window_width, &window_height]() {
+        const double win_center_norm_x = 2 * (SafeCast<double>(window_width) / 2 / window_width) - 1;
+        const double win_center_norm_y = 2 * (SafeCast<double>(window_height) / 2 / window_height) - 1;
+
+        return mvp_matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
+    };
+
+    const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
+    const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
+
+    // Left, Up is negative; Right, Down is positive
+    auto calc_pixels_from_center = [&] {
+        // Account for MVP matrices
+        // Normalize to -1 | 1 used by the matrix
+        const auto norm_x = 2 * (SafeCast<double>(screen_pos.x) / window_width) - 1;
+        const auto norm_y = 2 * (SafeCast<double>(screen_pos.y) / window_height) - 1;
+
+        auto center_pos = calc_center_pos();
+        // If player is standing on a partial tile, adjust the center accordingly to the correct location
+        center_pos.x -= SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
+        center_pos.y += SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y); // Y axis is inverted
+
+        // A = C / B
+        const glm::vec4 norm_positions = mvp_matrix / glm::vec4(norm_x, norm_y, 1, 1);
+        return Position2{norm_positions.x - center_pos.x, center_pos.y - norm_positions.y};
+    };
+
+    const auto pixels_from_center = calc_pixels_from_center();
+
+    // Calculate tile position based on current player position
+    auto tile_x =
+        LossyCast<WorldCoordAxis>(truncated_player_pos_x + pixels_from_center.x / LossyCast<float>(tileWidth));
+    auto tile_y =
+        LossyCast<WorldCoordAxis>(truncated_player_pos_y + pixels_from_center.y / LossyCast<float>(tileWidth));
+
+    // Subtract extra tile if negative because no tile exists at -0, -0
+    if (tile_x < 0)
+        tile_x -= 1;
+    if (tile_y < 0)
+        tile_y -= 1;
+
+    return {tile_x, tile_y};
+}
+
 void render::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
     const auto position_x = LossyCast<int>(player_x);
     const auto position_y = LossyCast<int>(player_y);

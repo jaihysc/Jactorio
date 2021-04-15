@@ -14,63 +14,12 @@
 
 using namespace jactorio;
 
-void game::Player::World::CalculateMouseSelectedTile(const glm::mat4& mvp_matrix) {
-    const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(positionX_));
-    const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(positionY_));
+void game::Player::World::SetMouseSelectedTile(const WorldCoord& coord) noexcept {
+    mouseSelectedTile_ = coord;
+}
 
-    float pixels_from_center_x;
-    float pixels_from_center_y;
-    {
-        const auto window_width  = render::Renderer::GetWindowWidth();
-        const auto window_height = render::Renderer::GetWindowHeight();
-
-        // Account for MVP matrices
-        // Normalize to -1 | 1 used by the matrix
-        const double norm_x = 2 * (MouseSelection::GetCursorX() / window_width) - 1;
-        const double norm_y = 2 * (MouseSelection::GetCursorY() / window_height) - 1;
-
-        // A = C / B
-        const glm::vec4 norm_positions = mvp_matrix / glm::vec4(norm_x, norm_y, 1, 1);
-
-
-        float mouse_x_center;
-        float mouse_y_center;
-        {
-            // Calculate the center tile on screen
-            // Calculate number of pixels from center
-            const double win_center_norm_x = 2 * (SafeCast<double>(window_width) / 2 / window_width) - 1;
-            const double win_center_norm_y = 2 * (SafeCast<double>(window_height) / 2 / window_height) - 1;
-
-            const glm::vec4 win_center_norm_positions =
-                mvp_matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
-
-            mouse_x_center = win_center_norm_positions.x;
-            mouse_y_center = win_center_norm_positions.y;
-        }
-
-        // If player is standing on a partial tile, adjust the center accordingly to the correct location
-        mouse_x_center -= SafeCast<float>(render::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
-
-        // This is plus since the y axis is inverted
-        mouse_y_center += SafeCast<float>(render::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
-
-
-        pixels_from_center_x = norm_positions.x - mouse_x_center;
-        pixels_from_center_y = mouse_y_center - norm_positions.y;
-    }
-
-    // Calculate tile position based on current player position
-    float tile_x = truncated_player_pos_x + pixels_from_center_x / LossyCast<float>(render::Renderer::tileWidth);
-
-    float tile_y = truncated_player_pos_y + pixels_from_center_y / LossyCast<float>(render::Renderer::tileWidth);
-
-    // Subtract extra tile if negative because no tile exists at -0, -0
-    if (tile_x < 0)
-        tile_x -= 1.f;
-    if (tile_y < 0)
-        tile_y -= 1.f;
-
-    mouseSelectedTile_ = {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
+WorldCoord game::Player::World::GetMouseTileCoords() const noexcept {
+    return mouseSelectedTile_;
 }
 
 bool game::Player::World::MouseSelectedTileInRange() const {
@@ -82,6 +31,18 @@ bool game::Player::World::MouseSelectedTileInRange() const {
         abs(positionX_ - SafeCast<float>(cursor_position.x)) + abs(positionY_ - SafeCast<float>(cursor_position.y));
 
     return tile_dist <= max_reach;
+}
+
+game::Player::World::PlayerPosT game::Player::World::GetPositionX() const noexcept {
+    return positionX_;
+}
+
+game::Player::World::PlayerPosT game::Player::World::GetPositionY() const noexcept {
+    return positionY_;
+}
+
+Position2<game::Player::World::PlayerPosT> game::Player::World::GetPosition() const noexcept {
+    return {GetPositionX(), GetPositionY()};
 }
 
 bool game::Player::World::TargetTileValid(game::World* world, const WorldCoord& coord) const {

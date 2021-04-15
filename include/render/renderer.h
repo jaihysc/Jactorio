@@ -71,9 +71,6 @@ namespace jactorio::render
             return mvpManager_;
         }
 
-        /// Changes zoom
-        float tileProjectionMatrixOffset = 0;
-
 
         /// Renderer will lookup uv coords at the provided spritemap_coords
         void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
@@ -97,8 +94,16 @@ namespace jactorio::render
 
 
         // ======================================================================
-        // Rendering internals
+        // Utility
+        J_NODISCARD WorldCoord ScreenPosToWorldCoord(const Position2<float>& player_pos,
+                                                     const Position2<int32_t>& screen_pos) const;
+
+        /// Changes zoom
+        float tileProjectionMatrixOffset = 0;
+
     private:
+        // Rendering internals
+
         // Center the world at position
         // This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
 
@@ -178,7 +183,6 @@ namespace jactorio::render
         /// Updates projection matrix and zoom level
         void GlUpdateTileProjectionMatrix() noexcept;
 
-        // ======================================================================
 
         MvpManager mvpManager_;
 

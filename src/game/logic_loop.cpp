@@ -26,10 +26,6 @@ void LogicLoop(ThreadedLoopCommon& common) {
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
 
-            // Retrieved mvp matrix may be invalid on startup
-            common.gameController.player.world.CalculateMouseSelectedTile(
-                common.renderer->GetMvpManager().GetMvpMatrix());
-
             common.gameController.LogicUpdate();
         }
 
