@@ -194,14 +194,17 @@ void gui::DrawCursorTooltip(const bool has_selected_item,
     guard.PushStyleColor(ImGuiCol_TitleBgActive, kGuiColTooltipTitleBg);
     guard.PushStyleColor(ImGuiCol_TitleBg, kGuiColTooltipTitleBg);
 
+    const auto min_width =
+        ImGui::CalcTextSize(title.c_str()).x + GetTotalWindowPaddingX(); // Minimum width to fit the title
+    guard.PushStyleVar(ImGuiStyleVar_WindowMinSize, {min_width, 0});
+
     {
         ImGuard title_text_guard;
         title_text_guard.PushStyleColor(ImGuiCol_Text, kGuiColTooltipTitleText);
         guard.Begin(title.c_str(), nullptr, flags);
     }
 
-    ImGui::Text("%s", StrMatchLen(description, title.size()).c_str());
-
+    ImGui::TextUnformatted(description.c_str());
     draw_func();
 
     // This window is always in front

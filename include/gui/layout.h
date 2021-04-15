@@ -38,6 +38,7 @@ namespace jactorio::gui
         return slots * scale * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
     }
 
+    /// Padding left and right of each window left as empty space
     constexpr unsigned GetTotalWindowPaddingX() {
         return 2 * kGuiStyleWindowPaddingX;
     }
