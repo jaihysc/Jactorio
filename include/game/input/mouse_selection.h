@@ -37,8 +37,11 @@ namespace jactorio::game
         static constexpr OverlayLayer kCursorOverlayLayer_ = OverlayLayer::cursor;
 
     public:
-        J_NODISCARD static double GetCursorX();
-        J_NODISCARD static double GetCursorY();
+        static void SetCursor(int32_t x_pos, int32_t y_pos) noexcept;
+
+        J_NODISCARD static int32_t GetCursorX() noexcept;
+        J_NODISCARD static int32_t GetCursorY() noexcept;
+        J_NODISCARD static Position2<int32_t> GetCursor() noexcept;
 
         // ======================================================================
         // Client only mouse selection (affects only rendering) For Player mouse selection, see player
@@ -61,9 +64,6 @@ namespace jactorio::game
 
         void RemoveLastOverlay(World& world) const;
     };
-
-    /// Callback provided to glfwSetCursorPosCallback to set mouse position
-    void SetCursorPosition(double x_pos, double y_pos);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
