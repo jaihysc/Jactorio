@@ -21,8 +21,7 @@ namespace jactorio::game
     {
         // A separate layer is only needed when it needs to be accessed independently, otherwise join together in single
         // layer
-        cursor = 0,
-        debug,
+        debug = 0,
         count_
     };
 

@@ -83,8 +83,6 @@ void game::GameController::LogicUpdate() {
 
     // Player
 
-    input.mouse.DrawCursorOverlay(worlds, player, proto);
-
     player.crafting.RecipeCraftTick(proto);
 
 

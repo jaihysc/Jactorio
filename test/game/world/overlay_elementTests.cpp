@@ -22,7 +22,7 @@ namespace jactorio::game
         */
 
 
-        const OverlayElement o2 = {sprite, {0.5, 1}, {2, 3}, OverlayLayer::cursor};
+        const OverlayElement o2 = {sprite, {0.5, 1}, {2, 3}, OverlayLayer::debug};
 
         EXPECT_FLOAT_EQ(o2.position.x, 0.5f);
         EXPECT_FLOAT_EQ(o2.position.y, 1.f);
@@ -51,9 +51,9 @@ namespace jactorio::game
         oe.SetZPosition(12);
         EXPECT_FLOAT_EQ(oe.position.z, 12.f);
 
-        oe.SetZPosition(OverlayLayer::cursor);
+        oe.SetZPosition(OverlayLayer::debug);
         EXPECT_FLOAT_EQ(oe.position.z, 0.4f);
 
-        EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::cursor), 0.4f);
+        EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::debug), 0.4f);
     }
 } // namespace jactorio::game
