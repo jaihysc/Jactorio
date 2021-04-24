@@ -5,16 +5,12 @@
 #include <imgui.h>
 
 #include "core/convert.h"
-#include "core/utility.h"
-
-#include "proto/sprite.h"
-
 #include "game/input/mouse_selection.h"
 #include "game/logistic/inventory.h"
-
 #include "gui/colors.h"
+#include "gui/context.h"
 #include "gui/menu_data.h"
-#include "render/gui_renderer.h"
+#include "proto/sprite.h"
 
 using namespace jactorio;
 
@@ -113,7 +109,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
             (scale - 1) * kInventorySlotPadding // To align with other scales, account for the padding between slots
             - 2 * kInventorySlotImagePadding;
 
-        const auto& menu_data = guiRenderer_->menuData;
+        const auto& menu_data = context_->menuData;
 
         const auto& uv = menu_data.spritePositions.at(sprite_id);
         ImGui::ImageButton(reinterpret_cast<void*>(menu_data.texId),

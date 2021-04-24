@@ -6,12 +6,20 @@
 
 #include "jactorio.h"
 
-#include "render/gui_renderer.h"
+namespace jactorio::proto
+{
+    class FrameworkBase;
+    struct UniqueDataBase;
+} // namespace jactorio::proto
 
 namespace jactorio::gui
 {
+    struct Context;
+
     /// Function to draw the menu
-    using MenuFunction = void (*)(const render::GuiRenderer& g_rendr);
+    using MenuFunction = void (*)(const Context& context,
+                                  const proto::FrameworkBase* prototype,
+                                  proto::UniqueDataBase* unique_data);
 
     // ======================================================================
     // Substitutes name_ below at macro definitions to create an array of guis
@@ -37,7 +45,8 @@ namespace jactorio::gui
     // Macro definitions - 3
 
     // Function
-#define J_GUI_WINDOW_SUB(name__) void name__(const render::GuiRenderer& g_rendr);
+#define J_GUI_WINDOW_SUB(name__) \
+    void name__(const Context& context, const proto::FrameworkBase* prototype, proto::UniqueDataBase* unique_data);
 
     J_GUI_WINDOW
 

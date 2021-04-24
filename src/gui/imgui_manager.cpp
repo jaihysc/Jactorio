@@ -4,23 +4,20 @@
 
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_sdl.h>
-#include <exception>
 #include <imgui.h>
 
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-
-#include "proto/abstract/entity.h"
-#include "proto/localization.h"
-
 #include "game/player/player.h"
 #include "game/world/chunk_tile.h"
-
 #include "gui/colors.h"
+#include "gui/context.h"
 #include "gui/menu_data.h"
 #include "gui/menus.h"
 #include "gui/menus_debug.h"
+#include "proto/abstract/entity.h"
+#include "proto/localization.h"
 #include "render/display_window.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
@@ -145,11 +142,11 @@ void gui::ImguiRenderFrame() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void DrawMenu(gui::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueDataBase* unique_data = nullptr) {
+void DrawMenu(gui::Menu menu, const gui::Context& context, proto::UniqueDataBase* unique_data = nullptr) {
     auto& gui_menu = gui::menus[static_cast<int>(menu)];
 
     if (gui_menu.visible) {
-        gui_menu.drawPtr({g_rendr, nullptr, unique_data});
+        gui_menu.drawPtr(context, nullptr, unique_data);
     }
 }
 
@@ -173,14 +170,14 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
     // ImPopFont();
 
     MenuData menu_data = {*sprite_positions, tex_id};
-    const render::GuiRenderer g_rendr{worlds, logic, player, proto, menu_data};
+    const Context context{worlds, logic, player, proto, menu_data};
 
 
     bool drew_gui = false;
 
     auto* tile = player.placement.GetActivatedTile();
     if (tile != nullptr) {
-        drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(g_rendr, tile);
+        drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(context, tile);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }
@@ -190,16 +187,16 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
     }
 
     if (!drew_gui) {
-        DrawMenu(Menu::CharacterMenu, g_rendr);
+        DrawMenu(Menu::CharacterMenu, context);
     }
 
     // Player gui
-    DrawMenu(Menu::DebugMenu, g_rendr);
+    DrawMenu(Menu::DebugMenu, context);
     DebugMenuLogic(worlds, logic, player, proto);
 
-    CursorWindow(g_rendr);
-    CraftingQueue(g_rendr);
-    PickupProgressbar(g_rendr);
+    CursorWindow(context, nullptr, nullptr);
+    CraftingQueue(context, nullptr, nullptr);
+    PickupProgressbar(context, nullptr, nullptr);
 }
 
 void gui::ImguiTerminate() {

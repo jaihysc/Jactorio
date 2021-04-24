@@ -125,7 +125,7 @@ namespace jactorio::game
                 return 0;
             }
 
-            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, ChunkTile* /*tile*/) const override {
+            bool OnRShowGui(const gui::Context& /*context*/, ChunkTile* /*tile*/) const override {
                 return false;
             }
 

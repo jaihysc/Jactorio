@@ -13,10 +13,8 @@
 
 using namespace jactorio;
 
-bool proto::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
-    auto* drill_data = tile->GetUniqueData<MiningDrillData>();
-
-    gui::MiningDrill({g_rendr, this, drill_data});
+bool proto::MiningDrill::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
+    gui::MiningDrill(context, this, tile->GetUniqueData<MiningDrillData>());
     return true;
 }
 

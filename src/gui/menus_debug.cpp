@@ -9,21 +9,19 @@
 
 #include "core/execution_timer.h"
 #include "core/resource_guard.h"
-
-#include "proto/inserter.h"
-#include "proto/label.h"
-#include "proto/sprite.h"
-#include "proto/transport_belt.h"
-
 #include "game/input/mouse_selection.h"
 #include "game/logic/conveyor_utility.h"
 #include "game/logic/logic.h"
 #include "game/logistic/inventory.h"
 #include "game/player/player.h"
 #include "game/world/world.h"
-
 #include "gui/colors.h"
+#include "gui/context.h"
 #include "gui/menus.h"
+#include "proto/inserter.h"
+#include "proto/label.h"
+#include "proto/sprite.h"
+#include "proto/transport_belt.h"
 
 using namespace jactorio;
 
@@ -72,15 +70,17 @@ std::string MemoryAddressToStr(const void* ptr) {
     return sstream.str();
 }
 
-void gui::DebugMenu(const render::GuiRenderer& params) {
-    auto& player = params.player;
-    auto& world  = params.worlds[player.world.GetId()];
-    auto& logic  = params.logic;
+void gui::DebugMenu(const Context& context,
+                    const proto::FrameworkBase* /*prototype*/,
+                    proto::UniqueDataBase* /*unique_data*/) {
+    auto& player = context.player;
+    auto& world  = context.worlds[player.world.GetId()];
+    auto& logic  = context.logic;
 
     ImGuiWindowFlags main_window_flags = 0;
     main_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
-    ImGuard guard{};
+    ImGuard guard;
     guard.Begin("Debug menu", nullptr, main_window_flags);
 
     ImGui::Text(
@@ -105,7 +105,7 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
         if (ImGui::Button("Mark localization labels")) {
             // Appends a ~ so localized text can be identified from hard coded text
 
-            auto labels = params.proto.GetAll<proto::Label>();
+            auto labels = context.proto.GetAll<proto::Label>();
             for (auto* label : labels) {
                 label->SetLocalizedName(label->GetLocalizedName() + "~");
             }
@@ -147,12 +147,12 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
 }
 
 void gui::DebugTimings() {
-    ImGuard guard{};
+    ImGuard guard;
     guard.Begin("Timings");
     ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    for (auto& time : ExecutionTimer::measuredTimes) {
-        ImGui::Text("%fms (%.1f/s) %s", time.second, 1000 / time.second, time.first.c_str());
+    for (auto& [key, value] : ExecutionTimer::measuredTimes) {
+        ImGui::Text("%fms (%.1f/s) %s", value, 1000 / value, key.c_str());
     }
 }
 
@@ -160,7 +160,7 @@ int give_amount  = 100;
 int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
 
 void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
-    ImGuard guard{};
+    ImGuard guard;
     guard.Begin("Item spawner");
 
     ImGui::InputInt("Give amount", &give_amount);
@@ -350,7 +350,7 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
 void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto) {
     auto& world = worlds[player.world.GetId()];
 
-    ImGuard guard{};
+    ImGuard guard;
     guard.Begin("Conveyor Info");
 
     const auto selected_tile = player.world.GetMouseTileCoords();
@@ -462,7 +462,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data
 void gui::DebugInserterInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
-    ImGuard guard{};
+    ImGuard guard;
     guard.Begin("Inserter info");
 
     const auto selected_tile = player.world.GetMouseTileCoords();

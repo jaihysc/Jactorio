@@ -88,8 +88,8 @@ SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& uni
     return AllOfSprite(*sprite, game_tick, 1. / 6);
 }
 
-bool proto::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
-    gui::AssemblyMachine({g_rendr, this, tile->GetUniqueData()});
+bool proto::AssemblyMachine::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
+    gui::AssemblyMachine(context, this, tile->GetUniqueData());
     return true;
 }
 
