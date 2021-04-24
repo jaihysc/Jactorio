@@ -12,15 +12,13 @@
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
-
-#include "proto/localization.h"
-#include "proto/sprite.h"
-
 #include "game/event/game_events.h"
-
 #include "gui/imgui_manager.h"
 #include "gui/main_menu.h"
 #include "gui/menus.h"
+#include "gui/menus_debug.h"
+#include "proto/localization.h"
+#include "proto/sprite.h"
 #include "render/opengl/shader.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
@@ -169,6 +167,12 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
                            player,
                            common.gameController.proto,
                            common.gameController.event);
+
+            gui::DebugMenuLogic(common.gameController.worlds,
+                                common.gameController.logic,
+                                player,
+                                common.gameController.proto,
+                                *common.renderer);
         }
         // ======================================================================
         // ======================================================================

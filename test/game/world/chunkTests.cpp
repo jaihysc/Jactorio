@@ -32,12 +32,12 @@ namespace jactorio::game
         EXPECT_EQ(&chunk.Tiles(TileLayer::entity)[23 * 32 + 12], &chunk.GetCTile({12, 23}, TileLayer::entity));
     }
 
-    TEST(Chunk, GetOverlayLayer) {
-        Chunk chunk_a{{0, 0}};
-
-        // Should return the layer specified by the index of the enum objectLayer
-        EXPECT_EQ(&chunk_a.GetOverlay(OverlayLayer::debug), &chunk_a.overlays[0]);
-    }
+    // TEST(Chunk, GetOverlayLayer) {
+    //     Chunk chunk_a{{0, 0}};
+    //
+    //     // Should return the layer specified by the index of the enum objectLayer
+    //     EXPECT_EQ(&chunk_a.GetOverlay(OverlayLayer::debug), &chunk_a.overlays[0]);
+    // }
 
     TEST(Chunk, GetLogicGroup) {
         Chunk chunk{{0, 0}};

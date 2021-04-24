@@ -22,6 +22,7 @@
 #include "proto/label.h"
 #include "proto/sprite.h"
 #include "proto/transport_belt.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -39,12 +40,13 @@ bool show_world_info = false;
 void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::Logic& logic,
                          game::Player& player,
-                         const data::PrototypeManager& proto) {
+                         const data::PrototypeManager& proto,
+                         render::Renderer& renderer) {
     if (show_tile_info)
         DebugTileInfo(worlds, player);
 
     if (show_conveyor_info)
-        DebugConveyorInfo(worlds, player, proto);
+        DebugConveyorInfo(worlds, player, proto, renderer);
 
     if (show_inserter_info)
         DebugInserterInfo(worlds, player);
@@ -91,14 +93,6 @@ void gui::DebugMenu(const Context& context,
         // ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
         ImGui::Text("Layer count | Tile: %d", game::kTileLayerCount);
-
-        if (ImGui::Button("Clear debug overlays")) {
-            for (auto* chunk : world.LogicGetChunks()) {
-
-                auto& object_layer = chunk->GetOverlay(game::OverlayLayer::debug);
-                object_layer.clear();
-            }
-        }
     }
 
     if (ImGui::CollapsingHeader("Data")) {
@@ -233,10 +227,10 @@ WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_conveyor_structs       = false;
 
-void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto) {
-    constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
-
-    // Sprite representing the update point
+static void ShowConveyorSegments(game::World& world,
+                                 game::Player& player,
+                                 const data::PrototypeManager& proto,
+                                 render::Renderer& renderer) {
     const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
     const auto* sprite_moving       = proto.Get<proto::Sprite>("__core__/rect-green");
     const auto* sprite_left_moving  = proto.Get<proto::Sprite>("__core__/rect-aqua");
@@ -247,10 +241,9 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
     const auto* sprite_down  = proto.Get<proto::Sprite>("__core__/arrow-down");
     const auto* sprite_left  = proto.Get<proto::Sprite>("__core__/arrow-left");
 
-    // Get all update points and add it to the chunk's objects for drawing
+    renderer.GlPrepareBegin();
     for (auto* chunk : world.LogicGetChunks()) {
-        auto& object_layer = chunk->GetOverlay(draw_overlay_layer);
-        object_layer.clear();
+        const auto tl_coord = game::World::ChunkCToWorldC(chunk->GetPosition());
 
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
             auto& tile = chunk->Tiles(game::TileLayer::entity)[i];
@@ -272,57 +265,54 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
             const auto position_x = i % game::Chunk::kChunkWidth;
             const auto position_y = i / game::Chunk::kChunkWidth;
 
-            Position2<int> pos;
-            Position2<int> segment_len;
-
+            auto coord = tl_coord;
+            Position2<float> segment_len;
             const proto::Sprite* direction_sprite;
-            const proto::Sprite* outline_sprite;
-
-            // Correspond the direction with a sprite representing the direction
             switch (line_segment.direction) {
-            default:
-                assert(false); // Missing case label
-
             case Orientation::up:
-                pos.x         = position_x;
-                pos.y         = position_y;
+                coord.x += position_x;
+                coord.y += position_y;
                 segment_len.x = 1;
                 segment_len.y = line_segment.length;
 
                 direction_sprite = sprite_up;
                 break;
             case Orientation::right:
-                pos.x         = position_x - line_segment.length + 1;
-                pos.y         = position_y;
+                coord.x += position_x - line_segment.length + 1;
+                coord.y += position_y;
                 segment_len.x = line_segment.length;
                 segment_len.y = 1;
 
                 direction_sprite = sprite_right;
                 break;
             case Orientation::down:
-                pos.x         = position_x;
-                pos.y         = position_y - line_segment.length + 1;
+                coord.x += position_x;
+                coord.y += position_y - line_segment.length + 1;
                 segment_len.x = 1;
                 segment_len.y = line_segment.length;
 
                 direction_sprite = sprite_down;
                 break;
             case Orientation::left:
-                pos.x         = position_x;
-                pos.y         = position_y;
+                coord.x += position_x;
+                coord.y += position_y;
                 segment_len.x = line_segment.length;
                 segment_len.y = 1;
 
                 direction_sprite = sprite_left;
                 break;
+
+            default:
+                assert(false); // Missing case label
             }
 
             // Shift items 1 tile forwards if segment bends
             if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
-                Position2Increment(line_segment.direction, pos, 1);
+                Position2Increment(line_segment.direction, coord, 1);
             }
 
 
+            const proto::Sprite* outline_sprite;
             // Correspond a color of rectangle
             if (line_segment.left.IsActive() && line_segment.right.IsActive())
                 outline_sprite = sprite_moving; // Both moving
@@ -333,21 +323,17 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
             else
                 outline_sprite = sprite_stop; // None moving
 
-            object_layer.emplace_back(
-                game::OverlayElement{*direction_sprite,
-                                     {SafeCast<float>(pos.x), SafeCast<float>(pos.y)},
-                                     {SafeCast<float>(segment_len.x), SafeCast<float>(segment_len.y)},
-                                     draw_overlay_layer});
-            object_layer.emplace_back(
-                game::OverlayElement{*outline_sprite,
-                                     {SafeCast<float>(pos.x), SafeCast<float>(pos.y)},
-                                     {SafeCast<float>(segment_len.x), SafeCast<float>(segment_len.y)},
-                                     draw_overlay_layer});
+            renderer.PrepareSprite(coord, player.world.GetPosition(), *direction_sprite, 0, segment_len);
+            renderer.PrepareSprite(coord, player.world.GetPosition(), *outline_sprite, 0, segment_len);
         }
     }
+    renderer.GlPrepareEnd();
 }
 
-void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto) {
+void gui::DebugConveyorInfo(GameWorlds& worlds,
+                            game::Player& player,
+                            const data::PrototypeManager& proto,
+                            render::Renderer& renderer) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard;
@@ -374,7 +360,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
     if (show_conveyor_structs)
-        ShowConveyorSegments(world, proto);
+        ShowConveyorSegments(world, player, proto, renderer);
 
     if (con_data != nullptr) {
         last_valid_line_segment = selected_tile;

@@ -192,7 +192,6 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
 
     // Player gui
     DrawMenu(Menu::DebugMenu, context);
-    DebugMenuLogic(worlds, logic, player, proto);
 
     CursorWindow(context, nullptr, nullptr);
     CraftingQueue(context, nullptr, nullptr);
