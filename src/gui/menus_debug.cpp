@@ -227,10 +227,7 @@ WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_conveyor_structs       = false;
 
-static void ShowConveyorSegments(game::World& world,
-                                 game::Player& player,
-                                 const data::PrototypeManager& proto,
-                                 render::Renderer& renderer) {
+static void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto, render::Renderer& renderer) {
     const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
     const auto* sprite_moving       = proto.Get<proto::Sprite>("__core__/rect-green");
     const auto* sprite_left_moving  = proto.Get<proto::Sprite>("__core__/rect-aqua");
@@ -323,8 +320,8 @@ static void ShowConveyorSegments(game::World& world,
             else
                 outline_sprite = sprite_stop; // None moving
 
-            renderer.PrepareSprite(coord, player.world.GetPosition(), *direction_sprite, 0, segment_len);
-            renderer.PrepareSprite(coord, player.world.GetPosition(), *outline_sprite, 0, segment_len);
+            renderer.PrepareSprite(coord, *direction_sprite, 0, segment_len);
+            renderer.PrepareSprite(coord, *outline_sprite, 0, segment_len);
         }
     }
     renderer.GlPrepareEnd();
@@ -360,7 +357,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds,
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
     if (show_conveyor_structs)
-        ShowConveyorSegments(world, player, proto, renderer);
+        ShowConveyorSegments(world, proto, renderer);
 
     if (con_data != nullptr) {
         last_valid_line_segment = selected_tile;

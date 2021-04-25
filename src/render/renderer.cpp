@@ -93,10 +93,11 @@ const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const Sp
     }
 }
 
-void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
-                                              const game::World& world,
-                                              const float player_x,
-                                              const float player_y) {
+void render::Renderer::SetPlayerPosition(const Position2<float>& player_position) noexcept {
+    playerPosition_ = player_position;
+}
+
+void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const game::World& world) {
     assert(spritemapCoords_);
     assert(drawThreads_ > 0);
     assert(renderLayers_.size() == drawThreads_);
@@ -115,8 +116,8 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     // Right and bottom varies depending on tile size
 
     // Player position with decimal removed
-    const auto position_x = LossyCast<int>(player_x);
-    const auto position_y = LossyCast<int>(player_y);
+    const auto position_x = LossyCast<int>(playerPosition_.x);
+    const auto position_y = LossyCast<int>(playerPosition_.y);
 
 
     const auto tile_offset = GetTileDrawOffset(position_x, position_y);
@@ -126,7 +127,7 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 
 
     // Must be calculated after tile_offset, chunk_start and chunk_amount. Otherwise, zooming becomes jagged
-    CalculateViewMatrix(player_x, player_y);
+    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
     GlUpdateTileProjectionMatrix();
     mvpManager_.CalculateMvpMatrix();
     mvpManager_.UpdateShaderMvp();
@@ -187,14 +188,13 @@ void render::Renderer::GlPrepareEnd() {
 }
 
 void render::Renderer::PrepareSprite(const WorldCoord& coord,
-                                     const Position2<float>& player_pos,
                                      const proto::Sprite& sprite,
                                      const SpriteSetT set,
                                      const Position2<float>& dimension) {
     auto& r_layer = renderLayers_[0];
 
 
-    const auto screen_pos = WorldCoordToBufferPos(player_pos, coord);
+    const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
 
     auto uv = GetSpriteUvCoords(sprite.internalId);
     ApplySpriteUvAdjustment(uv, sprite.GetCoords(set, 0));

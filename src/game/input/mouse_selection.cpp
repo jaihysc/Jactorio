@@ -53,7 +53,6 @@ void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
         if (selected_entity != nullptr && selected_entity->placeable) {
             // Has item selected
             renderer.PrepareSprite(cursor_coord,
-                                   player.world.GetPosition(),
                                    *selected_entity->sprite,
                                    selected_entity->OnRGetSpriteSet(orientation, world, cursor_coord),
                                    {SafeCast<float>(selected_entity->GetWidth(orientation)),
@@ -69,7 +68,7 @@ void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
 
         if (entity_tile->GetPrototype() != nullptr || resource_tile->GetPrototype() != nullptr) {
             // No item selected, over entity
-            renderer.PrepareSprite(cursor_coord, player.world.GetPosition(), *sprite);
+            renderer.PrepareSprite(cursor_coord, *sprite);
         }
     }
 }

@@ -98,10 +98,12 @@ namespace jactorio::render
             return GetSpriteUvCoords(*spritemapCoords_, key);
         }
 
+
+        /// Used for rendering methods, set prior to drawing
+        void SetPlayerPosition(const Position2<float>& player_position) noexcept;
+
         /// \param world World to render
-        /// \param player_x X Position of the player in tiles
-        /// \param player_y Y Position of the player in tiles
-        void GlRenderPlayerPosition(GameTickT game_tick, const game::World& world, float player_x, float player_y);
+        void GlRenderPlayerPosition(GameTickT game_tick, const game::World& world);
 
 
         /// Allows use of Prepare methods
@@ -110,7 +112,6 @@ namespace jactorio::render
         void GlPrepareEnd();
 
         void PrepareSprite(const WorldCoord& coord,
-                           const Position2<float>& player_pos,
                            const proto::Sprite& sprite,
                            SpriteSetT set                    = 0,
                            const Position2<float>& dimension = {1, 1});
@@ -224,6 +225,9 @@ namespace jactorio::render
 
         /// Internal ids to spritemap positions
         const SpriteUvCoordsT* spritemapCoords_ = nullptr;
+
+        /// Cached player's position, for convenience to avoid having to pass player around everywhere
+        Position2<float> playerPosition_;
 
         static unsigned int windowWidth_;
         static unsigned int windowHeight_;

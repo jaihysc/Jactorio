@@ -133,11 +133,10 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
+            common.renderer->SetPlayerPosition(player.world.GetPosition());
+
             // MVP Matrices updated in here
-            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(),
-                                                    player_world,
-                                                    player.world.GetPositionX(),
-                                                    player.world.GetPositionY());
+            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(), player_world);
 
             common.renderer->GlPrepareBegin();
             game::MouseSelection::DrawCursorOverlay(*common.renderer,
