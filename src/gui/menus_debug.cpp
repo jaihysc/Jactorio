@@ -238,7 +238,6 @@ static void ShowConveyorSegments(game::World& world, const data::PrototypeManage
     const auto* sprite_down  = proto.Get<proto::Sprite>("__core__/arrow-down");
     const auto* sprite_left  = proto.Get<proto::Sprite>("__core__/arrow-left");
 
-    renderer.GlPrepareBegin();
     for (auto* chunk : world.LogicGetChunks()) {
         const auto tl_coord = game::World::ChunkCToWorldC(chunk->GetPosition());
 
@@ -324,7 +323,6 @@ static void ShowConveyorSegments(game::World& world, const data::PrototypeManage
             renderer.PrepareSprite(coord, *outline_sprite, 0, segment_len);
         }
     }
-    renderer.GlPrepareEnd();
 }
 
 void gui::DebugConveyorInfo(GameWorlds& worlds,

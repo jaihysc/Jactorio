@@ -143,8 +143,6 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
                                                     common.gameController.worlds,
                                                     common.gameController.player,
                                                     common.gameController.proto);
-            common.renderer->GlPrepareEnd();
-
 
             common.gameController.player.world.SetMouseSelectedTile( //
                 common.renderer->ScreenPosToWorldCoord(common.gameController.player.world.GetPosition(),
@@ -152,8 +150,6 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
-
-            ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });
             gui::ImguiBeginFrame(display_window);
 
             if (IsVisible(gui::Menu::MainMenu)) {
@@ -172,6 +168,10 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
                                 player,
                                 common.gameController.proto,
                                 *common.renderer);
+
+            //
+            common.renderer->GlPrepareEnd();
+            gui::ImguiRenderFrame();
         }
         // ======================================================================
         // ======================================================================
