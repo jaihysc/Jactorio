@@ -9,16 +9,15 @@
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-
-#include "proto/abstract/entity.h"
-
 #include "game/player/player.h"
 #include "game/world/chunk_tile.h"
-
 #include "gui/colors.h"
+#include "gui/context.h"
 #include "gui/menu_data.h"
 #include "gui/menus.h"
 #include "gui/menus_debug.h"
+#include "proto/abstract/entity.h"
+#include "proto/localization.h"
 #include "render/display_window.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
@@ -117,6 +116,21 @@ void gui::Setup(const render::DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
+void gui::LoadFont(const proto::Localization& localization) {
+    auto& io = ImGui::GetIO();
+
+    const auto font_path = std::string(data::PrototypeManager::kDataFolder) + "/" + localization.fontPath;
+    ImWchar glyph_ranges[]{1, 0xFFFF, 0};
+
+    LOG_MESSAGE_F(
+        info, "Loading '%s' %f font '%s'", localization.identifier.c_str(), localization.fontSize, font_path.c_str());
+
+    if (io.Fonts->AddFontFromFileTTF(font_path.c_str(), localization.fontSize, nullptr, glyph_ranges) == nullptr) {
+        throw std::runtime_error("Failed to load font " + font_path);
+    }
+    io.Fonts->Build();
+}
+
 void gui::ImguiBeginFrame(const render::DisplayWindow& display_window) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
@@ -128,11 +142,11 @@ void gui::ImguiRenderFrame() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void DrawMenu(gui::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueDataBase* unique_data = nullptr) {
+void DrawMenu(gui::Menu menu, const gui::Context& context, proto::UniqueDataBase* unique_data = nullptr) {
     auto& gui_menu = gui::menus[static_cast<int>(menu)];
 
     if (gui_menu.visible) {
-        gui_menu.drawPtr({g_rendr, nullptr, unique_data});
+        gui_menu.drawPtr(context, nullptr, unique_data);
     }
 }
 
@@ -156,14 +170,14 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
     // ImPopFont();
 
     MenuData menu_data = {*sprite_positions, tex_id};
-    const render::GuiRenderer g_rendr{worlds, logic, player, proto, menu_data};
+    const Context context{worlds, logic, player, proto, menu_data};
 
 
     bool drew_gui = false;
 
     auto* tile = player.placement.GetActivatedTile();
     if (tile != nullptr) {
-        drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(g_rendr, tile);
+        drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(context, tile);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }
@@ -173,16 +187,15 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
     }
 
     if (!drew_gui) {
-        DrawMenu(Menu::CharacterMenu, g_rendr);
+        DrawMenu(Menu::CharacterMenu, context);
     }
 
     // Player gui
-    DrawMenu(Menu::DebugMenu, g_rendr);
-    DebugMenuLogic(worlds, logic, player, proto);
+    DrawMenu(Menu::DebugMenu, context);
 
-    CursorWindow(g_rendr);
-    CraftingQueue(g_rendr);
-    PickupProgressbar(g_rendr);
+    CursorWindow(context, nullptr, nullptr);
+    CraftingQueue(context, nullptr, nullptr);
+    PickupProgressbar(context, nullptr, nullptr);
 }
 
 void gui::ImguiTerminate() {

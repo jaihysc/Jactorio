@@ -75,7 +75,7 @@ namespace jactorio::data
                 return;
 
             assert(data::active_unique_data_manager != nullptr);
-            this->SetPtr(static_cast<TUnique*>(&active_unique_data_manager->RelocationTableGet(id)));
+            this->SetPtr(SafeCast<TUnique*>(&active_unique_data_manager->RelocationTableGet(id)));
         }
 
         CEREAL_SAVE(archive) {

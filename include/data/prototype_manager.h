@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/convert.h"
 #include "proto/detail/category.h"
 #include "proto/framework/framework_base.h"
 
@@ -94,15 +95,23 @@ namespace jactorio::data
         template <typename TProto = proto::FrameworkBase>
         J_NODISCARD TProto* Find(const std::string& iname) const noexcept;
 
+        /// Short form: Fetches localized text for provided label's internal name
+        J_NODISCARD const std::string& GetLocalText(const std::string& label_name) const;
+
 
         // ======================================================================
 
 
-        /// Loads prototypes and their properties from provided directory path
-        /// \remark This is how the game loads prototypes normally
-        /// \param folder_path Do not include a / at the end (Valid usage: dc/xy/data)
+        /// Loads prototypes and their properties from provided directory path,
+        /// Validates loaded prototypes
+        /// \param data_folder_path Path to data folder (data folder has subdirectories, each sub-directory has data.py)
         /// \exception ProtoError Prototype validation failed or Pybind error
-        void Load(const std::string& folder_path);
+        void LoadProto(const char* data_folder_path);
+
+        /// Loads localization for prototypes
+        /// \param data_folder_path Path to data folder (data folder has subdirectories, each sub-directory has data.py)
+        /// \param local_identifier Identifier for locale to load
+        void LoadLocal(const char* data_folder_path, const char* local_identifier);
 
 
         /// Clears all prototype data
@@ -148,6 +157,9 @@ namespace jactorio::data
 
         /// Appended to the beginning of each new prototype
         std::string directoryPrefix_;
+
+        /// Returned when no label exists in GetLocalText
+        std::string defaultLocalization_ = "???";
     };
 
     template <typename TProto>
@@ -166,7 +178,7 @@ namespace jactorio::data
 
         try {
             proto::FrameworkBase* base = category->at(iname);
-            return static_cast<TProto*>(base);
+            return SafeCast<TProto*>(base);
         }
         catch (std::out_of_range&) {
             LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
@@ -185,7 +197,7 @@ namespace jactorio::data
 
         for (auto& it : category_items) {
             proto::FrameworkBase* base_ptr = it.second;
-            items.push_back(static_cast<TProto*>(base_ptr));
+            items.push_back(SafeCast<TProto*>(base_ptr));
         }
 
         return items;
@@ -233,7 +245,7 @@ namespace jactorio::data
         for (const auto& map : dataRaw_) {
             auto i = map.find(iname);
             if (i != map.end()) {
-                return static_cast<TProto*>(i->second);
+                return SafeCast<TProto*>(i->second);
             }
         }
         return nullptr;
@@ -250,7 +262,7 @@ namespace jactorio::data
         assert(relocationTable_.at(prototype_id));
 
         const auto* proto = relocationTable_[prototype_id];
-        return static_cast<const TProto&>(*proto);
+        return SafeCast<const TProto&>(*proto);
     }
 } // namespace jactorio::data
 

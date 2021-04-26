@@ -10,124 +10,49 @@
 
 namespace jactorio::game
 {
-    class PlayerPlacementTest : public testing::Test
-    {
-    protected:
-        Player player_;
-        Player::Inventory& playerInv_   = player_.inventory;
-        Player::Placement& playerPlace_ = player_.placement;
+    TEST(PlayerPlacement, RotatePlacementOrientation) {
+        Player player;
+        auto& place = player.placement;
 
-        Logic logic_;
-        World world_;
+        EXPECT_EQ(place.orientation, Orientation::up);
 
-        data::PrototypeManager proto_;
+        place.RotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::right);
 
-        /// Sets the base tile and entity at coord
-        void SetEntityCoords(const WorldCoord& coord,
-                             const proto::Tile* tile_proto,
-                             const proto::Entity* entity_proto) {
-            world_.GetTile(coord, TileLayer::base)->SetPrototype(Orientation::up, tile_proto);
-            world_.GetTile(coord, TileLayer::entity)->SetPrototype(Orientation::up, entity_proto);
-        }
-    };
+        place.RotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::down);
 
-    TEST_F(PlayerPlacementTest, RotatePlacementOrientation) {
-        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
+        place.RotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::left);
 
-        playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::right);
-
-        playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::down);
-
-        playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::left);
-
-        playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
+        place.RotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::up);
     }
 
-    TEST_F(PlayerPlacementTest, CounterRotatePlacementOrientation) {
-        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
+    TEST(PlayerPlacement, CounterRotatePlacementOrientation) {
+        Player player;
+        auto& place = player.placement;
 
-        playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::left);
+        EXPECT_EQ(place.orientation, Orientation::up);
 
-        playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::down);
+        place.CounterRotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::left);
 
-        playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::right);
+        place.CounterRotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::down);
 
-        playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
+        place.CounterRotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::right);
+
+        place.CounterRotateOrientation();
+        EXPECT_EQ(place.orientation, Orientation::up);
     }
 
-    /// Place entity at 0, 0
-    TEST_F(PlayerPlacementTest, TryPlaceEntity) {
-        // Create entity
-        proto::Item item;
-        proto::Item item_no_entity; // Does not hold an entity reference
+    TEST(PlayerPlacement, TryActivateTile) {
+        Player player;
+        Logic logic;
+        World world;
 
-        proto::ContainerEntity entity;
-        entity.SetItem(&item);
-
-        proto::ContainerEntity entity2;
-
-
-        proto::Tile tile_proto;
-        tile_proto.isWater = false;
-
-        world_.EmplaceChunk({0, 0});
-
-        auto& tile1_base   = *world_.GetTile({0, 0}, TileLayer::base);
-        auto& tile1_entity = *world_.GetTile({0, 0}, TileLayer::entity);
-
-        auto& tile2_base   = *world_.GetTile({1, 0}, TileLayer::base);
-        auto& tile2_entity = *world_.GetTile({1, 0}, TileLayer::entity);
-
-
-        tile1_base.SetPrototype(Orientation::up, &tile_proto);
-
-        tile2_base.SetPrototype(Orientation::up, &tile_proto);
-        tile2_entity.SetPrototype(Orientation::up, &entity2);
-
-
-        // Edge cases
-        EXPECT_FALSE(playerPlace_.TryPlaceEntity(world_, logic_, {0, 0})); // Placing with no items selected
-
-        playerInv_.SetSelectedItem({&item_no_entity, 2});
-
-        tile1_entity.SetPrototype(Orientation::up, &entity);
-
-        EXPECT_FALSE(playerPlace_.TryPlaceEntity(world_, logic_, {0, 0})); // Item holds no reference to an entity
-        EXPECT_EQ(tile1_entity.GetPrototype(), &entity);                   // Should not delete at this location
-
-
-        // Placement tests
-
-        // Place at 0, 0
-        playerInv_.SetSelectedItem({&item, 2});
-
-        tile1_entity.SetPrototype(nullptr);
-
-        EXPECT_TRUE(playerPlace_.TryPlaceEntity(world_, logic_, {0, 0})); // Place on empty tile 0, 0
-
-        EXPECT_EQ(tile1_entity.GetPrototype(), &entity);
-        EXPECT_EQ(playerInv_.GetSelectedItem()->count, 1); // 1 less item
-
-        // The OnBuild() method should get called, creating unique data on the tile which holds the inventory
-        EXPECT_NE(tile1_entity.GetUniqueData(), nullptr);
-
-
-        // Do not place at 1, 0
-
-        // A tile already exists on 1, 0 - Should not override it
-        EXPECT_FALSE(playerPlace_.TryPlaceEntity(world_, logic_, {1, 0}));
-        EXPECT_EQ(tile2_entity.GetPrototype(), &entity2);
-    }
-
-    TEST_F(PlayerPlacementTest, TryActivateTile) {
         // Create entity
         proto::Item item;
         proto::Item item_no_entity; // Does not hold an entity reference
@@ -141,385 +66,309 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
-        world_.EmplaceChunk({0, 0});
+        world.EmplaceChunk({0, 0});
 
 
-        auto* tile_base   = world_.GetTile({0, 0}, TileLayer::base);
-        auto* tile_entity = world_.GetTile({0, 0}, TileLayer::entity);
+        auto* tile_base   = world.GetTile({0, 0}, TileLayer::base);
+        auto* tile_entity = world.GetTile({0, 0}, TileLayer::entity);
 
         tile_base->SetPrototype(Orientation::up, &tile_proto);
 
         // No entity, do not activate
-        EXPECT_FALSE(playerPlace_.TryActivateTile(world_, {0, 0}));
+        EXPECT_FALSE(player.placement.TryActivateTile(world, {0, 0}));
 
 
         // If selected item's entity is placeable, do not set activated_layer
         tile_entity->SetPrototype(Orientation::up, &entity);
 
-        playerInv_.SetSelectedItem({&item, 2});
+        player.inventory.SetSelectedItem({&item, 2});
 
-        EXPECT_FALSE(playerPlace_.TryPlaceEntity(world_, logic_, {0, 0}));
-        EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
+        EXPECT_FALSE(player.placement.TryPlaceEntity(world, logic, {0, 0}));
+        EXPECT_EQ(player.placement.GetActivatedTile(), nullptr);
 
 
         // Clicking on an entity with no placeable items selected will set activated_layer
-        playerInv_.SetSelectedItem({&item_no_entity, 2});
+        player.inventory.SetSelectedItem({&item_no_entity, 2});
 
-        EXPECT_TRUE(playerPlace_.TryActivateTile(world_, {0, 0}));
-        EXPECT_EQ(playerPlace_.GetActivatedTile(), tile_entity);
+        EXPECT_TRUE(player.placement.TryActivateTile(world, {0, 0}));
+        EXPECT_EQ(player.placement.GetActivatedTile(), tile_entity);
 
 
         // Clicking again will NOT unset
-        EXPECT_TRUE(playerPlace_.TryActivateTile(world_, {0, 0}));
-        EXPECT_EQ(playerPlace_.GetActivatedTile(), tile_entity);
+        EXPECT_TRUE(player.placement.TryActivateTile(world, {0, 0}));
+        EXPECT_EQ(player.placement.GetActivatedTile(), tile_entity);
 
 
         // Activated tile can be set to nullptr to deactivate
-        playerPlace_.SetActivatedTile(nullptr);
-        EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
+        player.placement.SetActivatedTile(nullptr);
+        EXPECT_EQ(player.placement.GetActivatedTile(), nullptr);
     }
-
-    /// Picking up an entity wil unset activated tile if activated tile was the entity
-    TEST_F(PlayerPlacementTest, TryPickupEntityDeactivateTile) {
-
-        // Create entity
-        proto::Item item;
-
-        proto::ContainerEntity entity;
-        entity.SetWidth(3);
-        entity.SetHeight(4);
-        entity.SetItem(&item);
-
-
-        proto::Tile tile_proto;
-        tile_proto.isWater = false;
-
-        // Create world with entity at 0, 0
-        world_.EmplaceChunk({0, 0});
-
-
-        for (WorldCoordAxis y = 0; y < entity.GetHeight(Orientation::up); ++y) {
-            for (WorldCoordAxis x = 0; x < entity.GetWidth(Orientation::up); ++x) {
-                auto* tile = world_.GetTile({x, y}, TileLayer::base);
-                tile->SetPrototype(Orientation::up, &tile_proto);
-            }
-        }
-
-
-        // Place entity
-        playerInv_.SetSelectedItem({&item, 2});
-
-        EXPECT_TRUE(playerPlace_.TryPlaceEntity(world_, logic_, {0, 0}));
-
-
-        // Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
-        playerInv_.DecrementSelectedItem();
-
-        EXPECT_TRUE(playerPlace_.TryActivateTile(world_, {2, 3}));
-        EXPECT_EQ(playerPlace_.GetActivatedTile(), world_.GetTile({0, 0}, TileLayer::entity));
-
-
-        // Picking up entity will unset
-        playerPlace_.TryPickup(world_, logic_, {0, 1}, 1000);
-        EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
-    }
-
-    TEST_F(PlayerPlacementTest, TryPickupEntity) {
-        // Create entity
-        proto::Item item;
-
-        auto& entity      = proto_.Make<proto::ContainerEntity>();
-        entity.pickupTime = 1.f;
-        entity.SetItem(&item);
-
-        // Create world with entity at 0, 0
-        world_.EmplaceChunk({0, 0});
-
-        auto* tile  = world_.GetTile({0, 0}, TileLayer::entity);
-        auto* tile2 = world_.GetTile({1, 0}, TileLayer::entity);
-
-        tile->SetPrototype(Orientation::up, &entity);
-        tile2->SetPrototype(Orientation::up, &entity);
-
-
-        // Create unique data by calling build event for prototype with tile
-        entity.OnBuild(world_, logic_, {0, 0}, TileLayer::entity, Orientation::up);
-
-
-        //
-        EXPECT_EQ(playerPlace_.GetPickupPercentage(), 0.f);  // Defaults to 0
-        playerPlace_.TryPickup(world_, logic_, {0, 2}, 990); // Will not attempt to pickup non entity tiles
-
-
-        // Test pickup
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 30);
-        EXPECT_EQ(playerPlace_.GetPickupPercentage(), 0.5f); // 50% picked up 30 ticks out of 60
-        EXPECT_EQ(tile->GetPrototype(), &entity); // Not picked up yet - 10 more ticks needed to reach 1 second
-
-
-        playerPlace_.TryPickup(world_, logic_, {1, 0}, 30); // Selecting different tile will reset pickup counter
-        EXPECT_EQ(tile2->GetPrototype(), &entity); // Not picked up yet - 50 more to 1 second since counter reset
-
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 50);
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 10);
-        EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
-
-        EXPECT_EQ(playerInv_.inventory[0].item, &item);
-        EXPECT_EQ(playerInv_.inventory[0].count, 1);
-
-        // Unique data for tile should have been deleted
-        EXPECT_EQ(tile->GetUniqueData(), nullptr);
-    }
-
-    TEST_F(PlayerPlacementTest, TryPickupResource) {
-        // Create resource entity
-        proto::Item item;
-
-        auto& entity      = proto_.Make<proto::ResourceEntity>();
-        entity.pickupTime = 3.f;
-        entity.SetItem(&item);
-
-        // Create world with the resource entity at 0, 0
-        world_.EmplaceChunk({0, 0});
-
-        auto* tile  = world_.GetTile({0, 0}, TileLayer::resource);
-        auto* tile2 = world_.GetTile({1, 0}, TileLayer::resource);
-
-        tile->SetPrototype(Orientation::up, &entity);
-
-        // Holds the resources available at the tile, should be decremented when extracted
-        auto& resource_data = tile->MakeUniqueData<proto::ResourceEntityData>(2);
-
-
-        //
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 180);
-        // Resource entity should only become nullptr after all the resources are extracted
-        EXPECT_EQ(tile->GetPrototype(), &entity);
-
-        EXPECT_EQ(resource_data.resourceAmount, 1);
-
-        EXPECT_EQ(playerInv_.inventory[0].item, &item); // Gave 1 resource to player
-        EXPECT_EQ(playerInv_.inventory[0].count, 1);
-
-
-        // All resources extracted from resource entity, should now become nullptr
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        EXPECT_EQ(tile2->GetPrototype(), nullptr); // Picked up, item given to inventory
-
-        // Resource_data should be deleted
-
-        EXPECT_EQ(playerInv_.inventory[0].item, &item);
-        EXPECT_EQ(playerInv_.inventory[0].count, 2); // Player has 2 of resource
-    }
-
-    TEST_F(PlayerPlacementTest, TryPickupLayered) {
-        proto::Item item;
-        // Create world with the resource entity at 0, 0
-        world_.EmplaceChunk({0, 0});
-        auto* tile_resource = world_.GetTile({0, 0}, TileLayer::resource);
-        auto* tile_entity   = world_.GetTile({0, 0}, TileLayer::entity);
-
-
-        // Resource entity
-        auto& resource_entity      = proto_.Make<proto::ResourceEntity>();
-        resource_entity.pickupTime = 3.f;
-        resource_entity.SetItem(&item);
-
-
-        tile_resource->SetPrototype(Orientation::up, &resource_entity);
-
-        // Holds the resources available at the tile, should be decremented when extracted
-        auto& resource_data = tile_resource->MakeUniqueData<proto::ResourceEntityData>(2);
-
-
-        // Other entity (e.g Container_entity)
-        auto& container_entity      = proto_.Make<proto::ContainerEntity>();
-        container_entity.pickupTime = 1.f;
-        container_entity.SetItem(&item);
-
-
-        tile_entity->SetPrototype(Orientation::up, &container_entity);
-
-        //
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60); // Container entity takes priority
-        EXPECT_EQ(tile_entity->GetPrototype(), nullptr);    // Picked up, item given to inventory
-
-
-        // Now that container entity is picked up, resource entity is next
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        EXPECT_EQ(resource_data.resourceAmount, 2); // Not picked up, still 60 more ticks required
-
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        EXPECT_EQ(resource_data.resourceAmount, 1); // Picked up
-    }
-
-    /// Picking up an entity which is rotated (treated as 2x1 instead of 1x2)
-    TEST_F(PlayerPlacementTest, TryPickupRotated) {
-        world_.EmplaceChunk({0, 0});
-
-        proto::Item item;
-        proto::ContainerEntity container;
-        container.SetItem(&item);
-
-        container.SetDimension({1, 2});
-        TestSetupContainer(world_, {1, 1}, Orientation::right, container); // Tiles {1, 1}, {2, 1}
-
-        playerPlace_.TryPickup(world_, logic_, {2, 1}, 9999);
-
-        EXPECT_EQ(world_.GetTile({1, 1}, TileLayer::entity)->GetPrototype(), nullptr); // Left container
-        EXPECT_EQ(world_.GetTile({2, 1}, TileLayer::entity)->GetPrototype(), nullptr); // Right container
-    }
-
 
     // ======================================================================
 
-
-    class MockEntityPlacement final : public TestMockEntity
+    class PlayerPlacementTest : public testing::Test
     {
-    public:
-        mutable bool buildCalled  = false;
-        mutable bool removeCalled = false;
+    protected:
+        /// Fills chunk with buildable tile
+        /// Sets up item and container_
+        void SetUp() override {
+            auto& chunk = world_.EmplaceChunk({0, 0});
 
-        mutable bool onCanBuildReturn = true;
+            container_.SetItem(&item_);
 
-        mutable std::vector<WorldCoord> emitCoords;
-        mutable std::vector<WorldCoord> receiveCoords;
+            tile_.isWater = false;
 
-        void OnBuild(World& /*world*/,
-                     Logic& /*logic*/,
-                     const WorldCoord& /*coord*/,
-                     TileLayer /*tlayer*/,
-                     Orientation /*orientation*/) const override {
-            buildCalled = true;
+            for (auto& tile : chunk.Tiles(TileLayer::base)) {
+                tile.SetPrototype(Orientation::up, &tile_);
+            }
         }
 
-        void OnRemove(World& /*world*/,
-                      Logic& /*logic*/,
-                      const WorldCoord& /*coord*/,
-                      TileLayer /*tlayer*/) const override {
-            removeCalled = true;
-        }
+        Player player_;
+        Logic logic_;
+        World world_;
 
+        /// Tile making up the chunk 0, 0
+        proto::Tile tile_;
 
-        J_NODISCARD bool OnCanBuild(const World& /*world*/,
-                                    const WorldCoord& /*coord*/,
-                                    const Orientation /*orien*/) const override {
-            return onCanBuildReturn;
-        }
-
-
-        void OnNeighborUpdate(World& /*world*/,
-                              Logic& /*logic*/,
-                              const WorldCoord& emit_coord,
-                              const WorldCoord& receive_coord,
-                              Orientation /*emit_orientation*/) const override {
-            emitCoords.push_back(emit_coord);
-            receiveCoords.push_back(receive_coord);
-        }
+        /// Item for container_
+        proto::Item item_;
+        proto::ContainerEntity container_;
     };
 
-    TEST_F(PlayerPlacementTest, PlacePickupCallPickupRemoveEvents) {
-        class MockUpdateListener : public TestMockEntity
-        {
-        public:
-            mutable WorldCoord emit;
-            mutable WorldCoord receive;
-            mutable proto::UpdateType type = proto::UpdateType::remove;
 
-            void OnTileUpdate(World& /*world*/,
-                              const WorldCoord& emit_coords,
-                              const WorldCoord& receive_coords,
-                              const proto::UpdateType type) const override {
-                emit       = emit_coords;
-                receive    = receive_coords;
-                this->type = type;
-            }
-        };
+    /// Valid placement at tile {0, 0}
+    TEST_F(PlayerPlacementTest, PlaceValid) {
+        player_.inventory.SetSelectedItem({&item_, 2});
+        EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {0, 0}));
 
-        // The world tile must have a tile prototype
-        proto::Tile tile_proto;
-        tile_proto.isWater = false;
+        EXPECT_EQ(world_.GetTile({0, 0}, TileLayer::entity)->GetPrototype(), &container_);
 
-        world_.EmplaceChunk({0, 0});
-        world_.GetTile({0, 0}, TileLayer::base)->SetPrototype(Orientation::up, &tile_proto);
-
-
-        // Create entity
-        proto::Item item;
-        MockEntityPlacement entity;
-        entity.SetItem(&item);
-
-
-        ItemStack selected_item = {&item, 1};
-        playerInv_.SetSelectedItem(selected_item);
-
-        // Update listeners should be dispatched
-        MockUpdateListener mock_listener;
-        world_.updateDispatcher.Register({3, 4}, {0, 0}, mock_listener);
-        // Change to some random data
-        mock_listener.emit    = {1, 2};
-        mock_listener.receive = {3, 4};
-
-        playerPlace_.TryPlaceEntity(world_, logic_, {0, 0});
-
-        EXPECT_TRUE(entity.buildCalled);
-        EXPECT_EQ(mock_listener.emit.x, 0);
-        EXPECT_EQ(mock_listener.emit.y, 0);
-
-        EXPECT_EQ(mock_listener.receive.x, 3);
-        EXPECT_EQ(mock_listener.receive.y, 4);
-
-        EXPECT_EQ(mock_listener.type, proto::UpdateType::place);
-
-
-        // Pickup
-
-        // Change to some random data
-        mock_listener.emit    = {1, 2};
-        mock_listener.receive = {3, 4};
-
-        playerPlace_.TryPickup(world_, logic_, {0, 0}, 60);
-        EXPECT_TRUE(entity.removeCalled);
-        EXPECT_EQ(mock_listener.emit.x, 0);
-        EXPECT_EQ(mock_listener.emit.y, 0);
-
-        EXPECT_EQ(mock_listener.receive.x, 3);
-        EXPECT_EQ(mock_listener.receive.y, 4);
-
-        EXPECT_EQ(mock_listener.type, proto::UpdateType::remove);
+        // 1 less item
+        EXPECT_EQ(*player_.inventory.GetSelectedItem(), ItemStack({&item_, 1}));
     }
 
-    TEST_F(PlayerPlacementTest, TryPlaceCallOnCanBuild) {
-        // The world tile must have a tile prototype
-        proto::Tile tile_proto;
-        tile_proto.isWater = false;
+    /// An entity already exists at {1, 2}, building another entity that overlaps it is invalid
+    TEST_F(PlayerPlacementTest, PlaceTileAlreadyHasEntity) {
+        container_.SetDimension({2, 3});
 
-        world_.EmplaceChunk({0, 0});
+        player_.inventory.SetSelectedItem({&item_, 2});
+        EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {1, 2}));
 
-        world_.GetTile({0, 0}, TileLayer::base)->SetPrototype(Orientation::up, &tile_proto);
+        // A tile already exists, Should not override it
+        EXPECT_FALSE(player_.placement.TryPlaceEntity(world_, logic_, {0, 0}));
 
+        EXPECT_EQ(world_.GetTile({0, 0}, TileLayer::entity)->GetPrototype(), nullptr);
+        EXPECT_EQ(world_.GetTile({1, 2}, TileLayer::entity)->GetPrototype(), &container_);
 
-        // Create entity
-        proto::Item item;
+        EXPECT_EQ(*player_.inventory.GetSelectedItem(), ItemStack({&item_, 1}));
+    }
 
-        MockEntityPlacement entity;
-        entity.onCanBuildReturn = false;
-        entity.SetItem(&item);
+    /// No item selected, nothing to place
+    TEST_F(PlayerPlacementTest, PlaceNoItemSelected) {
+        EXPECT_FALSE(player_.placement.TryPlaceEntity(world_, logic_, {3, 11}));
+        EXPECT_EQ(world_.GetTile({3, 11}, TileLayer::entity)->GetPrototype(), nullptr);
+    }
 
+    /// No entity associated with item selected, nothing to place
+    TEST_F(PlayerPlacementTest, PlaceItemWithNoEntitySelected) {
+        item_.entityPrototype = nullptr;
+        player_.inventory.SetSelectedItem({&item_, 1});
 
-        ItemStack selected_item = {&item, 1};
-        playerInv_.SetSelectedItem(selected_item);
+        EXPECT_FALSE(player_.placement.TryPlaceEntity(world_, logic_, {3, 11}));
+        EXPECT_EQ(world_.GetTile({3, 11}, TileLayer::entity)->GetPrototype(), nullptr);
 
-        playerPlace_.TryPlaceEntity(world_, logic_, {0, 0});
+        EXPECT_EQ(*player_.inventory.GetSelectedItem(), ItemStack({&item_, 1}));
+    }
+
+    /// If entity can be built at location,
+    /// OnCanBuild can override to not build at location
+    TEST_F(PlayerPlacementTest, PlaceCallOnCanBuild) {
+        class Mock : public TestMockEntity
+        {
+        public:
+            bool OnCanBuild(const World& /*world*/,
+                            const WorldCoord& /*coord*/,
+                            const Orientation /*orien*/) const override {
+                return onCanBuildReturn;
+            }
+
+            mutable bool onCanBuildReturn = true;
+        } mock;
+        mock.onCanBuildReturn = false;
+        mock.SetItem(&item_);
+
+        player_.inventory.SetSelectedItem({&item_, 1});
+        player_.placement.TryPlaceEntity(world_, logic_, {0, 0});
 
         // Not placed because onCanBuild returned false
         EXPECT_EQ(world_.GetTile({0, 0}, TileLayer::entity)->GetPrototype(), nullptr);
     }
 
-    TEST_F(PlayerPlacementTest, TryPlaceTryRemoveCallOnNeighborUpdate) {
+
+    // Remove
+
+    /// Picking up an entity wil unset activated tile if activated tile was the entity
+    TEST_F(PlayerPlacementTest, TryPickupEntityDeactivateTile) {
+        container_.SetDimension({3, 4});
+
+        player_.inventory.SetSelectedItem({&item_, 2});
+        EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {0, 0}));
+
+        // Bit of a hack to get rid of the selected item, since it has internal members, cannot be set to {nullptr, 0}
+        player_.inventory.DecrementSelectedItem();
+
+        EXPECT_TRUE(player_.placement.TryActivateTile(world_, {2, 3}));
+        EXPECT_EQ(player_.placement.GetActivatedTile(), world_.GetTile({0, 0}, TileLayer::entity));
+
+
+        player_.placement.TryPickup(world_, logic_, {1, 2});
+        EXPECT_EQ(player_.placement.GetActivatedTile(), nullptr);
+    }
+
+    TEST_F(PlayerPlacementTest, PickupEntity) {
+        auto* tile = world_.GetTile({0, 0}, TileLayer::entity);
+
+        player_.inventory.SetSelectedItem({&item_, 1});
+        EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {0, 0}));
+
+
+        player_.placement.TryPickup(world_, logic_, {0, 2}); // Will not attempt to pickup non entity tiles
+        EXPECT_NE(tile->GetPrototype(), nullptr);
+
+        player_.placement.TryPickup(world_, logic_, {0, 0});
+        EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
+
+        EXPECT_EQ(player_.inventory.inventory[0].item, &item_);
+        EXPECT_EQ(player_.inventory.inventory[0].count, 1);
+    }
+
+    TEST_F(PlayerPlacementTest, PickupResource) {
+        proto::Item item;
+        proto::ResourceEntity resource;
+        resource.pickupTime = 3.f;
+        resource.SetItem(&item);
+
+        auto* tile = world_.GetTile({0, 0}, TileLayer::resource);
+        tile->SetPrototype(Orientation::up, &resource);
+        auto& resource_data = tile->MakeUniqueData<proto::ResourceEntityData>(2);
+
+
+        player_.placement.TryPickup(world_, logic_, {0, 0}, 180);
+        // Resource entity should only become nullptr after all the resources are extracted
+        EXPECT_EQ(tile->GetPrototype(), &resource);
+        EXPECT_EQ(resource_data.resourceAmount, 1);
+
+        EXPECT_EQ(player_.inventory.inventory[0].item, &item); // Gave 1 resource to player
+        EXPECT_EQ(player_.inventory.inventory[0].count, 1);
+
+
+        // All resources extracted from resource entity, should now become nullptr
+        player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
+        player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
+        EXPECT_EQ(tile->GetPrototype(), &resource);
+
+        player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
+        EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
+
+        EXPECT_EQ(player_.inventory.inventory[0].item, &item);
+        EXPECT_EQ(player_.inventory.inventory[0].count, 2);
+    }
+
+    /// For a tile, pickup entity first, then resource
+    TEST_F(PlayerPlacementTest, PickupLayerOrder) {
+        auto* tile_resource = world_.GetTile({0, 0}, TileLayer::resource);
+        auto* tile_entity   = world_.GetTile({0, 0}, TileLayer::entity);
+
+        // Resource entity
+        proto::Item resource_item;
+        proto::ResourceEntity resource_entity;
+        resource_entity.pickupTime = 3.f;
+        resource_entity.SetItem(&resource_item);
+
+        tile_resource->SetPrototype(Orientation::up, &resource_entity);
+        tile_resource->MakeUniqueData<proto::ResourceEntityData>(1);
+
+        // Container entity
+        proto::Item container_item;
+        proto::ContainerEntity container_entity;
+        container_entity.SetItem(&container_item);
+
+        tile_entity->SetPrototype(Orientation::up, &container_entity);
+
+
+        player_.placement.TryPickup(world_, logic_, {0, 0}); // Container entity takes priority
+        EXPECT_EQ(tile_entity->GetPrototype(), nullptr);
+
+        player_.placement.TryPickup(world_, logic_, {0, 0}, 180);
+        EXPECT_EQ(tile_resource->GetPrototype(), nullptr);
+    }
+
+    /// Picking up an entity which is rotated (treated as 2x1 instead of 1x2)
+    TEST_F(PlayerPlacementTest, PickupRotatedEntity) {
+        container_.SetDimension({1, 2});
+        TestSetupContainer(world_, {1, 1}, Orientation::right, container_); // Tiles {1, 1}, {2, 1}
+
+        player_.placement.TryPickup(world_, logic_, {2, 1});
+
+        EXPECT_EQ(world_.GetTile({1, 1}, TileLayer::entity)->GetPrototype(), nullptr); // Left container
+        EXPECT_EQ(world_.GetTile({2, 1}, TileLayer::entity)->GetPrototype(), nullptr); // Right container
+    }
+
+    TEST_F(PlayerPlacementTest, PlacePickupCallEvents) {
+        class MockEntity : public TestMockEntity
+        {
+        public:
+            void OnBuild(World& /*world*/,
+                         Logic& /*logic*/,
+                         const WorldCoord& /*coord*/,
+                         TileLayer /*tlayer*/,
+                         Orientation /*orientation*/) const override {
+                onBuildCalled = true;
+            }
+
+            void OnRemove(World& /*world*/,
+                          Logic& /*logic*/,
+                          const WorldCoord& /*coord*/,
+                          TileLayer /*tlayer*/) const override {
+                onRemoveCalled = true;
+            }
+
+            void OnTileUpdate(World& /*world*/,
+                              const WorldCoord& emit_coord,
+                              const WorldCoord& receive_coord,
+                              const proto::UpdateType type) const override {
+                EXPECT_EQ(emit_coord, WorldCoord(3, 3));
+                EXPECT_EQ(receive_coord, WorldCoord(5, 6));
+                updateType = type;
+                onUpdateCalled++;
+            }
+
+            mutable bool onBuildCalled           = false;
+            mutable bool onRemoveCalled          = false;
+            mutable int onUpdateCalled           = 0;
+            mutable proto::UpdateType updateType = proto::UpdateType::place;
+        } mock;
+        mock.SetDimension({3, 2});
+        mock.SetItem(&item_);
+
+
+        world_.updateDispatcher.Register({5, 6}, {3, 3}, mock);
+
+        player_.inventory.SetSelectedItem({&item_, 2});
+        EXPECT_TRUE(player_.placement.TryPlaceEntity(world_, logic_, {1, 2}));
+
+        EXPECT_TRUE(mock.onBuildCalled);
+        EXPECT_EQ(mock.updateType, proto::UpdateType::place);
+        EXPECT_EQ(mock.onUpdateCalled, 1);
+
+        // Pickup
+        player_.placement.TryPickup(world_, logic_, {1, 2});
+        EXPECT_TRUE(mock.onRemoveCalled);
+        EXPECT_EQ(mock.updateType, proto::UpdateType::remove);
+        EXPECT_EQ(mock.onUpdateCalled, 2);
+    }
+
+    TEST_F(PlayerPlacementTest, PlacePickupCallOnNeighborUpdate) {
         // Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order
         // from top left
 
@@ -529,54 +378,52 @@ namespace jactorio::game
         // [8] [x] [x] [5]
         //     [7] [6]
 
-        proto::Tile tile_proto;
-        tile_proto.isWater = false;
+        class Mock final : public TestMockEntity
+        {
+        public:
+            mutable std::vector<WorldCoord> emitCoords;
+            mutable std::vector<WorldCoord> receiveCoords;
+
+            void OnNeighborUpdate(World& /*world*/,
+                                  Logic& /*logic*/,
+                                  const WorldCoord& emit_coord,
+                                  const WorldCoord& receive_coord,
+                                  Orientation /*emit_orientation*/) const override {
+                emitCoords.push_back(emit_coord);
+                receiveCoords.push_back(receive_coord);
+            }
+        } mock;
 
         proto::Item item;
+        mock.SetDimension({2, 3});
+        mock.SetItem(&item);
 
-        MockEntityPlacement entity_proto;
-        entity_proto.SetWidth(2);
-        entity_proto.SetHeight(3);
-        entity_proto.SetItem(&item);
-
-        world_.EmplaceChunk({0, 0});
-
-        // Set tiles so entity can be placed on it
-        for (int y = 1; y < 4; ++y) {
-            for (int x = 1; x < 3; ++x) {
-                world_.GetTile({x, y}, TileLayer::base)->SetPrototype(Orientation::up, &tile_proto);
-            }
-        }
-
-        // Set entity around border
+        // Set listeners around border
         for (int x = 1; x <= 2; ++x) {
-            SetEntityCoords({x, 0}, &tile_proto, &entity_proto);
+            world_.GetTile({x, 0}, TileLayer::entity)->SetPrototype(Orientation::up, &mock);
         }
         for (int y = 1; y <= 3; ++y) {
-            SetEntityCoords({3, y}, &tile_proto, &entity_proto);
+            world_.GetTile({3, y}, TileLayer::entity)->SetPrototype(Orientation::up, &mock);
         }
         for (int x = 2; x >= 1; --x) {
-            SetEntityCoords({x, 4}, &tile_proto, &entity_proto);
+            world_.GetTile({x, 4}, TileLayer::entity)->SetPrototype(Orientation::up, &mock);
         }
         for (int y = 3; y >= 1; --y) {
-            SetEntityCoords({0, y}, &tile_proto, &entity_proto);
+            world_.GetTile({0, y}, TileLayer::entity)->SetPrototype(Orientation::up, &mock);
         }
 
-        // ======================================================================
         // Place
+        player_.inventory.SetSelectedItem({&item, 1});
 
-        ItemStack selected_item = {&item, 1};
-        playerInv_.SetSelectedItem(selected_item);
-
-        playerPlace_.TryPlaceEntity(world_, logic_, {1, 1});
-        ASSERT_EQ(entity_proto.emitCoords.size(), 10);
-        ASSERT_EQ(entity_proto.receiveCoords.size(), 10);
+        player_.placement.TryPlaceEntity(world_, logic_, {1, 1});
+        ASSERT_EQ(mock.emitCoords.size(), 10);
+        ASSERT_EQ(mock.receiveCoords.size(), 10);
 
 
         auto validate_coords =
             [&](const size_t index, const WorldCoord& emit_coords, const WorldCoord& receive_coords) {
-                EXPECT_EQ(entity_proto.emitCoords[index], emit_coords);
-                EXPECT_EQ(entity_proto.receiveCoords[index], receive_coords);
+                EXPECT_EQ(mock.emitCoords[index], emit_coords);
+                EXPECT_EQ(mock.receiveCoords[index], receive_coords);
             };
 
         validate_coords(0, {1, 1}, {1, 0});
@@ -593,12 +440,10 @@ namespace jactorio::game
         validate_coords(8, {1, 2}, {0, 2});
         validate_coords(9, {1, 1}, {0, 1});
 
-        // ======================================================================
         // Remove
-
-        playerPlace_.TryPickup(world_, logic_, {2, 3}, 9999); // Bottom right corner
-        EXPECT_EQ(entity_proto.emitCoords.size(), 20);
-        EXPECT_EQ(entity_proto.receiveCoords.size(), 20);
+        player_.placement.TryPickup(world_, logic_, {2, 3}); // Bottom right corner
+        ASSERT_EQ(mock.emitCoords.size(), 20);
+        ASSERT_EQ(mock.receiveCoords.size(), 20);
 
         validate_coords(10, {1, 1}, {1, 0});
         validate_coords(11, {2, 1}, {2, 0});

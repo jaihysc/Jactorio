@@ -387,7 +387,7 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
         });
 
     // Resources
-    GenerateChunk<proto::ResourceEntity>(
+    GenerateChunk<proto::Entity>(
         world,
         proto,
         {chunk_x, chunk_y},

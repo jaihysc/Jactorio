@@ -5,6 +5,7 @@
 #pragma once
 
 #include <fstream>
+#include <type_traits>
 
 #include "core/data_type.h"
 
@@ -52,7 +53,7 @@ namespace jactorio
             return 0;
         }
 
-        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTile* /*tile*/) const override {
+        bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
@@ -285,23 +286,43 @@ namespace jactorio
     }
 
 
-    /// Serializes T and returns deserialized T
-    template <typename T>
-    J_NODISCARD T TestSerializeDeserialize(const T& object) {
+    /// Serializes T
+    template <typename T, typename TArchiver = cereal::PortableBinaryOutputArchive>
+    void TestSerialize(const T& object) {
         constexpr auto save_file = "savegame.dat";
 
-        {
-            std::ofstream out_cereal_stream(save_file, std::ios_base::binary);
-            cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
-            output_archive(object);
-        } // Must go out of scope to flush
+        std::ofstream out_cereal_stream(save_file, std::ios_base::binary);
+        TArchiver output_archive(out_cereal_stream);
+        output_archive(object);
+    }
+
+    /// Returns deserialized T into provided object
+    template <typename T, typename TArchiver = cereal::PortableBinaryInputArchive>
+    void TestDeserialize(T& out) {
+        constexpr auto save_file = "savegame.dat";
 
         std::ifstream in_cereal_stream(save_file, std::ios_base::binary);
-        cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
+        TArchiver iarchive(in_cereal_stream);
+
+        iarchive(out);
+    }
+
+    /// Returns deserialized T
+    template <typename T, typename TArchiver = cereal::PortableBinaryInputArchive>
+    J_NODISCARD T TestDeserialize() {
+        static_assert(std::is_default_constructible_v<T>);
 
         T deserialized_val;
-        iarchive(deserialized_val);
+        TestDeserialize<T, TArchiver>(deserialized_val);
         return deserialized_val;
+    }
+
+
+    /// Serializes T and returns deserialized T
+    template <typename T>
+    J_NODISCARD auto TestSerializeDeserialize(const T& object) {
+        TestSerialize(object);
+        return TestDeserialize<T>();
     }
 } // namespace jactorio
 

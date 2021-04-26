@@ -80,7 +80,7 @@ void proto::AssemblyMachineData::CraftAddProduct() {
 // ======================================================================
 
 SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
+    const auto& machine_data = SafeCast<const AssemblyMachineData&>(unique_data);
 
     if (!machine_data.deferralEntry.Valid())
         game_tick = 0;
@@ -88,8 +88,8 @@ SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& uni
     return AllOfSprite(*sprite, game_tick, 1. / 6);
 }
 
-bool proto::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
-    gui::AssemblyMachine({g_rendr, this, tile->GetUniqueData()});
+bool proto::AssemblyMachine::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
+    gui::AssemblyMachine(context, this, tile->GetUniqueData());
     return true;
 }
 
@@ -110,7 +110,7 @@ bool proto::AssemblyMachine::TryBeginCrafting(game::Logic& logic, AssemblyMachin
 void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
                                                 game::Logic& logic,
                                                 UniqueDataBase* unique_data) const {
-    auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
+    auto* machine_data = SafeCast<AssemblyMachineData*>(unique_data);
 
     machine_data->CraftAddProduct();
 

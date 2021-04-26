@@ -10,28 +10,28 @@
 #include "core/orientation.h"
 #include "data/cereal/serialize.h"
 
-namespace jactorio
+namespace jactorio::game
 {
-    namespace proto
-    {
-        class Sprite;
-        struct UniqueDataBase;
-    } // namespace proto
+    class World;
+    class Chunk;
+    class ChunkTile;
+} // namespace jactorio::game
 
-    namespace game
-    {
-        class World;
+namespace jactorio::gui
+{
+    struct Context;
+}
 
-        class ChunkTile;
-        class Chunk;
-    } // namespace game
+namespace jactorio::proto
+{
+    class Sprite;
+    struct UniqueDataBase;
+} // namespace jactorio::proto
 
-    namespace render
-    {
-        class RendererLayer;
-        class GuiRenderer;
-    } // namespace render
-} // namespace jactorio
+namespace jactorio::render
+{
+    class RendererLayer;
+} // namespace jactorio::render
 
 namespace jactorio::proto
 {
@@ -79,7 +79,7 @@ namespace jactorio::proto
                                                            GameTickT game_tick) const = 0;
 
         /// Displays the menu associated with itself with the provided data
-        virtual bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const = 0;
+        virtual bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const = 0;
 
         /// \param pixel_offset Pixels to top left of current tile
         virtual void OnRDrawUniqueData(render::RendererLayer& layer,

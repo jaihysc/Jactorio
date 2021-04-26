@@ -12,7 +12,6 @@ def addSprite(spritePath):
 def createSplitter(name, icon, spriteN, spriteE, spriteS, spriteW):
     (j.Splitter(name)
         .rotatable(True)
-        .pickupTime(0.1)
 
         .item(j.Item(name + "-item")
             .sprite(

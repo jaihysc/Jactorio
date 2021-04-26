@@ -4,10 +4,9 @@
 
 #include "render/renderer.h"
 
+#include <cmath>
 #include <future>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include "jactorio.h"
 
 #include "core/execution_timer.h"
 #include "game/world/world.h"
@@ -94,10 +93,11 @@ const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const Sp
     }
 }
 
-void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
-                                              const game::World& world,
-                                              const float player_x,
-                                              const float player_y) {
+void render::Renderer::SetPlayerPosition(const Position2<float>& player_position) noexcept {
+    playerPosition_ = player_position;
+}
+
+void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const game::World& world) {
     assert(spritemapCoords_);
     assert(drawThreads_ > 0);
     assert(renderLayers_.size() == drawThreads_);
@@ -116,8 +116,8 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     // Right and bottom varies depending on tile size
 
     // Player position with decimal removed
-    const auto position_x = LossyCast<int>(player_x);
-    const auto position_y = LossyCast<int>(player_y);
+    const auto position_x = LossyCast<int>(playerPosition_.x);
+    const auto position_y = LossyCast<int>(playerPosition_.y);
 
 
     const auto tile_offset = GetTileDrawOffset(position_x, position_y);
@@ -127,32 +127,20 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 
 
     // Must be calculated after tile_offset, chunk_start and chunk_amount. Otherwise, zooming becomes jagged
-    CalculateViewMatrix(player_x, player_y);
+    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
     GlUpdateTileProjectionMatrix();
     mvpManager_.CalculateMvpMatrix();
     mvpManager_.UpdateShaderMvp();
 
-    int started_threads = 0; // Also is index for vector holding futures
+    std::size_t started_threads = 0; // Also is index for vector holding futures
 
-
-    auto begin_prepare_data = [](RendererLayer& r_layer) {
-        r_layer.Clear();
-        r_layer.GlWriteBegin();
-    };
-
-    auto end_prepare_data = [](RendererLayer& r_layer) {
-        r_layer.GlWriteEnd();
-        r_layer.GlBindBuffers();
-        r_layer.GlHandleBufferResize();
-        GlDraw(r_layer.GetIndicesCount());
-    };
 
     auto await_thread_completion = [&]() {
         for (int i = 0; i < started_threads; ++i) {
             chunkDrawThreads_[i].wait();
             auto& r_layer_tile = renderLayers_[i];
 
-            end_prepare_data(r_layer_tile);
+            GlPrepareEnd(r_layer_tile);
         }
     };
 
@@ -161,7 +149,7 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     for (int y = 0; y < chunk_amount.y; ++y) {
 
         // Wait for started threads to finish before starting new ones
-        if (SafeCast<size_t>(started_threads) == drawThreads_) {
+        if (started_threads == drawThreads_) {
             await_thread_completion();
             started_threads = 0;
         }
@@ -170,7 +158,7 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
         const auto chunk_y = chunk_start.y + y;
 
         auto& r_layer_tile = renderLayers_[started_threads];
-        begin_prepare_data(r_layer_tile);
+        GlPrepareBegin(r_layer_tile);
 
         Position2<int> row_start{chunk_start.x, chunk_y};
         Position2<int> render_tile_offset{tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y};
@@ -190,6 +178,91 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     }
 
     await_thread_completion();
+}
+
+void render::Renderer::GlPrepareBegin() {
+    GlPrepareBegin(renderLayers_[0]);
+}
+void render::Renderer::GlPrepareEnd() {
+    GlPrepareEnd(renderLayers_[0]);
+}
+
+void render::Renderer::PrepareSprite(const WorldCoord& coord,
+                                     const proto::Sprite& sprite,
+                                     const SpriteSetT set,
+                                     const Position2<float>& dimension) {
+    auto& r_layer = renderLayers_[0];
+
+
+    const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
+
+    auto uv = GetSpriteUvCoords(sprite.internalId);
+    ApplySpriteUvAdjustment(uv, sprite.GetCoords(set, 0));
+
+    r_layer.PushBack({{
+
+                          {SafeCast<float>(screen_pos.x), SafeCast<float>(screen_pos.y)},
+
+                          {SafeCast<float>(screen_pos.x) + dimension.x * SafeCast<float>(tileWidth),
+                           SafeCast<float>(screen_pos.y) + dimension.y * SafeCast<float>(tileWidth)}},
+                      {uv.topLeft, uv.bottomRight}},
+                     0.5f);
+}
+
+WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& player_pos,
+                                                   const Position2<int32_t>& screen_pos) const {
+    const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
+    const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
+
+    const auto norm_screen_pos_x = 2 * (SafeCast<float>(screen_pos.x) / SafeCast<float>(GetWindowWidth())) - 1;
+    const auto norm_screen_pos_y = 2 * (SafeCast<float>(screen_pos.y) / SafeCast<float>(GetWindowHeight())) - 1;
+
+    const glm::vec4 adjusted_screen_pos =
+        mvpManager_.GetMvpMatrix() / glm::vec4(norm_screen_pos_x, norm_screen_pos_y, 1, 1);
+
+    // Normalize window center between -1 and 1, since is window center, simplifies to 0
+    auto screen_center_pos = mvpManager_.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
+
+    // Players can be partially on a tile, adjust the center accordingly to the correct location
+    screen_center_pos.x -= SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
+    screen_center_pos.y += SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
+
+    // WorldCoord sign direction
+    const auto pixels_from_center_x = adjusted_screen_pos.x - screen_center_pos.x;
+    const auto pixels_from_center_y = screen_center_pos.y - adjusted_screen_pos.y;
+
+    auto tile_x = truncated_player_pos_x + pixels_from_center_x / LossyCast<float>(tileWidth);
+    auto tile_y = truncated_player_pos_y + pixels_from_center_y / LossyCast<float>(tileWidth);
+
+    // Subtract extra tile if negative because no tile exists at -0, -0
+    if (tile_x < 0)
+        tile_x -= 1;
+    if (tile_y < 0)
+        tile_y -= 1;
+
+    return {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
+}
+
+Position2<int32_t> render::Renderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
+                                                           const WorldCoord& coord) const {
+    const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
+    const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
+
+    // From center, without matrix adjustments (WorldCoord sign direction)
+    const auto pixels_from_center_x = (coord.x - truncated_player_pos_x) * tileWidth;
+    const auto pixels_from_center_y = (coord.y - truncated_player_pos_y) * tileWidth;
+
+    // From top left of screen (Top left 0, 0)
+    const auto buffer_center_pos = mvpManager_.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
+    auto buffer_pos_x            = pixels_from_center_x + buffer_center_pos.x;
+    auto buffer_pos_y            = pixels_from_center_y + buffer_center_pos.y;
+
+    // Players can be partially on a tile, remove partial distance for top left of a tile
+    buffer_pos_x -= SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
+    buffer_pos_y -= SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
+
+    // Sometimes has float 8.99999, which is wrongly truncated to 8, thus must round first
+    return {LossyCast<int32_t>(std::round(buffer_pos_x)), LossyCast<int32_t>(std::round(buffer_pos_y))};
 }
 
 void render::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
@@ -357,6 +430,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
 
         const float pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
 
+        // TODO do not draw those out of view
         r_layer.PushBack({{// top left of tile, 1 tile over and down
                            {pixel_pos.x, pixel_pos.y},
                            {pixel_pos.x + SafeCast<float>(tileWidth), pixel_pos.y + SafeCast<float>(tileWidth)}},
@@ -392,7 +466,7 @@ void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
     }
 }
 
-void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_offset) noexcept {
+void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_sub) noexcept {
     const auto diff_x = uv.bottomRight.x - uv.topLeft.x;
     const auto diff_y = uv.bottomRight.y - uv.topLeft.y;
 
@@ -400,11 +474,11 @@ void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPosition
     assert(diff_y >= 0);
 
     // Calculate bottom first since it needs the unmodified top_left
-    uv.bottomRight.x = uv.topLeft.x + diff_x * uv_offset.bottomRight.x;
-    uv.bottomRight.y = uv.topLeft.y + diff_y * uv_offset.bottomRight.y;
+    uv.bottomRight.x = uv.topLeft.x + diff_x * uv_sub.bottomRight.x;
+    uv.bottomRight.y = uv.topLeft.y + diff_y * uv_sub.bottomRight.y;
 
-    uv.topLeft.x += diff_x * uv_offset.topLeft.x;
-    uv.topLeft.y += diff_y * uv_offset.topLeft.y;
+    uv.topLeft.x += diff_x * uv_sub.topLeft.x;
+    uv.topLeft.y += diff_y * uv_sub.topLeft.y;
 }
 
 void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept {
@@ -428,6 +502,17 @@ void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::C
     uv.topLeft.y = uv.bottomRight.y - len_y;
 }
 
+void render::Renderer::GlPrepareBegin(RendererLayer& r_layer) {
+    r_layer.Clear();
+    r_layer.GlWriteBegin();
+}
+
+void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
+    r_layer.GlWriteEnd();
+    r_layer.GlBindBuffers();
+    r_layer.GlHandleBufferResize();
+    GlDraw(r_layer.GetIndicesCount());
+}
 
 void render::Renderer::GlDraw(const uint64_t index_count) noexcept {
     DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES,

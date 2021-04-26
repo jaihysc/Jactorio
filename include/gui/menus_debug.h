@@ -6,19 +6,21 @@
 
 #include "core/data_type.h"
 
-namespace jactorio
+namespace jactorio::data
 {
-    namespace data
-    {
-        class PrototypeManager;
-    }
+    class PrototypeManager;
+} // namespace jactorio::data
 
-    namespace game
-    {
-        class Logic;
-        class Player;
-    } // namespace game
-} // namespace jactorio
+namespace jactorio::game
+{
+    class Logic;
+    class Player;
+} // namespace jactorio::game
+
+namespace jactorio::render
+{
+    class Renderer;
+} // namespace jactorio::render
 
 namespace jactorio::gui
 {
@@ -28,7 +30,8 @@ namespace jactorio::gui
     void DebugMenuLogic(GameWorlds& worlds,
                         game::Logic& logic,
                         game::Player& player,
-                        const data::PrototypeManager& proto);
+                        const data::PrototypeManager& proto,
+                        render::Renderer& renderer);
 
     void DebugTimings();
 
@@ -37,7 +40,10 @@ namespace jactorio::gui
     /// Info on tile currently hovered over
     void DebugTileInfo(GameWorlds& worlds, game::Player& player);
 
-    void DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto);
+    void DebugConveyorInfo(GameWorlds& worlds,
+                           game::Player& player,
+                           const data::PrototypeManager& proto,
+                           render::Renderer& renderer);
 
     void DebugInserterInfo(GameWorlds& worlds, game::Player& player);
 

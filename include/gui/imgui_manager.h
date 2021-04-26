@@ -18,6 +18,11 @@ namespace jactorio::game
     class Logic;
 } // namespace jactorio::game
 
+namespace jactorio::proto
+{
+    class Localization;
+}
+
 namespace jactorio::render
 {
     class DisplayWindow;
@@ -40,6 +45,10 @@ namespace jactorio::gui
     void SetupCharacterData(render::RendererSprites& renderer_sprites);
 
     void Setup(const render::DisplayWindow& display_window);
+
+    /// Loads glyphs from provided localization's font
+    /// \exception std::runtime_error if load failed
+    void LoadFont(const proto::Localization& localization);
 
     void ImguiBeginFrame(const render::DisplayWindow& display_window);
     void ImguiRenderFrame();

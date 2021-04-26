@@ -21,9 +21,7 @@ namespace jactorio::game
     {
         // A separate layer is only needed when it needs to be accessed independently, otherwise join together in single
         // layer
-        cursor = 0,
-        debug,
-        count_
+        count_ = 0
     };
 
     constexpr int kOverlayLayerCount = static_cast<int>(OverlayLayer::count_);

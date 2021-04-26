@@ -172,7 +172,7 @@ void game::ChunkTile::TopLeft::CopyUniqueData(TopLeft& to, PrototypeT* prototype
         assert(prototype != nullptr); // No prototype available for copying unique data
 
         auto copied_unique = prototype->CopyUniqueData(uniqueData.get());
-        to.uniqueData      = std::unique_ptr<UniqueDataT>(static_cast<UniqueDataT*>(copied_unique.release()));
+        to.uniqueData      = std::unique_ptr<UniqueDataT>(SafeCast<UniqueDataT*>(copied_unique.release()));
     }
 }
 

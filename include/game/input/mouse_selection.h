@@ -12,58 +12,46 @@
 #include "game/world/chunk.h"
 #include "proto/detail/type.h"
 
-namespace jactorio
+namespace jactorio::data
 {
-    namespace data
-    {
-        class PrototypeManager;
-    }
-    namespace proto
-    {
-        class Entity;
-    } // namespace proto
+    class PrototypeManager;
+}
+namespace jactorio::proto
+{
+    class Entity;
+} // namespace jactorio::proto
 
-    namespace game
-    {
-        class Player;
-    }
-} // namespace jactorio
+namespace jactorio::game
+{
+    class Player;
+}
+
+namespace jactorio::render
+{
+    class Renderer;
+}
 
 namespace jactorio::game
 {
     /// Handles mouse input and selection
     class MouseSelection
     {
-        static constexpr OverlayLayer kCursorOverlayLayer_ = OverlayLayer::cursor;
-
     public:
-        J_NODISCARD static double GetCursorX();
-        J_NODISCARD static double GetCursorY();
+        static void SetCursor(const Position2<int32_t>& cursor_pos) noexcept;
+        J_NODISCARD static Position2<int32_t> GetCursor() noexcept;
 
-        // ======================================================================
-        // Client only mouse selection (affects only rendering) For Player mouse selection, see player
+        // Rendering
 
-        /// Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the
-        /// cursor
-        void DrawCursorOverlay(GameWorlds& worlds, Player& player, const data::PrototypeManager& proto);
-
-        /// Draws cursor_sprite when over entity & no item selected or item not placeable
-        /// With item selected: draws ghost of entity
-        void DrawOverlay(World& world,
-                         const WorldCoord& coord,
-                         Orientation orientation,
-                         const proto::Entity* selected_entity,
-                         const proto::Sprite& cursor_sprite);
+        /// Draws a selection box if NO entity is selected
+        /// otherwise, draws a ghost of the entity selected at the cursor
+        static void DrawCursorOverlay(render::Renderer& renderer,
+                                      GameWorlds& worlds,
+                                      Player& player,
+                                      const data::PrototypeManager& proto);
 
     private:
-        ChunkCoord lastChunkPos_               = {0, 0};
-        const proto::Sprite* lastCursorSprite_ = nullptr;
-
-        void RemoveLastOverlay(World& world) const;
+        static Position2<int32_t> cursorPos_;
     };
-
-    /// Callback provided to glfwSetCursorPosCallback to set mouse position
-    void SetCursorPosition(double x_pos, double y_pos);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H

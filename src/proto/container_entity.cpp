@@ -16,8 +16,8 @@ void proto::ContainerEntity::OnBuild(game::World& world,
     world.GetTile(coord, tlayer)->MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
-bool proto::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
-    gui::ContainerEntity({g_rendr, this, tile->GetUniqueData<ContainerEntityData>()});
+bool proto::ContainerEntity::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
+    gui::ContainerEntity(context, this, tile->GetUniqueData<ContainerEntityData>());
     return true;
 }
 

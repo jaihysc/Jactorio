@@ -8,29 +8,17 @@ My attempt at recreating [Factorio](https://factorio.com), inspired by [Hopson98
 
 [Weekly log](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 
-## Work in progress
-
-- [x] World Generation
-- [x] Transport lines
-- [x] Drills
-- [x] Inserters
-- [x] Assembly Machines
-- [ ] Splitters
-- [ ] Underground belts
-- [ ] Smelting / Furnaces
-
 ## Building
 
 Requirements:
 
-* Compiler supporting c++17 [gcc >= 9, clang >= 9, msvc >= 142]
+* Compiler supporting c++17 [Tested on: gcc >= 9, clang >= 9, msvc >= 142]
 * Python interpreter 3.x.x
 * CMake
 
 Remarks:
 
 * Windows - Ensure CMake is added to the `Paths` environmental variable
-* Windows - Use git bash to run the bash files
 * MacOS - Version >= 10.15
 
 ---
@@ -39,21 +27,21 @@ Remarks:
 
 **Parameters:** `--notest` if you do not want to build the tests
 
-Executable will be placed in `out/<Build type>/src/`
+Executable will be placed in `out/<Build type>/bin/`
 
 ---
 
-In a bash shell on Windows, Mac and Linux:
+In a shell:
 
 ```bash
 git clone https://github.com/jaihysc/Jactorio.git
 cd Jactorio
-sh ./build.sh <See build types above> --notest
+./build.sh <See build types above> --notest
 ```
 
 ## Running tests
 
-**Test parameters:** `--leakcheck` to perform a leak check, skipping some false positive tests
+**Test parameters:** `--leakcheck` to perform a leak check using valgrind, skipping some false positive tests
 
 The test results will be placed in the directory of `runtests.sh`
 
@@ -62,12 +50,12 @@ The test results will be placed in the directory of `runtests.sh`
 After following the build steps above **without** `--notest`
 
 ```bash
-sh ./runtests.sh <Build type used to build>
+./runtests.sh <Build type used to build>
 ```
 
 ## Dependencies
 
-The installation of dependencies listed below is automatic
+The installation of dependencies listed below is automatic, but may carry additional dependencies **you** must install:
 
 * [backward-cpp](https://github.com/bombela/backward-cpp)
 * [cereal](https://github.com/USCiLab/cereal)

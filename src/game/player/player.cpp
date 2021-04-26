@@ -14,63 +14,12 @@
 
 using namespace jactorio;
 
-void game::Player::World::CalculateMouseSelectedTile(const glm::mat4& mvp_matrix) {
-    const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(positionX_));
-    const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(positionY_));
+void game::Player::World::SetMouseSelectedTile(const WorldCoord& coord) noexcept {
+    mouseSelectedTile_ = coord;
+}
 
-    float pixels_from_center_x;
-    float pixels_from_center_y;
-    {
-        const auto window_width  = render::Renderer::GetWindowWidth();
-        const auto window_height = render::Renderer::GetWindowHeight();
-
-        // Account for MVP matrices
-        // Normalize to -1 | 1 used by the matrix
-        const double norm_x = 2 * (MouseSelection::GetCursorX() / window_width) - 1;
-        const double norm_y = 2 * (MouseSelection::GetCursorY() / window_height) - 1;
-
-        // A = C / B
-        const glm::vec4 norm_positions = mvp_matrix / glm::vec4(norm_x, norm_y, 1, 1);
-
-
-        float mouse_x_center;
-        float mouse_y_center;
-        {
-            // Calculate the center tile on screen
-            // Calculate number of pixels from center
-            const double win_center_norm_x = 2 * (SafeCast<double>(window_width) / 2 / window_width) - 1;
-            const double win_center_norm_y = 2 * (SafeCast<double>(window_height) / 2 / window_height) - 1;
-
-            const glm::vec4 win_center_norm_positions =
-                mvp_matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
-
-            mouse_x_center = win_center_norm_positions.x;
-            mouse_y_center = win_center_norm_positions.y;
-        }
-
-        // If player is standing on a partial tile, adjust the center accordingly to the correct location
-        mouse_x_center -= SafeCast<float>(render::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
-
-        // This is plus since the y axis is inverted
-        mouse_y_center += SafeCast<float>(render::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
-
-
-        pixels_from_center_x = norm_positions.x - mouse_x_center;
-        pixels_from_center_y = mouse_y_center - norm_positions.y;
-    }
-
-    // Calculate tile position based on current player position
-    float tile_x = truncated_player_pos_x + pixels_from_center_x / LossyCast<float>(render::Renderer::tileWidth);
-
-    float tile_y = truncated_player_pos_y + pixels_from_center_y / LossyCast<float>(render::Renderer::tileWidth);
-
-    // Subtract extra tile if negative because no tile exists at -0, -0
-    if (tile_x < 0)
-        tile_x -= 1.f;
-    if (tile_y < 0)
-        tile_y -= 1.f;
-
-    mouseSelectedTile_ = {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
+WorldCoord game::Player::World::GetMouseTileCoords() const noexcept {
+    return mouseSelectedTile_;
 }
 
 bool game::Player::World::MouseSelectedTileInRange() const {
@@ -79,16 +28,20 @@ bool game::Player::World::MouseSelectedTileInRange() const {
     // Maximum distance of from the player where tiles can be reached
     constexpr unsigned int max_reach = 34;
     const auto tile_dist =
-        abs(positionX_ - SafeCast<float>(cursor_position.x)) + abs(positionY_ - SafeCast<float>(cursor_position.y));
+        abs(position_.x - SafeCast<float>(cursor_position.x)) + abs(position_.y - SafeCast<float>(cursor_position.y));
 
     return tile_dist <= max_reach;
+}
+
+Position2<game::Player::World::PlayerPosT> game::Player::World::GetPosition() const noexcept {
+    return position_;
 }
 
 bool game::Player::World::TargetTileValid(game::World* world, const WorldCoord& coord) const {
     assert(world != nullptr); // Player is not in a world
 
-    const auto* origin_tile =
-        world->GetTile({LossyCast<WorldCoordAxis>(positionX_), LossyCast<WorldCoordAxis>(positionY_)}, TileLayer::base);
+    const auto* origin_tile = world->GetTile(
+        {LossyCast<WorldCoordAxis>(position_.x), LossyCast<WorldCoordAxis>(position_.y)}, TileLayer::base);
 
     if (origin_tile == nullptr)
         return false;
@@ -107,17 +60,25 @@ bool game::Player::World::TargetTileValid(game::World* world, const WorldCoord& 
 }
 
 void game::Player::World::MovePlayerX(const float amount) {
-    const float target_x = positionX_ + amount;
+    const float target_x = position_.x + amount;
 
     //    if (TargetTileValid(&GetWorld(), LossyCast<int>(target_x), LossyCast<int>(playerPositionY_)))
-    positionX_ = target_x;
+    position_.x = target_x;
 }
 
 void game::Player::World::MovePlayerY(const float amount) {
-    const float target_y = positionY_ + amount;
+    const float target_y = position_.y + amount;
 
     //    if (TargetTileValid(&GetWorld(), LossyCast<int>(playerPositionX_), LossyCast<int>(target_y)))
-    positionY_ = target_y;
+    position_.y = target_y;
+}
+
+void game::Player::World::SetPlayerX(const PlayerPosT x) noexcept {
+    position_.x = x;
+}
+
+void game::Player::World::SetPlayerY(const PlayerPosT y) noexcept {
+    position_.y = y;
 }
 
 
@@ -234,18 +195,18 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
         return false;
 
     // Does not have item, or placeable item
-    auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
-    if (entity_ptr == nullptr || !entity_ptr->placeable)
+    auto* entity = stack->item->entityPrototype;
+    if (entity == nullptr || !entity->placeable)
         return false;
 
 
-    assert(entity_ptr != nullptr);
+    assert(entity != nullptr);
     // Prototypes can perform additional checking on whether the location can be placed on or not
-    if (!entity_ptr->OnCanBuild(world, coord, orientation))
+    if (!entity->OnCanBuild(world, coord, orientation))
         return false;
 
     // Do not take item away from player unless item was successfully placed
-    if (!world.Place(coord, orientation, *entity_ptr))
+    if (!world.Place(coord, orientation, *entity))
         // Failed to place because an entity already exists
         return false;
 
@@ -259,9 +220,14 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
 
     // Call events
 
-    entity_ptr->OnBuild(world, logic, coord, TileLayer::entity, orientation);
-    UpdateNeighboringEntities(world, logic, coord, orientation, entity_ptr);
-    world.UpdateDispatch(coord, proto::UpdateType::place);
+    entity->OnBuild(world, logic, coord, TileLayer::entity, orientation);
+    UpdateNeighboringEntities(world, logic, coord, orientation, entity);
+
+    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+            world.UpdateDispatch({coord.x + x_offset, coord.y + y_offset}, proto::UpdateType::place);
+        }
+    }
 
     return true;
 }
@@ -275,8 +241,9 @@ bool game::Player::Placement::TryActivateTile(game::World& world, const WorldCoo
 
     // Can activate if: No selected item OR selected item is not placeable
     if (stack != nullptr) {
+        assert(!stack->Empty());
         // Ensure item attempting to place is an entity
-        auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
+        auto* entity_ptr = stack->item->entityPrototype;
 
         if (entity_ptr != nullptr && entity_ptr->placeable)
             return false;
@@ -322,74 +289,89 @@ void game::Player::Placement::TryPickup(game::World& world,
         }
         else if (resource_proto != nullptr) {
         }
-        else
+        else {
             // No valid pointers
             return;
+        }
     }
 
-    // Selecting a new tile different from the last selected tile will reset the counter
-    if (lastSelectedCoord_ != coord) {
-        pickupTickCounter_ = 0;
-    }
 
-    lastSelectedCoord_ = coord;
-    // Default coord is 0,0 so picking up at 0,0 fails lastCoord != currentCoord, thus set it every time
-    pickupTickTarget_ = LossyCast<uint16_t>(chosen_ptr->pickupTime * kGameHertz); // Seconds to ticks
-
-
-    pickupTickCounter_ += ticks;
-    if (pickupTickCounter_ >= pickupTickTarget_) {
-        // Entity picked up
-        LOG_MESSAGE(debug, "Player picked up entity");
-
-        // Give picked up item to player
+    auto give_item = [this, &chosen_ptr]() {
         assert(chosen_ptr->GetItem() != nullptr); // Entity prototype does not have an item prototype
-        const auto item_stack = ItemStack{chosen_ptr->GetItem(), 1};
+        const ItemStack item_stack{chosen_ptr->GetItem(), 1};
 
         // Failed to add item, likely because the inventory is full
-        if (!playerInv_->inventory.CanAdd(item_stack).first)
+        if (!playerInv_->inventory.CanAdd(item_stack).first) {
             return;
+        }
 
         playerInv_->inventory.Add(item_stack);
         playerInv_->inventory.Sort();
 
         pickupTickCounter_ = 0;
-        // Resource entity
-        if (is_resource_ptr) {
-            auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
+    };
 
-            assert(resource_data != nullptr); // Resource tiles should have valid data
-
-            // Delete resource tile if it is empty after extracting
-            if (--resource_data->resourceAmount == 0) {
-                resource_tile->Clear();
-            }
+    if (is_resource_ptr) {
+        // Selecting a new tile different from the last selected tile will reset the counter
+        if (lastSelectedCoord_ != coord) {
+            lastSelectedCoord_ = coord;
+            pickupTickCounter_ = 0;
         }
-        // Is normal entity
-        else {
-            // User may have hovered on another tile other than the top left
-            auto tl_coord = coord.Incremented(*entity_tile);
 
-
-            // Picking up an entity which is set in activated_layer will unset activated_layer
-            if (activatedTile_ == entity_tile->GetTopLeft())
-                activatedTile_ = nullptr;
-
-            // Call events
-            entity_proto->OnRemove(world, logic, tl_coord, TileLayer::entity);
-
-            const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
-            assert(result); // false indicates failed to remove entity
-
-            UpdateNeighboringEntities(world, logic, tl_coord, entity_tile->GetOrientation(), entity_proto);
-
-            world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
+        pickupTickCounter_ += ticks;
+        pickupTickTarget_ = LossyCast<uint16_t>(SafeCast<const proto::ResourceEntity*>(chosen_ptr)->pickupTime *
+                                                kGameHertz); // Seconds to ticks
+        if (pickupTickCounter_ >= pickupTickTarget_) {
+            PickupResource(resource_tile);
+            give_item();
         }
+    }
+    else {
+        PickupEntity(world, logic, coord, entity_tile, entity_proto);
+        give_item();
     }
 }
 
 float game::Player::Placement::GetPickupPercentage() const {
     return SafeCast<float>(pickupTickCounter_) / SafeCast<float>(pickupTickTarget_);
+}
+
+void game::Player::Placement::PickupEntity(
+    game::World& world, Logic& logic, const WorldCoord& coord, ChunkTile* entity_tile, const proto::Entity* entity) {
+    // User may have hovered on another tile other than the top left
+    auto tl_coord = coord.Incremented(*entity_tile);
+
+    // Picking up an entity which is set in activated_layer will unset activated_layer
+    if (activatedTile_ == entity_tile->GetTopLeft())
+        activatedTile_ = nullptr;
+
+
+    // Call events
+    entity->OnRemove(world, logic, tl_coord, TileLayer::entity);
+
+    const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
+    assert(result); // false indicates failed to remove entity
+
+    UpdateNeighboringEntities(world, logic, tl_coord, entity_tile->GetOrientation(), entity);
+
+    world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
+
+    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+            world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
+        }
+    }
+}
+
+void game::Player::Placement::PickupResource(ChunkTile* resource_tile) {
+    auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
+
+    assert(resource_data != nullptr); // Resource tiles should have valid data
+
+    // Delete resource tile if it is empty after extracting
+    if (--resource_data->resourceAmount == 0) {
+        resource_tile->Clear();
+    }
 }
 
 // ============================================================================================

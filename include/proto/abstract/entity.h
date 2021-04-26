@@ -48,9 +48,6 @@ namespace jactorio::proto
         /// Can be placed by player?
         PYTHON_PROP_REF_I(bool, placeable, true);
 
-        /// Seconds to pickup entity
-        PYTHON_PROP_REF_I(float, pickupTime, 1);
-
         /// Item for this entity
         J_NODISCARD Item* GetItem() const {
             return item_;
@@ -85,7 +82,7 @@ namespace jactorio::proto
             return 0;
         }
 
-        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTile* /*tile*/) const override {
+        bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 

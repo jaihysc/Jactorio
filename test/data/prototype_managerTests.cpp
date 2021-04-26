@@ -4,8 +4,10 @@
 
 #include <filesystem>
 
-#include "data/globals.h"
 #include "data/prototype_manager.h"
+
+#include "data/globals.h"
+#include "proto/label.h"
 #include "proto/sprite.h"
 
 namespace jactorio::data
@@ -119,12 +121,12 @@ namespace jactorio::data
 
 
     /// This test excluded in Valgrind
-    TEST_F(PrototypeManagerTest, Load) {
+    TEST_F(PrototypeManagerTest, LoadProto) {
         active_prototype_manager = &proto_;
         proto_.SetDirectoryPrefix("asdf");
 
         // Load_data should set the directory prefix based on the subfolder
-        proto_.Load(PrototypeManager::kDataFolder);
+        proto_.LoadProto(PrototypeManager::kDataFolder);
 
         const auto* proto = proto_.Get<proto::Sprite>("__test__/test_tile");
 
@@ -144,12 +146,22 @@ namespace jactorio::data
 
         // Load_data should set the directory prefix based on the subfolder
         try {
-            proto_.Load("yeet");
+            proto_.LoadProto("yeet");
             FAIL();
         }
         catch (std::filesystem::filesystem_error&) {
             SUCCEED();
         }
+    }
+
+    TEST_F(PrototypeManagerTest, LoadLocalization) {
+        proto_.Make<proto::Sprite>("__test__/test_tile");
+
+        proto_.LoadLocal(PrototypeManager::kDataFolder, "test");
+        const auto* proto = proto_.Get<proto::Sprite>("__test__/test_tile");
+
+        ASSERT_NE(proto, nullptr);
+        EXPECT_EQ(proto->GetLocalizedName(), "Localized Test Tile");
     }
 
     TEST_F(PrototypeManagerTest, GetInvalid) {
@@ -210,6 +222,16 @@ namespace jactorio::data
         const std::vector<proto::Sprite*> data_all = proto_.GetAll<proto::Sprite>();
 
         EXPECT_EQ(data_all.size(), 0);
+    }
+
+    TEST_F(PrototypeManagerTest, GetValidLabel) {
+        auto& label = proto_.Make<proto::Label>("label-1");
+        label.SetLocalizedName("April");
+
+        EXPECT_EQ(proto_.GetLocalText("label-1"), "April");
+    }
+    TEST_F(PrototypeManagerTest, GetInvalidLabel) {
+        EXPECT_EQ(proto_.GetLocalText("Creeper aw man"), "???");
     }
 
 

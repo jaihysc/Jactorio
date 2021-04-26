@@ -2,14 +2,15 @@
 
 #include <gtest/gtest.h>
 
-#include "data/save_game_manager.h"
 #include "game/player/keybind_manager.h"
 
+#include "jactorioTests.h"
+
 #include <cereal/archives/json.hpp>
-#include <fstream>
 
 #include "game/game_controller.h"
 #include "game/input/input_manager.h"
+
 
 namespace jactorio::game
 {
@@ -22,24 +23,24 @@ namespace jactorio::game
 
         /// Expects the PlayerAction test to be called after executing provided function f
         void ExpectTestActionCalled(const std::function<void()>& f) const {
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionX(), 0.f);
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionY(), 0.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().x, 0.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().y, 0.f);
 
             f();
 
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionX(), -100.f);
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionY(), 120.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().x, -100.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().y, 120.f);
         }
 
         /// Serializes KeybindManager to JSON
         void Serialize() const {
-            data::SerializeKeybinds(keybindManager_);
+            TestSerialize<KeybindManager, cereal::JSONOutputArchive>(keybindManager_);
         }
 
         /// Deserializes KeybindManager from JSON
         void Deserialize() {
             KeybindManager keybind_manager(input_, gameController_);
-            data::DeserializeKeybinds(keybind_manager);
+            TestDeserialize<KeybindManager, cereal::JSONInputArchive>(keybind_manager);
 
             keybindManager_ = std::move(keybind_manager);
         }

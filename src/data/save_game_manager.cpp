@@ -2,77 +2,10 @@
 
 #include "data/save_game_manager.h"
 
-#include <filesystem>
-#include <fstream>
-#include <functional>
-
-#include "data/cereal/register_type.h"
-#include "game/game_controller.h"
-#include "game/player/keybind_manager.h"
-
-#include <cereal/archives/json.hpp>
-#include <cereal/archives/portable_binary.hpp>
-
 using namespace jactorio;
 
 static constexpr auto kSaveGameFolder  = "saves";
 static constexpr auto kSaveGameFileExt = "dat";
-
-void data::SerializeGameController(const game::GameController& game_controller, const std::string& save_name) {
-    LOG_MESSAGE_F(info, "Saving savegame as %s", save_name.c_str());
-
-    std::ofstream out_cereal_stream(ResolveSavePath(save_name), std::ios_base::binary);
-    cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
-    output_archive(game_controller);
-
-    LOG_MESSAGE(info, "Saving savegame Done");
-}
-
-void data::DeserializeGameController(game::GameController& out_game_controller, const std::string& save_name) {
-    LOG_MESSAGE_F(info, "Loading savegame %s", save_name.c_str());
-
-    const std::vector<std::function<void()>> pre_load_hooks{
-        [&]() {
-            out_game_controller.proto.GenerateRelocationTable();
-            active_prototype_manager = &out_game_controller.proto;
-        },
-        [&]() { out_game_controller.ResetGame(); }, // Remove any dangling pointers (activatedTile)
-    };
-    const std::vector<std::function<void()>> post_load_hooks{
-        [&]() {
-            for (auto& world : out_game_controller.worlds) {
-                world.DeserializePostProcess();
-            }
-        },
-        [&]() { out_game_controller.unique.Clear(); },
-    };
-
-
-    // ======================================================================
-
-    auto run_hooks = [](const std::vector<std::function<void()>>& hooks, const std::string& message) {
-        for (std::size_t i = 0; i < hooks.size(); ++i) {
-            LOG_MESSAGE_F(debug, "%s %d of %d", message.c_str(), i + 1, hooks.size());
-
-            const auto& hook = hooks[i];
-            hook();
-        }
-
-        LOG_MESSAGE_F(debug, "%s Done", message.c_str());
-    };
-
-
-    run_hooks(pre_load_hooks, "Pre load hook");
-
-    std::ifstream in_cereal_stream(ResolveSavePath(save_name), std::ios_base::binary);
-    cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
-
-    iarchive(out_game_controller);
-
-    run_hooks(post_load_hooks, "Post load hook");
-
-    LOG_MESSAGE(info, "Loading savegame Done");
-}
 
 bool data::IsValidSaveName(const std::string& save_name) {
     const auto path = std::filesystem::path(save_name);
@@ -119,29 +52,4 @@ std::string data::ResolveSavePath(const std::string& save_name) {
 std::filesystem::directory_iterator data::GetSaveDirIt() {
     CheckExistsSaveDirectory();
     return std::filesystem::directory_iterator(kSaveGameFolder);
-}
-
-// ======================================================================
-
-void data::SerializeKeybinds(const game::KeybindManager& keybind_manager) {
-    LOG_MESSAGE_F(info, "Saving keybinds to %s", kKeybindSaveName);
-
-    std::ofstream of(kKeybindSaveName);
-    cereal::JSONOutputArchive archiver(of);
-
-    archiver(keybind_manager);
-}
-
-bool data::DeserializeKeybinds(game::KeybindManager& out_keybind_manager) {
-    LOG_MESSAGE_F(info, "Loading keybinds from %s", kKeybindSaveName);
-
-    if (!std::filesystem::exists(kKeybindSaveName))
-        return false;
-
-    std::ifstream ifs(kKeybindSaveName);
-    cereal::JSONInputArchive archiver(ifs);
-
-    archiver(out_keybind_manager);
-
-    return true;
 }

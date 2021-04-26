@@ -84,7 +84,7 @@ namespace jactorio::proto
         // ======================================================================
         // Rendering
 
-        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const override;
+        bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
 
 
         J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;

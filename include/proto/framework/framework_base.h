@@ -9,6 +9,7 @@
 
 #include "jactorio.h"
 
+#include "core/convert.h"
 #include "core/data_type.h"
 #include "data/cereal/serialize.h"
 #include "proto/detail/category.h"
@@ -123,7 +124,7 @@ namespace jactorio::proto
 
 #define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)                                                 \
     std::unique_ptr<UniqueDataBase> CopyUniqueData(const UniqueDataBase* ptr) const override { \
-        return std::make_unique<data_ty__>(*static_cast<const data_ty__*>(ptr));               \
+        return std::make_unique<data_ty__>(*SafeCast<const data_ty__*>(ptr));                  \
     }                                                                                          \
     static_assert(true)
 

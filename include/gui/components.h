@@ -16,13 +16,10 @@ namespace jactorio::game
     class ItemStack;
 }
 
-namespace jactorio::render
-{
-    class GuiRenderer;
-}
-
 namespace jactorio::gui
 {
+    struct Context;
+
     class GuiMenu
     {
         static constexpr ImGuiWindowFlags kDefaultFlags =
@@ -81,12 +78,9 @@ namespace jactorio::gui
         using BeginCallbackT    = std::function<void(std::size_t slot_index)>;
         using DrawSlotCallbackT = std::function<void()>;
 
-        friend render::GuiRenderer;
-
-    protected:
-        explicit GuiItemSlots(const render::GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
-
     public:
+        explicit GuiItemSlots(const Context& context) : context_(&context) {}
+
         /// \param slot_count Number of slots to draw
         /// \param callback Use to draw slot
         void Begin(std::size_t slot_count, const BeginCallbackT& callback) const;
@@ -120,7 +114,7 @@ namespace jactorio::gui
         void DrawBackingButton() const;
 
 
-        const render::GuiRenderer* guiRenderer_;
+        const Context* context_;
     };
 
 

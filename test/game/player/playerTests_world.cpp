@@ -22,7 +22,7 @@ namespace jactorio::game
         const auto result = TestSerializeDeserialize(playerWorld_);
 
         EXPECT_EQ(result.GetId(), 32);
-        EXPECT_FLOAT_EQ(result.GetPositionX(), 32.41);
-        EXPECT_FLOAT_EQ(result.GetPositionY(), 16.92);
+        EXPECT_FLOAT_EQ(result.GetPosition().x, 32.41f);
+        EXPECT_FLOAT_EQ(result.GetPosition().y, 16.92f);
     }
 } // namespace jactorio::game

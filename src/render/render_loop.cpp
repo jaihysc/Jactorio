@@ -7,18 +7,18 @@
 
 #include <SDL.h>
 #include <examples/imgui_impl_sdl.h>
+#include <exception>
 
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
-
-#include "proto/sprite.h"
-
 #include "game/event/game_events.h"
-
 #include "gui/imgui_manager.h"
 #include "gui/main_menu.h"
 #include "gui/menus.h"
+#include "gui/menus_debug.h"
+#include "proto/localization.h"
+#include "proto/sprite.h"
 #include "render/opengl/shader.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
@@ -85,7 +85,7 @@ void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& displ
 
     SDL_Event e;
 
-    while (common.gameState == main_menu_game_state) {
+    while (common.gameState == main_menu_game_state && common.gameState != ThreadedLoopCommon::GameState::quit) {
         common.gameController.event.Raise<game::RendererTickEvent>(
             game::EventType::renderer_tick, game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
@@ -116,7 +116,7 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
     SDL_Event e;
 
-    while (common.gameState == world_render_game_state) {
+    while (common.gameState == world_render_game_state && common.gameState != ThreadedLoopCommon::GameState::quit) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
         auto& player       = common.gameController.player;
@@ -133,16 +133,23 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
+            common.renderer->SetPlayerPosition(player.world.GetPosition());
+
             // MVP Matrices updated in here
-            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(),
-                                                    player_world,
-                                                    player.world.GetPositionX(),
-                                                    player.world.GetPositionY());
+            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(), player_world);
+
+            common.renderer->GlPrepareBegin();
+            game::MouseSelection::DrawCursorOverlay(*common.renderer,
+                                                    common.gameController.worlds,
+                                                    common.gameController.player,
+                                                    common.gameController.proto);
+
+            common.gameController.player.world.SetMouseSelectedTile( //
+                common.renderer->ScreenPosToWorldCoord(common.gameController.player.world.GetPosition(),
+                                                       game::MouseSelection::GetCursor()));
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
-
-            ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });
             gui::ImguiBeginFrame(display_window);
 
             if (IsVisible(gui::Menu::MainMenu)) {
@@ -155,6 +162,16 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
                            player,
                            common.gameController.proto,
                            common.gameController.event);
+
+            gui::DebugMenuLogic(common.gameController.worlds,
+                                common.gameController.logic,
+                                player,
+                                common.gameController.proto,
+                                *common.renderer);
+
+            //
+            common.renderer->GlPrepareEnd();
+            gui::ImguiRenderFrame();
         }
         // ======================================================================
         // ======================================================================
@@ -171,15 +188,13 @@ void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_wi
     }
 }
 
-void render::RenderInit(ThreadedLoopCommon& common) {
+static void Init(ThreadedLoopCommon& common) {
+    using namespace render;
+
     // Init window
-    DisplayWindow display_window{};
-    try {
-        if (display_window.Init(840, 490) != 0)
-            return;
-    }
-    catch (proto::ProtoError&) {
-        return;
+    DisplayWindow display_window;
+    if (display_window.Init(840, 490) != 0) {
+        throw std::runtime_error("Failed to initialize display window");
     }
 
 
@@ -206,10 +221,29 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Since game data will be now accessed, wait until prototype loading is complete
     LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
-    while (!common.prototypeLoadingComplete) // BUG if logic exits while render is waiting, it will never exit
-        ;
+    while (!common.prototypeLoadingComplete) {
+        if (common.gameState == ThreadedLoopCommon::GameState::quit) {
+            return;
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
     LOG_MESSAGE(debug, "Continuing render initialization");
 
+
+    // Load gui font
+    bool loaded_local  = false;
+    auto localizations = common.gameController.proto.GetAll<proto::Localization>();
+    for (const auto& local : localizations) {
+        assert(local != nullptr);
+        if (local->identifier == common.gameController.localIdentifier) {
+            gui::LoadFont(*local);
+            loaded_local = true;
+            break;
+        }
+    }
+    if (!loaded_local) {
+        LOG_MESSAGE(warning, "No font was loaded, using default font");
+    }
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
@@ -230,21 +264,17 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // ======================================================================
 
-    common.gameController.input.key.Register(
-        [&]() {
-            common.gameController.event.SubscribeOnce(
-                game::EventType::renderer_tick, [&renderer](const game::EventBase& e) {
-                    const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
-                    auto& window         = render_e.windows[0].get();
-
-                    window.SetFullscreen(!window.IsFullscreen());
-                    renderer->GlResizeWindow(window_x, window_y);
-                });
-        },
-        SDLK_SPACE,
-        game::InputAction::key_down);
-
     RenderingLoop(common, display_window);
+}
 
+void render::RenderInit(ThreadedLoopCommon& common) {
+    try {
+        Init(common);
+    }
+    catch (std::exception& e) {
+        LOG_MESSAGE_F(error, "Render thread exception '%s'", e.what());
+    }
+
+    common.gameState = ThreadedLoopCommon::GameState::quit;
     LOG_MESSAGE(info, "Renderer thread exited");
 }

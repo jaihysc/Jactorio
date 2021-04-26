@@ -17,7 +17,6 @@ def addBelt(name, iconSpritePath, worldSpritePath):
                 .sets(20)
                 .trim(16)
         )
-        .pickupTime(0.1)
         .speed(0.05)
         .rotatable(True)
     )

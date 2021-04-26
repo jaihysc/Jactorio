@@ -22,6 +22,7 @@
 #include "proto/inserter.h"
 #include "proto/item.h"
 #include "proto/label.h"
+#include "proto/localization.h"
 #include "proto/mining_drill.h"
 #include "proto/noise_layer.h"
 #include "proto/recipe.h"
@@ -150,6 +151,11 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     PYBIND_DATA_CLASS(Label, Label, FrameworkBase);
 
+    PYBIND_DATA_CLASS(Localization, Localization, FrameworkBase)
+    PYBIND_PROP(Localization, identifier)
+    PYBIND_PROP(Localization, fontPath)
+    PYBIND_PROP(Localization, fontSize);
+
     PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
     PYBIND_PROP(Sprite, group)
     PYBIND_PROP(Sprite, frames)
@@ -208,8 +214,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_PROP(Entity, placeable)
     PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)
     PYBIND_PROP_GET_SET(Entity, tileWidth, SetWidth, GetWidth)
-    PYBIND_PROP_GET_SET(Entity, tileHeight, SetHeight, GetHeight)
-    PYBIND_PROP(Entity, pickupTime);
+    PYBIND_PROP_GET_SET(Entity, tileHeight, SetHeight, GetHeight);
 
     PYBIND_DATA_CLASS_ABSTRACT(HealthEntity, HealthEntity, Entity)
     PYBIND_PROP(HealthEntity, maxHealth);
@@ -217,7 +222,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_DATA_CLASS(ContainerEntity, ContainerEntity, HealthEntity)
     PYBIND_PROP(ContainerEntity, inventorySize);
 
-    PYBIND_DATA_CLASS(ResourceEntity, ResourceEntity, Entity);
+    PYBIND_DATA_CLASS(ResourceEntity, ResourceEntity, Entity)
+    PYBIND_PROP(ResourceEntity, pickupTime);
 
 
     // Belts
@@ -264,25 +270,26 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     // Data_raw + get/set
 
     py::enum_<Category>(m, "category")
-        .value("Tile", Category::tile)
-        .value("Sprite", Category::sprite)
-        .value("NoiseLayerTile", Category::noise_layer_tile)
-        .value("NoiseLayerEntity", Category::noise_layer_entity)
-        .value("Sound", Category::sound)
         .value("Item", Category::item)
-
+        .value("Label", Category::label)
+        .value("Localization", Category::localization)
+        .value("NoiseLayerEntity", Category::noise_layer_entity)
+        .value("NoiseLayerTile", Category::noise_layer_tile)
         .value("Recipe", Category::recipe)
         .value("RecipeCategory", Category::recipe_category)
         .value("RecipeGroup", Category::recipe_group)
+        .value("Sound", Category::sound)
+        .value("Sprite", Category::sprite)
+        .value("Tile", Category::tile)
 
-        .value("ResourceEntity", Category::resource_entity)
-        .value("EnemyEntity", Category::enemy_entity)
-
-        .value("ContainerEntity", Category::container_entity)
         .value("AssemblyMachine", Category::assembly_machine)
-        .value("TransportBelt", Category::transport_belt)
+        .value("ContainerEntity", Category::container_entity)
+        .value("EnemyEntity", Category::enemy_entity)
+        .value("Inserter", Category::inserter)
         .value("MiningDrill", Category::mining_drill)
-        .value("Inserter", Category::inserter);
+        .value("ResourceEntity", Category::resource_entity)
+        .value("Splitter", Category::splitter)
+        .value("TransportBelt", Category::transport_belt);
 
     m.def(
         "get",
@@ -292,6 +299,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
             return jactorio::data::active_prototype_manager->Get<FrameworkBase>(category, iname);
         },
         pybind11::return_value_policy::reference);
+
 
     // ############################################################
 }

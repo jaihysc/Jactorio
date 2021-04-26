@@ -61,12 +61,9 @@ namespace jactorio::game
 
         public:
             /// Call on game tick to calculate the coordinates of mouse selected tile
-            void CalculateMouseSelectedTile(const glm::mat4& mvp_matrix);
-
-            /// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
-            J_NODISCARD WorldCoord GetMouseTileCoords() const {
-                return mouseSelectedTile_;
-            }
+            void SetMouseSelectedTile(const WorldCoord& coord) noexcept;
+            /// Gets the world coord of the tile the mouse is hovered over,
+            J_NODISCARD WorldCoord GetMouseTileCoords() const noexcept;
 
             /// \return true if selected tile is within placement range
             J_NODISCARD bool MouseSelectedTileInRange() const;
@@ -82,26 +79,17 @@ namespace jactorio::game
 
 
             /// The tile the player is on, decimals indicate partial tile
-            J_NODISCARD PlayerPosT GetPositionX() const {
-                return positionX_;
-            }
-            J_NODISCARD PlayerPosT GetPositionY() const {
-                return positionY_;
-            }
+            J_NODISCARD Position2<PlayerPosT> GetPosition() const noexcept;
 
             /// If the tile at the specified amount is valid, the player will be moved to that tile
             void MovePlayerX(PlayerPosT amount);
             void MovePlayerY(PlayerPosT amount);
 
-            void SetPlayerX(const PlayerPosT x) noexcept {
-                positionX_ = x;
-            }
-            void SetPlayerY(const PlayerPosT y) noexcept {
-                positionY_ = y;
-            }
+            void SetPlayerX(PlayerPosT x) noexcept;
+            void SetPlayerY(PlayerPosT y) noexcept;
 
             CEREAL_SERIALIZE(archive) {
-                archive(worldId_, positionX_, positionY_);
+                archive(worldId_, position_);
             }
 
         private:
@@ -110,8 +98,7 @@ namespace jactorio::game
 
             WorldCoord mouseSelectedTile_;
 
-            PlayerPosT positionX_ = 0;
-            PlayerPosT positionY_ = 0;
+            Position2<PlayerPosT> position_;
 
             /// The world the player is currently in
             WorldId worldId_ = 0;
@@ -231,8 +218,7 @@ namespace jactorio::game
             /// \return true if tile was activated
             bool TryActivateTile(game::World& world, const WorldCoord& coord);
 
-            /// This will either pickup an entity, or mine resources from a resource tile
-            /// Call when the key for picking up entities is pressed
+            /// Pickup an entity, or mine resources from a resource tile
             /// If resource + entity exists on one tile, picking up entity takes priority
             void TryPickup(game::World& world, Logic& logic, const WorldCoord& coord, uint16_t ticks = 1);
 
@@ -243,6 +229,13 @@ namespace jactorio::game
             Orientation orientation = Orientation::up;
 
         private:
+            void PickupEntity(game::World& world,
+                              Logic& logic,
+                              const WorldCoord& coord,
+                              ChunkTile* entity_tile,
+                              const proto::Entity* entity);
+            static void PickupResource(ChunkTile* resource_tile);
+
             ChunkTile* activatedTile_ = nullptr;
 
             uint16_t pickupTickCounter_ = 0;

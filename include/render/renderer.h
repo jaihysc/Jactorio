@@ -8,8 +8,14 @@
 #include <glm/glm.hpp>
 
 #include "core/data_type.h"
+#include "core/orientation.h"
 #include "render/opengl/mvp_manager.h"
 #include "render/renderer_layer.h"
+
+namespace jactorio::proto
+{
+    class Sprite;
+}
 
 namespace jactorio::game
 {
@@ -22,6 +28,11 @@ namespace jactorio::render
 {
     class Renderer
     {
+        // Rendering specifications
+        //
+        // The visible area to render to is a grid of pixels
+        // - Top left is (0, 0); Bottom right is (window width, window height)
+        // - No need to worry about matrices, pretend it does not exist while preparing coordinates
     public:
         static constexpr unsigned int tileWidth = 6;
 
@@ -71,9 +82,6 @@ namespace jactorio::render
             return mvpManager_;
         }
 
-        /// Changes zoom
-        float tileProjectionMatrixOffset = 0;
-
 
         /// Renderer will lookup uv coords at the provided spritemap_coords
         void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
@@ -90,15 +98,39 @@ namespace jactorio::render
             return GetSpriteUvCoords(*spritemapCoords_, key);
         }
 
-        /// \param world World to render
-        /// \param player_x X Position of the player in tiles
-        /// \param player_y Y Position of the player in tiles
-        void GlRenderPlayerPosition(GameTickT game_tick, const game::World& world, float player_x, float player_y);
 
+        /// Used for rendering methods, set prior to drawing
+        void SetPlayerPosition(const Position2<float>& player_position) noexcept;
+
+        /// \param world World to render
+        void GlRenderPlayerPosition(GameTickT game_tick, const game::World& world);
+
+
+        /// Allows use of Prepare methods
+        void GlPrepareBegin();
+        /// Renders, disallows use of Prepare methods after this call
+        void GlPrepareEnd();
+
+        void PrepareSprite(const WorldCoord& coord,
+                           const proto::Sprite& sprite,
+                           SpriteSetT set                    = 0,
+                           const Position2<float>& dimension = {1, 1});
 
         // ======================================================================
-        // Rendering internals
+        // Utility
+        J_NODISCARD WorldCoord ScreenPosToWorldCoord(const Position2<float>& player_pos,
+                                                     const Position2<int32_t>& screen_pos) const;
+
+        /// \return On screen position of world coord, suitable for sending to buffers for rendering
+        J_NODISCARD Position2<int32_t> WorldCoordToBufferPos(const Position2<float>& player_pos,
+                                                             const WorldCoord& coord) const;
+
+        /// Changes zoom
+        float tileProjectionMatrixOffset = 0;
+
     private:
+        // Rendering internals
+
         // Center the world at position
         // This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
 
@@ -167,9 +199,19 @@ namespace jactorio::render
                                   Position2<int> render_tile_offset) const;
 
 
-        static void ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_offset) noexcept;
+        /// Adjusts uv region to a sub region provided by uv_sub
+        /// ----    ****
+        /// ---- -> **--
+        /// ----    **--
+        static void ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_sub) noexcept;
 
         static void ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept;
+
+
+        /// Allows layer to be drawn on
+        static void GlPrepareBegin(RendererLayer& r_layer);
+        /// Renders current layer, can no longer be drawn on
+        static void GlPrepareEnd(RendererLayer& r_layer);
 
         /// Draws current data to the screen
         /// \param index_count Count of indices to draw
@@ -178,12 +220,14 @@ namespace jactorio::render
         /// Updates projection matrix and zoom level
         void GlUpdateTileProjectionMatrix() noexcept;
 
-        // ======================================================================
 
         MvpManager mvpManager_;
 
         /// Internal ids to spritemap positions
         const SpriteUvCoordsT* spritemapCoords_ = nullptr;
+
+        /// Cached player's position, for convenience to avoid having to pass player around everywhere
+        Position2<float> playerPosition_;
 
         static unsigned int windowWidth_;
         static unsigned int windowHeight_;

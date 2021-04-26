@@ -4,26 +4,12 @@
 #define JACTORIO_INCLUDE_CORE_LOGGER_H
 #pragma once
 
-#include <string>
+#include <cstdint>
+#include <cstdio>
 #include <type_traits>
 
-// Damn Windows has to use backslashes for paths
-// Cuts away paths, keeps only the filename
-#ifdef _MSC_VER
-#define FILENAME (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#endif
-
-#ifdef __GNUC__
-#include <cstring>
-#define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#undef _MSC_VER
-#endif
-
-// Logging macros
-//
-// Prefer calling LOG_MESSAGE to log a message over log_message()
-#define LOG_MESSAGE(severity__, format__) \
-    jactorio::MakeLogMessage<jactorio::LogSeverity::severity__>(format__, FILENAME, __LINE__)
+#define LOG_MESSAGE(severity__, msg__) \
+    jactorio::MakeLogMessage<jactorio::LogSeverity::severity__>("%s", FILENAME, __LINE__, msg__)
 
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_F(severity__, format__, ...) \
@@ -53,15 +39,15 @@ namespace jactorio
 
     /// Logs a message to console
     /// Format: Timestamp [severity] - [group] message
-    void LogMessage(LogSeverity severity, const std::string& group, int line, const std::string& message);
+    void LogMessage(LogSeverity severity, const char* group, int line, const char* message);
 
     /// Converts log_severity to a string
     /// \return The log severity as string
-    std::string LogSeverityStr(LogSeverity severity);
+    const char* LogSeverityStr(LogSeverity severity);
 
     /// Converts log_severity to a string with color
     /// \return The log severity as string
-    std::string LogSeverityStrColored(LogSeverity severity);
+    const char* LogSeverityStrColored(LogSeverity severity);
 
 
     /// Creates a formatted log message if log level permits

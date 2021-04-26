@@ -79,7 +79,6 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/game_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
-	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logic/conveyor_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/conveyor_structTests.cpp
@@ -138,6 +137,9 @@ target_include_directories(jactorioTest
 	PUBLIC
 	${JACTORIO_TEST_DIR}
 )
+
+define_filename_for_sources(jactorioTest)
+
 
 add_test(NAME jactorioTest COMMAND jactorioTest)
 

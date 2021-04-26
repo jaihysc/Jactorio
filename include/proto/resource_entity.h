@@ -39,6 +39,9 @@ namespace jactorio::proto
         PROTOTYPE_CATEGORY(resource_entity);
         PROTOTYPE_DATA_TRIVIAL_COPY(ResourceEntityData);
 
+        /// Seconds to pickup entity
+        PYTHON_PROP_REF_I(float, pickupTime, 1);
+
         ResourceEntity() {
             // Resource entities can never be placed
             this->placeable = false;

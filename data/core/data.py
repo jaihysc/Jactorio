@@ -1,3 +1,5 @@
+import core.prototypes.local
+
 import jactorioData as j
 
 def addSprite(name, spritePath):
@@ -37,16 +39,3 @@ def addItem(name, path):
 
 addItem("inventory-selected-cursor", "core/graphics/hand.png")
 addItem("reset", "core/graphics/reset.png")
-
-
-# Labels
-for i in range(13):
-    j.Label("label:player-action-" + str(i))
-
-j.Label("label:key-action-none")
-j.Label("label:key-action-key-down")
-j.Label("label:key-action-key-pressed")
-j.Label("label:key-action-key-repeat")
-j.Label("label:key-action-key-held")
-j.Label("label:key-action-key-up")     
-

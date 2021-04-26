@@ -8,14 +8,17 @@
 #include "jactorio.h"
 
 #include "config.h"
+#include "core/convert.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 #include "data/save_game_manager.h"
+#include "game/event/game_events.h"
 #include "game/event/hardware_events.h"
 #include "gui/components.h"
 #include "gui/layout.h"
 #include "gui/menus.h"
 #include "proto/label.h"
+#include "proto/localization.h"
 #include "render/renderer.h"
 
 using namespace jactorio;
@@ -83,10 +86,12 @@ J_NODISCARD static bool MenuButtonMini(const char* label) {
 }
 
 /// Menu button for heading back to previous menu when clicked
+/// Clears any outstanding error messages on backwards click
 /// \return true if clicked
 static bool MenuBackButton(gui::MainMenuData& menu_data, const gui::MainMenuData::Window new_menu) {
-    if (MenuButtonMini("Back")) {
+    if (MenuButtonMini("<")) {
         menu_data.currentMenu = new_menu;
+        menu_data.lastError.clear();
         return true;
     }
 
@@ -127,7 +132,7 @@ void ErrorText(const char* error_msg) {
 }
 
 /// \param error_str Cleared when user dismisses it
-void ErrorTextDismissible(std::string& error_str) {
+static void ErrorTextDismissible(std::string& error_str) {
     if (error_str.empty())
         return;
 
@@ -138,6 +143,10 @@ void ErrorTextDismissible(std::string& error_str) {
     if (ImGui::Button("x", {10, 10})) {
         error_str.clear();
     }
+}
+
+static const char* GetLocalText(const ThreadedLoopCommon& common, const std::string& label_name) {
+    return common.gameController.proto.GetLocalText(label_name).c_str();
 }
 
 // ======================================================================
@@ -156,17 +165,17 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     menu.Begin("_new_game_menu");
 
     const gui::GuiTitle title;
-    title.Begin("New game");
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuNewGame));
 
 
     auto seed = common.gameController.worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
-    ImGui::InputInt("Seed", &seed);
+    ImGui::InputInt(GetLocalText(common, proto::LabelNames::kMenuNewGameSeed), &seed);
 
 
     MenuBackButton(common.mainMenuData, gui::MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
-    if (MenuButtonMini("Start")) {
+    if (MenuButtonMini(GetLocalText(common, proto::LabelNames::kMenuNewGamePlay))) {
         common.gameController.ResetGame();
 
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
@@ -180,7 +189,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
 }
 
 /// Lists all save games, loads save game user clicks on
-void LoadSaveGameMenu(ThreadedLoopCommon& common) {
+static void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -188,20 +197,19 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     menu.Begin("_save_game_browser_menu");
 
     const GuiTitle title;
-    title.Begin("Load game");
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuLoadGame));
 
-    auto& last_load_error = common.mainMenuData.lastLoadError;
-    ErrorTextDismissible(last_load_error);
+    ErrorTextDismissible(common.mainMenuData.lastError);
 
     for (const auto& save_game : data::GetSaveDirIt()) {
         const auto filename = save_game.path().stem().string();
 
         if (MenuButton(filename.c_str())) {
             try {
-                data::DeserializeGameController(common.gameController, filename);
+                common.gameController.LoadGame(filename.c_str());
             }
             catch (cereal::Exception& e) {
-                last_load_error = e.what();
+                common.mainMenuData.lastError = e.what();
                 LOG_MESSAGE_F(error, "Failed to load game %s : %s", filename.c_str(), e.what());
             }
         }
@@ -210,13 +218,13 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
-    if (MenuButtonMini("Play")) {
+    if (MenuButtonMini(GetLocalText(common, proto::LabelNames::kMenuLoadGamePlay))) {
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
     }
 }
 
 /// Asks for save name and saves current world
-void SaveGameMenu(ThreadedLoopCommon& common) {
+static void SaveGameMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -224,32 +232,32 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
     menu.Begin("_save_game_menu");
 
     const GuiTitle title;
-    title.Begin("Save game");
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuSaveGame));
 
 
-    auto* save_name       = common.mainMenuData.saveName;
-    auto& last_save_error = common.mainMenuData.lastSaveError;
+    auto* save_name = common.mainMenuData.saveName;
 
-    ErrorTextDismissible(last_save_error);
+    ErrorTextDismissible(common.mainMenuData.lastError);
 
     if (!data::IsValidSaveName(save_name)) {
-        ErrorText("Invalid save name");
+        ErrorText(GetLocalText(common, proto::LabelNames::kMenuSaveGameInvalidName));
     }
 
-    ImGui::InputText("Save name", save_name, MainMenuData::kMaxSaveNameLength);
+    ImGui::InputText(
+        GetLocalText(common, proto::LabelNames::kMenuSaveGameSaveName), save_name, MainMenuData::kMaxSaveNameLength);
 
 
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
     if (data::IsValidSaveName(save_name)) {
-        if (MenuButtonMini("Save")) {
+        if (MenuButtonMini(GetLocalText(common, proto::LabelNames::kMenuSaveGameSave))) {
             try {
-                data::SerializeGameController(common.gameController, save_name);
+                common.gameController.SaveGame(save_name);
                 common.mainMenuData.currentMenu = MainMenuData::Window::main;
             }
             catch (cereal::Exception& e) {
-                last_save_error = e.what();
+                common.mainMenuData.lastError = e.what();
                 LOG_MESSAGE_F(error, "Failed to save game as %s : %s", save_name, e.what());
             }
         }
@@ -261,7 +269,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 /// Changes player_action's keybind to next key up
 static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::Type player_action) {
     common.gameController.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
-        const auto& input_variant = static_cast<const game::InputActivityEvent&>(e).input;
+        const auto& input_variant = SafeCast<const game::InputActivityEvent&>(e).input;
 
         if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
             const auto& kb_event = std::get<game::KeyboardActivityEvent>(input_variant);
@@ -290,7 +298,7 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
 
 
 /// Allows the user to change keybinds
-void OptionKeybindMenu(ThreadedLoopCommon& common) {
+static void OptionKeybindMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -298,20 +306,20 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     menu.Begin("_option_change_keybind_menu");
 
     const GuiTitle title;
-    title.Begin("Keybinds");
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuOptionChangeKeybind));
 
 
-    ImGui::TextUnformatted("Name");
+    ImGui::TextUnformatted(GetLocalText(common, proto::LabelNames::kMenuOptionChangeKeybindName));
 
     ToNextMenuButtonMiniBegin(1);
-    ImGui::TextUnformatted("Key");
+    ImGui::TextUnformatted(GetLocalText(common, proto::LabelNames::kMenuOptionChangeKeybindKey));
 
     ToNextMenuButtonMiniBegin();
-    ImGui::TextUnformatted("Action");
+    ImGui::TextUnformatted(GetLocalText(common, proto::LabelNames::kMenuOptionChangeKeybindAction));
 
 
     /// Button which when clicked will set the next key for the player action
-    auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code, const SDL_Keymod mods) {
+    auto keybind_button = [&common](const game::InputManager::IntKeyMouseCodePair int_code, const SDL_Keymod mods) {
         std::string keybind_name;
 
         // Mod names
@@ -350,19 +358,19 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         else {
             switch (static_cast<game::MouseInput>(int_code * -1)) {
             case game::MouseInput::left:
-                keybind_name += "Mouse left";
+                keybind_name += GetLocalText(common, proto::LabelNames::kKeyMouseLeft);
                 break;
             case game::MouseInput::middle:
-                keybind_name += "Mouse middle";
+                keybind_name += GetLocalText(common, proto::LabelNames::kKeyMouseMiddle);
                 break;
             case game::MouseInput::right:
-                keybind_name += "Mouse right";
+                keybind_name += GetLocalText(common, proto::LabelNames::kKeyMouseRight);
                 break;
             case game::MouseInput::x1:
-                keybind_name += "Mouse x1";
+                keybind_name += GetLocalText(common, proto::LabelNames::kKeyMouseX1);
                 break;
             case game::MouseInput::x2:
-                keybind_name += "Mouse x2";
+                keybind_name += GetLocalText(common, proto::LabelNames::kKeyMouseX2);
                 break;
 
             default:
@@ -394,9 +402,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         };
 
         auto localize_key_action = [&common, &key_action_labels](const std::size_t key_action_index) {
-            return common.gameController.proto.Get<proto::Label>(std::string(key_action_labels[key_action_index]))
-                ->GetLocalizedName()
-                .c_str();
+            return GetLocalText(common, key_action_labels[key_action_index]);
         };
 
         const auto current_key_action_index  = static_cast<int>(current_key_action);
@@ -431,10 +437,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     for (std::size_t i = 0; i < info.size() - 1; ++i) {
         const auto action_label_name = std::string(proto::LabelNames::kPlayerActionPrefix) + std::to_string(i);
-        const auto* label            = common.gameController.proto.Get<proto::Label>(action_label_name);
-        assert(label != nullptr);
-
-        ImGui::TextUnformatted(label->GetLocalizedName().c_str());
+        ImGui::TextUnformatted(GetLocalText(common, action_label_name));
 
 
         const auto& [key, key_action, key_mod] = info[i];
@@ -474,18 +477,56 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     }
 
     if (MenuBackButton(common.mainMenuData, MainMenuData::Window::options)) {
-        data::SerializeKeybinds(common.gameController.keybindManager);
+        common.gameController.SaveSetting();
     }
 
     SameLineMenuButtonMini(2);
 
-    if (MenuButtonMini("Reset")) {
+    if (MenuButtonMini(GetLocalText(common, proto::LabelNames::kMenuOptionChangeKeybindReset))) {
         common.gameController.keybindManager.LoadDefaultKeybinds();
     }
 }
 
+/// Allows user to change languages
+static void OptionLanguageMenu(ThreadedLoopCommon& common) {
+    using namespace gui;
+
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_language_menu");
+
+    const GuiTitle title;
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuOptionChangeLanguage));
+
+
+    ErrorTextDismissible(common.mainMenuData.lastError);
+    ImGui::TextUnformatted(GetLocalText(common, proto::LabelNames::kMenuOptionChangeLanguageRestartNotice));
+
+    for (auto* local : common.gameController.proto.GetAll<proto::Localization>()) {
+        assert(local != nullptr);
+
+        const auto button_text = local->identifier + " | " + local->GetLocalizedName();
+        ImGuard guard;
+        guard.PushID(button_text.c_str());
+
+        if (MenuButton(button_text.c_str())) {
+            common.gameController.localIdentifier = local->identifier;
+
+            try {
+                common.gameController.SaveSetting();
+            }
+            catch (std::runtime_error& e) {
+                common.mainMenuData.lastError = e.what();
+                LOG_MESSAGE_F(error, "Failed to save settings: %s", e.what());
+            }
+        }
+    }
+
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::options);
+}
+
 /// Presents Various submenus for options of the game
-void OptionsMenu(ThreadedLoopCommon& common) {
+static void OptionsMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
@@ -493,17 +534,30 @@ void OptionsMenu(ThreadedLoopCommon& common) {
     menu.Begin("_options_menu");
 
     const GuiTitle title;
-    title.Begin("Options");
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuOptions));
 
-    if (MenuButton("Keybinds")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuOptionChangeKeybind))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::option_change_keybind;
+    }
+
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuOptionToggleFullscreen))) {
+        common.gameController.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
+            const auto& render_e = SafeCast<const game::RendererTickEvent&>(e);
+            auto& window         = render_e.windows[0].get();
+
+            window.SetFullscreen(!window.IsFullscreen());
+        });
+    }
+
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuOptionChangeLanguage))) {
+        common.mainMenuData.currentMenu = MainMenuData::Window::option_change_language;
     }
 
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
 }
 
 /// \return true if a submenu was drawn
-bool DrawSubmenu(ThreadedLoopCommon& common) {
+static bool DrawSubmenu(ThreadedLoopCommon& common) {
     switch (common.mainMenuData.currentMenu) {
     case gui::MainMenuData::Window::main:
         break;
@@ -522,6 +576,9 @@ bool DrawSubmenu(ThreadedLoopCommon& common) {
         return true;
     case gui::MainMenuData::Window::option_change_keybind:
         OptionKeybindMenu(common);
+        return true;
+    case gui::MainMenuData::Window::option_change_language:
+        OptionLanguageMenu(common);
         return true;
 
 
@@ -553,19 +610,19 @@ void gui::StartMenu(ThreadedLoopCommon& common) {
 
     // ======================================================================
 
-    if (MenuButton("New game")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuNewGame))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::new_game;
     }
 
-    if (MenuButton("Load game")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuLoadGame))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::load_game;
     }
 
-    if (MenuButton("Options")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuOptions))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::options;
     }
 
-    if (MenuButton("Quit")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuQuit))) {
         ChangeGameState(common, ThreadedLoopCommon::GameState::quit);
     }
 }
@@ -579,23 +636,23 @@ void gui::MainMenu(ThreadedLoopCommon& common) {
     menu.Begin("_main_menu");
 
     const GuiTitle title;
-    title.Begin("Main menu");
+    title.Begin(GetLocalText(common, proto::LabelNames::kMenuMain));
 
 
-    if (MenuButton("Load game")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuLoadGame))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::load_game;
     }
 
-    if (MenuButton("Save game")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuSaveGame))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::save_game;
     }
 
-    if (MenuButton("Options")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuOptions))) {
         common.mainMenuData.currentMenu = MainMenuData::Window::options;
     }
 
 
-    if (MenuButton("Quit")) {
+    if (MenuButton(GetLocalText(common, proto::LabelNames::kMenuQuit))) {
         ChangeGameState(common, ThreadedLoopCommon::GameState::main_menu);
     }
 }

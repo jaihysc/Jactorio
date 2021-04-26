@@ -13,10 +13,8 @@
 
 using namespace jactorio;
 
-bool proto::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
-    auto* drill_data = static_cast<MiningDrillData*>(tile->GetUniqueData());
-
-    gui::MiningDrill({g_rendr, this, drill_data});
+bool proto::MiningDrill::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
+    gui::MiningDrill(context, this, tile->GetUniqueData<MiningDrillData>());
     return true;
 }
 
@@ -53,7 +51,7 @@ SpriteSetT proto::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
 }
 
 SpriteFrameT proto::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& drill_data = static_cast<const MiningDrillData&>(unique_data);
+    const auto& drill_data = SafeCast<const MiningDrillData&>(unique_data);
 
     // Drill is inactive
     if (!drill_data.deferralEntry.Valid())
@@ -84,7 +82,7 @@ proto::Item* proto::MiningDrill::FindOutputItem(const game::World& world,
 
 void proto::MiningDrill::OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const {
     // Re-register callback and insert item, remove item from ground for next elapse
-    auto* drill_data = static_cast<MiningDrillData*>(unique_data);
+    auto* drill_data = SafeCast<MiningDrillData*>(unique_data);
 
     const bool outputted_item = drill_data->output.DropOff(logic, {drill_data->outputItem, 1});
 
@@ -168,7 +166,8 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
     // Do not register callback to mine items if there is no valid entity to output items to
     if (InitializeOutput(world, emit_coord, drill_data)) {
         drill_data->miningTicks =
-            LossyCast<uint16_t>(SafeCast<float>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
+            LossyCast<uint16_t>(SafeCast<float>(kGameHertz) *
+                                SafeCast<const ResourceEntity*>(drill_data->outputItem->entityPrototype)->pickupTime);
 
         const bool success = DeductResource(world, self_tile.GetOrientation(), *drill_data);
         assert(success);

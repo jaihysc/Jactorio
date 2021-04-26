@@ -5,16 +5,12 @@
 #include <imgui.h>
 
 #include "core/convert.h"
-#include "core/utility.h"
-
-#include "proto/sprite.h"
-
 #include "game/input/mouse_selection.h"
 #include "game/logistic/inventory.h"
-
 #include "gui/colors.h"
+#include "gui/context.h"
 #include "gui/menu_data.h"
-#include "render/gui_renderer.h"
+#include "proto/sprite.h"
 
 using namespace jactorio;
 
@@ -113,7 +109,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
             (scale - 1) * kInventorySlotPadding // To align with other scales, account for the padding between slots
             - 2 * kInventorySlotImagePadding;
 
-        const auto& menu_data = guiRenderer_->menuData;
+        const auto& menu_data = context_->menuData;
 
         const auto& uv = menu_data.spritePositions.at(sprite_id);
         ImGui::ImageButton(reinterpret_cast<void*>(menu_data.texId),
@@ -171,8 +167,8 @@ void gui::DrawCursorTooltip(const bool has_selected_item,
                             const std::string& description,
                             const std::function<void()>& draw_func) {
 
-    ImVec2 cursor_pos(LossyCast<float>(game::MouseSelection::GetCursorX()),
-                      LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f);
+    ImVec2 cursor_pos(LossyCast<float>(game::MouseSelection::GetCursor().x),
+                      LossyCast<float>(game::MouseSelection::GetCursor().y) + 10.f);
 
     // If an item is currently selected, move the tooltip down to not overlap
     if (has_selected_item)
@@ -194,14 +190,17 @@ void gui::DrawCursorTooltip(const bool has_selected_item,
     guard.PushStyleColor(ImGuiCol_TitleBgActive, kGuiColTooltipTitleBg);
     guard.PushStyleColor(ImGuiCol_TitleBg, kGuiColTooltipTitleBg);
 
+    const auto min_width =
+        ImGui::CalcTextSize(title.c_str()).x + GetTotalWindowPaddingX(); // Minimum width to fit the title
+    guard.PushStyleVar(ImGuiStyleVar_WindowMinSize, {min_width, 0});
+
     {
         ImGuard title_text_guard;
         title_text_guard.PushStyleColor(ImGuiCol_Text, kGuiColTooltipTitleText);
         guard.Begin(title.c_str(), nullptr, flags);
     }
 
-    ImGui::Text("%s", StrMatchLen(description, title.size()).c_str());
-
+    ImGui::TextUnformatted(description.c_str());
     draw_func();
 
     // This window is always in front

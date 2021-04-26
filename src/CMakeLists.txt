@@ -127,9 +127,13 @@ add_library(jactorioBase
 target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
 target_link_libraries(jactorioBase jactorioLib)
 
+define_filename_for_sources(jactorioBase)
+
 
 # Jactorio Executable
 add_executable(jactorio
         ${JACTORIO_DIR}/jactorio.cpp
         )
 target_link_libraries(jactorio jactorioBase)
+
+define_filename_for_sources(jactorio)
