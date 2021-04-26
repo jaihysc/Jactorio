@@ -79,23 +79,17 @@ namespace jactorio::game
 
 
             /// The tile the player is on, decimals indicate partial tile
-            J_NODISCARD PlayerPosT GetPositionX() const noexcept;
-            J_NODISCARD PlayerPosT GetPositionY() const noexcept;
             J_NODISCARD Position2<PlayerPosT> GetPosition() const noexcept;
 
             /// If the tile at the specified amount is valid, the player will be moved to that tile
             void MovePlayerX(PlayerPosT amount);
             void MovePlayerY(PlayerPosT amount);
 
-            void SetPlayerX(const PlayerPosT x) noexcept {
-                positionX_ = x;
-            }
-            void SetPlayerY(const PlayerPosT y) noexcept {
-                positionY_ = y;
-            }
+            void SetPlayerX(PlayerPosT x) noexcept;
+            void SetPlayerY(PlayerPosT y) noexcept;
 
             CEREAL_SERIALIZE(archive) {
-                archive(worldId_, positionX_, positionY_);
+                archive(worldId_, position_);
             }
 
         private:
@@ -104,8 +98,7 @@ namespace jactorio::game
 
             WorldCoord mouseSelectedTile_;
 
-            PlayerPosT positionX_ = 0;
-            PlayerPosT positionY_ = 0;
+            Position2<PlayerPosT> position_;
 
             /// The world the player is currently in
             WorldId worldId_ = 0;

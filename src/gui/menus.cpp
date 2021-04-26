@@ -333,8 +333,8 @@ void gui::CursorWindow(const Context& context,
         guard.PushStyleColor(ImGuiCol_PopupBg, kGuiColNone);
 
         // Slightly off center so that user can still click
-        ImGui::SetNextWindowPos({LossyCast<float>(game::MouseSelection::GetCursorX()),
-                                 LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f});
+        ImGui::SetNextWindowPos({LossyCast<float>(game::MouseSelection::GetCursor().x),
+                                 LossyCast<float>(game::MouseSelection::GetCursor().y) + 2.f});
         ImGui::SetNextWindowFocus();
 
         GuiMenu menu;

@@ -44,6 +44,8 @@ bool game::GameController::Init() {
         // Must recover so user can at least make it to the main menu to fix settings
 
         LOG_MESSAGE(warning, "Using default keybinds, default localization");
+
+        proto.LoadLocal(data::PrototypeManager::kDataFolder, localIdentifier.c_str());
         keybindManager.LoadDefaultKeybinds();
 
         try {

@@ -236,7 +236,7 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
 
         // Mouse events
     case SDL_MOUSEMOTION:
-        game::MouseSelection::SetCursor(sdl_event.motion.x, sdl_event.motion.y);
+        game::MouseSelection::SetCursor({sdl_event.motion.x, sdl_event.motion.y});
         break;
     case SDL_MOUSEWHEEL:
         if (!gui::input_mouse_captured)

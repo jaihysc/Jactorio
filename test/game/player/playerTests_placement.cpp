@@ -233,6 +233,7 @@ namespace jactorio::game
 
 
         player_.placement.TryPickup(world_, logic_, {0, 2}); // Will not attempt to pickup non entity tiles
+        EXPECT_NE(tile->GetPrototype(), nullptr);
 
         player_.placement.TryPickup(world_, logic_, {0, 0});
         EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
@@ -441,8 +442,8 @@ namespace jactorio::game
 
         // Remove
         player_.placement.TryPickup(world_, logic_, {2, 3}); // Bottom right corner
-        EXPECT_EQ(mock.emitCoords.size(), 20);
-        EXPECT_EQ(mock.receiveCoords.size(), 20);
+        ASSERT_EQ(mock.emitCoords.size(), 20);
+        ASSERT_EQ(mock.receiveCoords.size(), 20);
 
         validate_coords(10, {1, 1}, {1, 0});
         validate_coords(11, {2, 1}, {2, 0});

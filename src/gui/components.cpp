@@ -167,8 +167,8 @@ void gui::DrawCursorTooltip(const bool has_selected_item,
                             const std::string& description,
                             const std::function<void()>& draw_func) {
 
-    ImVec2 cursor_pos(LossyCast<float>(game::MouseSelection::GetCursorX()),
-                      LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f);
+    ImVec2 cursor_pos(LossyCast<float>(game::MouseSelection::GetCursor().x),
+                      LossyCast<float>(game::MouseSelection::GetCursor().y) + 10.f);
 
     // If an item is currently selected, move the tooltip down to not overlap
     if (has_selected_item)

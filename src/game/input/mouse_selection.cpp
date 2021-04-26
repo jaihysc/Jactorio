@@ -10,24 +10,14 @@
 
 using namespace jactorio;
 
-int32_t x_position = 0;
-int32_t y_position = 0;
+Position2<int32_t> game::MouseSelection::cursorPos_;
 
-void game::MouseSelection::SetCursor(const int32_t x_pos, const int32_t y_pos) noexcept {
-    x_position = x_pos;
-    y_position = y_pos;
-}
-
-int32_t game::MouseSelection::GetCursorX() noexcept {
-    return x_position;
-}
-
-int32_t game::MouseSelection::GetCursorY() noexcept {
-    return y_position;
+void game::MouseSelection::SetCursor(const Position2<int32_t>& cursor_pos) noexcept {
+    cursorPos_ = cursor_pos;
 }
 
 Position2<int32_t> game::MouseSelection::GetCursor() noexcept {
-    return {GetCursorX(), GetCursorY()};
+    return cursorPos_;
 }
 
 

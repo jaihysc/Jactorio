@@ -12,7 +12,7 @@ namespace jactorio::game
 
         PlayerAction::GetExecutor(PlayerAction::Type::test)(game_controller);
 
-        EXPECT_FLOAT_EQ(game_controller.player.world.GetPositionX(), -100);
-        EXPECT_FLOAT_EQ(game_controller.player.world.GetPositionY(), 120);
+        EXPECT_FLOAT_EQ(game_controller.player.world.GetPosition().x, -100.f);
+        EXPECT_FLOAT_EQ(game_controller.player.world.GetPosition().y, 120.f);
     }
 } // namespace jactorio::game

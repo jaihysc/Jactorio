@@ -238,6 +238,7 @@ static void Init(ThreadedLoopCommon& common) {
         if (local->identifier == common.gameController.localIdentifier) {
             gui::LoadFont(*local);
             loaded_local = true;
+            break;
         }
     }
     if (!loaded_local) {

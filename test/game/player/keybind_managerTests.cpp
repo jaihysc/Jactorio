@@ -23,13 +23,13 @@ namespace jactorio::game
 
         /// Expects the PlayerAction test to be called after executing provided function f
         void ExpectTestActionCalled(const std::function<void()>& f) const {
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionX(), 0.f);
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionY(), 0.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().x, 0.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().y, 0.f);
 
             f();
 
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionX(), -100.f);
-            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionY(), 120.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().x, -100.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPosition().y, 120.f);
         }
 
         /// Serializes KeybindManager to JSON

@@ -37,11 +37,7 @@ namespace jactorio::game
     class MouseSelection
     {
     public:
-        // TODO make non static
-        static void SetCursor(int32_t x_pos, int32_t y_pos) noexcept;
-
-        J_NODISCARD static int32_t GetCursorX() noexcept;
-        J_NODISCARD static int32_t GetCursorY() noexcept;
+        static void SetCursor(const Position2<int32_t>& cursor_pos) noexcept;
         J_NODISCARD static Position2<int32_t> GetCursor() noexcept;
 
         // Rendering
@@ -52,6 +48,9 @@ namespace jactorio::game
                                       GameWorlds& worlds,
                                       Player& player,
                                       const data::PrototypeManager& proto);
+
+    private:
+        static Position2<int32_t> cursorPos_;
     };
 } // namespace jactorio::game
 

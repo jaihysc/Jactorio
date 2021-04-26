@@ -28,28 +28,20 @@ bool game::Player::World::MouseSelectedTileInRange() const {
     // Maximum distance of from the player where tiles can be reached
     constexpr unsigned int max_reach = 34;
     const auto tile_dist =
-        abs(positionX_ - SafeCast<float>(cursor_position.x)) + abs(positionY_ - SafeCast<float>(cursor_position.y));
+        abs(position_.x - SafeCast<float>(cursor_position.x)) + abs(position_.y - SafeCast<float>(cursor_position.y));
 
     return tile_dist <= max_reach;
 }
 
-game::Player::World::PlayerPosT game::Player::World::GetPositionX() const noexcept {
-    return positionX_;
-}
-
-game::Player::World::PlayerPosT game::Player::World::GetPositionY() const noexcept {
-    return positionY_;
-}
-
 Position2<game::Player::World::PlayerPosT> game::Player::World::GetPosition() const noexcept {
-    return {GetPositionX(), GetPositionY()};
+    return position_;
 }
 
 bool game::Player::World::TargetTileValid(game::World* world, const WorldCoord& coord) const {
     assert(world != nullptr); // Player is not in a world
 
-    const auto* origin_tile =
-        world->GetTile({LossyCast<WorldCoordAxis>(positionX_), LossyCast<WorldCoordAxis>(positionY_)}, TileLayer::base);
+    const auto* origin_tile = world->GetTile(
+        {LossyCast<WorldCoordAxis>(position_.x), LossyCast<WorldCoordAxis>(position_.y)}, TileLayer::base);
 
     if (origin_tile == nullptr)
         return false;
@@ -68,17 +60,25 @@ bool game::Player::World::TargetTileValid(game::World* world, const WorldCoord& 
 }
 
 void game::Player::World::MovePlayerX(const float amount) {
-    const float target_x = positionX_ + amount;
+    const float target_x = position_.x + amount;
 
     //    if (TargetTileValid(&GetWorld(), LossyCast<int>(target_x), LossyCast<int>(playerPositionY_)))
-    positionX_ = target_x;
+    position_.x = target_x;
 }
 
 void game::Player::World::MovePlayerY(const float amount) {
-    const float target_y = positionY_ + amount;
+    const float target_y = position_.y + amount;
 
     //    if (TargetTileValid(&GetWorld(), LossyCast<int>(playerPositionX_), LossyCast<int>(target_y)))
-    positionY_ = target_y;
+    position_.y = target_y;
+}
+
+void game::Player::World::SetPlayerX(const PlayerPosT x) noexcept {
+    position_.x = x;
+}
+
+void game::Player::World::SetPlayerY(const PlayerPosT y) noexcept {
+    position_.y = y;
 }
 
 

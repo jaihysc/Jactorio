@@ -154,7 +154,7 @@ namespace jactorio::data
         }
     }
 
-    TEST_F(PrototypeManagerTest, LoadLocaliation) {
+    TEST_F(PrototypeManagerTest, LoadLocalization) {
         proto_.Make<proto::Sprite>("__test__/test_tile");
 
         proto_.LoadLocal(PrototypeManager::kDataFolder, "test");

@@ -107,11 +107,12 @@ void gui::DebugMenu(const Context& context,
     }
 
     if (ImGui::CollapsingHeader("Game")) {
-        ImGui::Text("Cursor position: %f, %f", game::MouseSelection::GetCursorX(), game::MouseSelection::GetCursorY());
+        ImGui::Text(
+            "Cursor position: %d, %d", game::MouseSelection::GetCursor().x, game::MouseSelection::GetCursor().y);
         ImGui::Text(
             "Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
 
-        ImGui::Text("Player position %f %f", player.world.GetPositionX(), player.world.GetPositionY());
+        ImGui::Text("Player position %f %f", player.world.GetPosition().x, player.world.GetPosition().y);
 
         ImGui::Text("Game tick: %llu", logic.GameTick());
         ImGui::Text("Chunk updates: %zu", world.LogicGetChunks().size());
@@ -528,8 +529,8 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
         constexpr int chunk_radius = 3; // Chunk radius around the player to display information for
         ImGui::Text("Radius of %d around the player", chunk_radius);
 
-        const auto start_chunk_x = game::World::WorldCToChunkC(player.world.GetPositionX());
-        const auto start_chunk_y = game::World::WorldCToChunkC(player.world.GetPositionY());
+        const auto start_chunk_x = game::World::WorldCToChunkC(player.world.GetPosition().x);
+        const auto start_chunk_y = game::World::WorldCToChunkC(player.world.GetPosition().y);
 
         for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
             for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
