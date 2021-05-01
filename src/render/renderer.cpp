@@ -355,6 +355,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
                                        const int chunk_span,
                                        const Position2<int> render_tile_offset,
                                        const GameTickT game_tick) const noexcept {
+    EXECUTION_PROFILE_SCOPE(profiler, "Prepare row");
 
     for (int x = 0; x < chunk_span; ++x) {
         const auto chunk_x = x + row_start.x;
@@ -373,10 +374,10 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
     }
 }
 
-void render::Renderer::PrepareChunk(RendererLayer& r_layer,
-                                    const game::Chunk& chunk,
-                                    const Position2<int> render_tile_offset,
-                                    const GameTickT game_tick) const noexcept {
+FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
+                                                const game::Chunk& chunk,
+                                                const Position2<int> render_tile_offset,
+                                                const GameTickT game_tick) const noexcept {
     // Iterate through and load tiles of a chunk into layer for rendering
     for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
         const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
@@ -391,11 +392,11 @@ void render::Renderer::PrepareChunk(RendererLayer& r_layer,
     PrepareOverlayLayers(r_layer, chunk, render_tile_offset);
 }
 
-void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
-                                         const game::Chunk& chunk,
-                                         const ChunkTileCoord ct_coord,
-                                         const Position2<float>& pixel_pos,
-                                         const GameTickT game_tick) const noexcept {
+FORCEINLINE void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
+                                                     const game::Chunk& chunk,
+                                                     const ChunkTileCoord ct_coord,
+                                                     const Position2<float>& pixel_pos,
+                                                     const GameTickT game_tick) const noexcept {
     for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
         const auto& tile = chunk.GetCTile(ct_coord, static_cast<game::TileLayer>(layer_index));
 
@@ -425,7 +426,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
             uv                 = GetSpriteUvCoords(sprite->internalId);
         }
 
-        if (tile.IsMultiTile())
+        if (tile.IsMultiTile()) // TODO simplify
             ApplyMultiTileUvAdjustment(uv, tile);
 
         const float pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
@@ -439,9 +440,9 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
     }
 }
 
-void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
-                                            const game::Chunk& chunk,
-                                            const Position2<int> render_tile_offset) const {
+FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
+                                                        const game::Chunk& chunk,
+                                                        const Position2<int> render_tile_offset) const {
 
     for (int layer_index = 0; layer_index < game::kOverlayLayerCount; ++layer_index) {
         const auto& overlay_container = chunk.overlays[layer_index];

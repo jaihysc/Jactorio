@@ -34,7 +34,7 @@ namespace jactorio::render
         // - Top left is (0, 0); Bottom right is (window width, window height)
         // - No need to worry about matrices, pretend it does not exist while preparing coordinates
     public:
-        static constexpr unsigned int tileWidth = 6;
+        static constexpr unsigned int tileWidth = 1;
 
         static constexpr double kDepthBufferNearMax = 1.;
         static constexpr double kDepthBufferFarMax  = -1.;
