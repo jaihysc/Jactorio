@@ -89,18 +89,18 @@ namespace jactorio::game
         }
 
         /// Tiles at provided tlayer
-        FORCEINLINE J_NODISCARD TileArrayT& Tiles(TileLayer tlayer) noexcept {
+        J_NODISCARD FORCEINLINE TileArrayT& Tiles(TileLayer tlayer) noexcept {
             return layers_[static_cast<int>(tlayer)];
         }
-        FORCEINLINE J_NODISCARD const TileArrayT& Tiles(TileLayer tlayer) const noexcept {
+        J_NODISCARD FORCEINLINE const TileArrayT& Tiles(TileLayer tlayer) const noexcept {
             return layers_[static_cast<int>(tlayer)];
         }
 
         /// Gets tile at x, y offset from top left of chunk
-        FORCEINLINE J_NODISCARD ChunkTile& GetCTile(const ChunkTileCoord& coord, const TileLayer tlayer) noexcept {
+        J_NODISCARD FORCEINLINE ChunkTile& GetCTile(const ChunkTileCoord& coord, const TileLayer tlayer) noexcept {
             return const_cast<ChunkTile&>(static_cast<const Chunk*>(this)->GetCTile(coord, tlayer));
         }
-        FORCEINLINE J_NODISCARD const ChunkTile& GetCTile(const ChunkTileCoord& coord,
+        J_NODISCARD FORCEINLINE const ChunkTile& GetCTile(const ChunkTileCoord& coord,
                                                           const TileLayer tlayer) const noexcept {
             assert(coord.x < kChunkWidth);
             assert(coord.y < kChunkWidth);
