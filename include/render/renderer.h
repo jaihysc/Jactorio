@@ -33,70 +33,49 @@ namespace jactorio::render
         // The visible area to render to is a grid of pixels
         // - Top left is (0, 0); Bottom right is (window width, window height)
         // - No need to worry about matrices, pretend it does not exist while preparing coordinates
+
+        // Center the world at player position
+        // The top left of the tile at player position will be at the center of the screen
+        // On a 1920 x 1080 screen: center is
+        // 960 pixels from left
+        // 540 pixels form top
+
+        // Achieved by offsetting the rendered chunks
+        // Every kChunkWidth tiles, shift 1 chunk
+        // Offset remainder tiles
+        // Offset decimal tile, using view matrix
+
+
+        /// Extra chunks drawn around the border
+        /// Hides the camera moving
+        static constexpr int kPaddingChunks = 1;
+
     public:
         static constexpr unsigned int tileWidth = 1;
-
-        static constexpr double kDepthBufferNearMax = 1.;
-        static constexpr double kDepthBufferFarMax  = -1.;
 
         Renderer();
 
         Renderer(const Renderer& other)     = delete;
         Renderer(Renderer&& other) noexcept = delete;
 
-        // ======================================================================
-        // Properties
-
-
-        J_NODISCARD static unsigned int GetWindowWidth() noexcept {
-            return windowWidth_;
-        }
-        J_NODISCARD static unsigned int GetWindowHeight() noexcept {
-            return windowHeight_;
-        }
-
-        // ======================================================================
-        // OpenGL calls
-
         /// Sets up OpenGl settings, only need to call once on program start
         static void GlSetup() noexcept;
-
         static void GlClear() noexcept;
+
+
+        // Window
+
+        J_NODISCARD static unsigned int GetWindowWidth() noexcept;
+        J_NODISCARD static unsigned int GetWindowHeight() noexcept;
 
         /// Resizes rendering buffers to new window size
         void GlResizeWindow(unsigned int window_x, unsigned int window_y) noexcept;
 
 
-        J_NODISCARD size_t GetDrawThreads() const noexcept {
-            return drawThreads_;
-        }
+        // Rendering
+
+        J_NODISCARD size_t GetDrawThreads() const noexcept;
         void GlSetDrawThreads(size_t threads);
-
-        // ======================================================================
-        // Rendering (Recalculated on window resize)
-
-        J_NODISCARD const MvpManager& GetMvpManager() const {
-            return mvpManager_;
-        }
-        J_NODISCARD MvpManager& GetMvpManager() {
-            return mvpManager_;
-        }
-
-
-        /// Renderer will lookup uv coords at the provided spritemap_coords
-        void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
-            spritemapCoords_ = &spritemap_coords;
-        }
-
-        /// Faster non range checked get into spritemapCoords_
-        /// \remark Ensure key always exists
-        J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(
-            const SpriteUvCoordsT& map, SpriteUvCoordsT::key_type key) noexcept;
-
-        J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(
-            const SpriteUvCoordsT::key_type key) const noexcept {
-            return GetSpriteUvCoords(*spritemapCoords_, key);
-        }
 
 
         /// Used for rendering methods, set prior to drawing
@@ -116,8 +95,24 @@ namespace jactorio::render
                            SpriteSetT set                    = 0,
                            const Position2<float>& dimension = {1, 1});
 
-        // ======================================================================
+
+        //
+
+        J_NODISCARD const MvpManager& GetMvpManager() const;
+        J_NODISCARD MvpManager& GetMvpManager();
+
+        /// Renderer will lookup uv coords at the provided spritemap_coords
+        void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept;
+
+        /// Faster non range checked get into spritemapCoords_
+        /// \remark Ensure key always exists
+        J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(
+            const SpriteUvCoordsT& map, SpriteUvCoordsT::key_type key) noexcept;
+        J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(SpriteUvCoordsT::key_type key) const noexcept;
+
+
         // Utility
+
         J_NODISCARD WorldCoord ScreenPosToWorldCoord(const Position2<float>& player_pos,
                                                      const Position2<int32_t>& screen_pos) const;
 
@@ -129,27 +124,12 @@ namespace jactorio::render
         float tileProjectionMatrixOffset = 0;
 
     private:
-        // Rendering internals
+        /// Draws current data to the screen
+        /// \param index_count Count of indices to draw
+        static void GlDraw(uint64_t index_count) noexcept;
 
-        // Center the world at position
-        // This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
 
-        // Player movement is in tiles
-        // Every chunk_width tiles, shift 1 chunk
-        // Remaining tiles are offset
-
-        // The top left of the tile at player position will be at the center of the screen
-
-        // On a 1920 x 1080 screen:
-        // 960 pixels from left
-        // 540 pixels form top
-        // Right and bottom varies depending on tile size
         void CalculateViewMatrix(float player_x, float player_y) noexcept;
-
-
-        /// Extra chunks drawn around the border
-        /// Hides the camera moving
-        static constexpr int kPaddingChunks = 1;
 
         /// Number of tiles to draw to fill window dimensions
         J_NODISCARD Position2<int> GetTileDrawAmount() const noexcept;
@@ -163,14 +143,6 @@ namespace jactorio::render
         /// Number of chunks to draw to fill window dimensions
         J_NODISCARD Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
 
-
-        // Each chunk draw unit gets a render layer
-        size_t drawThreads_ = 0;
-
-        std::vector<std::future<void>> chunkDrawThreads_;
-
-        /// Each thread gets 2 layers for rendering tiles + unique data
-        std::vector<RendererLayer> renderLayers_;
 
         /// \param row_start Chunk coordinate where the row of chunks starts
         /// \param chunk_span Number of chunks spanned
@@ -213,13 +185,15 @@ namespace jactorio::render
         /// Renders current layer, can no longer be drawn on
         static void GlPrepareEnd(RendererLayer& r_layer);
 
-        /// Draws current data to the screen
-        /// \param index_count Count of indices to draw
-        static void GlDraw(uint64_t index_count) noexcept;
-
         /// Updates projection matrix and zoom level
         void GlUpdateTileProjectionMatrix() noexcept;
 
+
+        size_t drawThreads_ = 0;
+        std::vector<std::future<void>> chunkDrawThreads_;
+
+        /// Each thread gets a render layer
+        std::vector<RendererLayer> renderLayers_;
 
         MvpManager mvpManager_;
 

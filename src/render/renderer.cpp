@@ -30,8 +30,6 @@ render::Renderer::Renderer() {
     GlResizeWindow(m_viewport[2], m_viewport[3]);
 }
 
-// ======================================================================
-
 void render::Renderer::GlSetup() noexcept {
     // Enables transparency in textures
     DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
@@ -51,6 +49,15 @@ void render::Renderer::GlClear() noexcept {
     DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
+
+unsigned render::Renderer::GetWindowWidth() noexcept {
+    return windowWidth_;
+}
+
+unsigned render::Renderer::GetWindowHeight() noexcept {
+    return windowHeight_;
+}
+
 void render::Renderer::GlResizeWindow(const unsigned int window_x, const unsigned int window_y) noexcept {
     // glViewport is critical, changes the size of the rendering area
     DEBUG_OPENGL_CALL(glViewport(0, 0, window_x, window_y));
@@ -63,6 +70,11 @@ void render::Renderer::GlResizeWindow(const unsigned int window_x, const unsigne
     for (auto& render_layer : renderLayers_) {
         render_layer.ResizeDefault();
     }
+}
+
+
+size_t render::Renderer::GetDrawThreads() const noexcept {
+    return drawThreads_;
 }
 
 void render::Renderer::GlSetDrawThreads(const size_t threads) {
@@ -78,20 +90,6 @@ void render::Renderer::GlSetDrawThreads(const size_t threads) {
     assert(renderLayers_.size() == drawThreads_);
 }
 
-
-// ======================================================================
-
-
-const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const SpriteUvCoordsT& map,
-                                                                        const SpriteUvCoordsT::key_type key) noexcept {
-    try {
-        return const_cast<SpriteUvCoordsT&>(map)[key];
-    }
-    catch (std::exception&) {
-        assert(false); // Should not throw
-        std::terminate();
-    }
-}
 
 void render::Renderer::SetPlayerPosition(const Position2<float>& player_position) noexcept {
     playerPosition_ = player_position;
@@ -209,6 +207,36 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
                      0.5f);
 }
 
+
+const render::MvpManager& render::Renderer::GetMvpManager() const {
+    return mvpManager_;
+}
+
+render::MvpManager& render::Renderer::GetMvpManager() {
+    return mvpManager_;
+}
+
+void render::Renderer::SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
+    spritemapCoords_ = &spritemap_coords;
+}
+
+const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const SpriteUvCoordsT& map,
+                                                                        const SpriteUvCoordsT::key_type key) noexcept {
+    try {
+        return const_cast<SpriteUvCoordsT&>(map)[key];
+    }
+    catch (std::exception&) {
+        assert(false); // Should not throw
+        std::terminate();
+    }
+}
+
+const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(
+    const SpriteUvCoordsT::key_type key) const noexcept {
+    return GetSpriteUvCoords(*spritemapCoords_, key);
+}
+
+
 WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& player_pos,
                                                    const Position2<int32_t>& screen_pos) const {
     const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
@@ -263,6 +291,15 @@ Position2<int32_t> render::Renderer::WorldCoordToBufferPos(const Position2<float
 
     // Sometimes has float 8.99999, which is wrongly truncated to 8, thus must round first
     return {LossyCast<int32_t>(std::round(buffer_pos_x)), LossyCast<int32_t>(std::round(buffer_pos_y))};
+}
+
+// ======================================================================
+
+void render::Renderer::GlDraw(const uint64_t index_count) noexcept {
+    DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES,
+                                     SafeCast<GLsizei>(index_count),
+                                     GL_UNSIGNED_INT,
+                                     nullptr)); // Pointer not needed as buffer is already bound
 }
 
 void render::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
@@ -513,13 +550,6 @@ void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
     r_layer.GlBindBuffers();
     r_layer.GlHandleBufferResize();
     GlDraw(r_layer.GetIndicesCount());
-}
-
-void render::Renderer::GlDraw(const uint64_t index_count) noexcept {
-    DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES,
-                                     SafeCast<GLsizei>(index_count),
-                                     GL_UNSIGNED_INT,
-                                     nullptr)); // Pointer not needed as buffer is already bound
 }
 
 void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {
