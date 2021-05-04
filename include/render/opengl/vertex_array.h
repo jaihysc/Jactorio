@@ -17,9 +17,9 @@ namespace jactorio::render
         ~VertexArray();
 
         VertexArray(const VertexArray& other)     = delete;
-        VertexArray(VertexArray&& other) noexcept = delete;
+        VertexArray(VertexArray&& other) noexcept = default;
         VertexArray& operator=(const VertexArray& other) = delete;
-        VertexArray& operator=(VertexArray&& other) noexcept = delete;
+        VertexArray& operator=(VertexArray&& other) noexcept = default;
 
         /// Adds specified buffer to the vertex array
         /// \remark Vertex_buffer must be deleted manually, it is not managed by the vertex array

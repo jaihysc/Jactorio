@@ -5,21 +5,17 @@
 #pragma once
 
 #include <glm/gtx/rotate_vector.hpp>
-#include <memory>
 
 #include "jactorio.h"
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
+#include "render/opengl/vertex_array.h"
+#include "render/opengl/vertex_buffer.h"
 
 namespace jactorio::render
 {
-    class IndexBuffer;
-    class VertexArray;
-    class VertexBuffer;
-
     /// Generates and maintains the buffers of a rendering layer
-    /// Currently 2 buffers are used: Vertex and UV
     /// \remark Can only be created and destructed in an Opengl Context
     /// \remark Methods with Gl prefix must be called from an OpenGl context
     class RendererLayer
@@ -30,37 +26,19 @@ namespace jactorio::render
         /// When resizing, the amount requested is multiplied by this, reducing future allocations
         static constexpr double kResizeECapacityMultiplier = 1.25;
 
-        /// Vertex buffer
-        static constexpr int kVbIndicesPerCoordinate = 3;
-
-        static constexpr int kVbIndicesPerElement = kVbIndicesPerCoordinate * 4;
-        static constexpr int kVbBytesPerElement   = kVbIndicesPerElement * sizeof(float);
-
-        /// Uv buffer
-        static constexpr int kUvIndicesPerCoordinate = 3;
-
-        /// Index buffer
-        static constexpr int kInIndicesPerElement = 6;
-
-
-        // Opengl seems to require the same spans
-        static_assert(kVbIndicesPerCoordinate == kUvIndicesPerCoordinate);
+        // Vertex buffer
+        static constexpr int kBaseValsPerElement  = 3;
+        static constexpr int kBaseBytesPerElement = kBaseValsPerElement * sizeof(float);
 
     public:
-        using VertexPositionT = QuadPosition<Position2<float>>;
+        using VertexPositionT = Position3<float>;
 
         struct Element
         {
-            Element() = default;
-
-            Element(const VertexPositionT& vertex, const UvPositionT& uv) : vertex(vertex), uv(uv) {}
-
             VertexPositionT vertex;
-            UvPositionT uv;
         };
 
         explicit RendererLayer();
-        ~RendererLayer();
 
         // Copying is disallowed because this needs to interact with openGL
 
@@ -69,20 +47,17 @@ namespace jactorio::render
         RendererLayer& operator=(const RendererLayer& other) = delete;
         RendererLayer& operator=(RendererLayer&& other) noexcept = default;
 
-        // ======================================================================
 
         /// Appends element to layer, after the highest element index where values were assigned
         /// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
-        FORCEINLINE void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z) noexcept;
-        FORCEINLINE void PushBack(const Element& element,
-                                  VertexPositionT::PositionT::ValueT z,
-                                  float rotate_deg) noexcept;
+        FORCEINLINE void PushBack(const Element& element) noexcept;
+        FORCEINLINE void PushBack(const Element& element, float rotate_deg) noexcept;
 
         /// Returns current element capacity of buffers
         J_NODISCARD uint32_t GetCapacity() const noexcept;
 
         /// Returns count of elements' index in buffers
-        J_NODISCARD uint64_t GetIndicesCount() const noexcept;
+        J_NODISCARD uint32_t GetElementCount() const noexcept;
 
         /// Queues allocation to hold element count
         /// \remark Performs reserves upon calling GlHandleBufferResize
@@ -97,7 +72,6 @@ namespace jactorio::render
         /// the data will not by uploaded with glBufferSubData
         void Clear() noexcept;
 
-        // ======================================================================
 
         /// Begins writing data to buffers
         void GlWriteBegin() noexcept;
@@ -108,9 +82,6 @@ namespace jactorio::render
         /// If a buffer resize was requested, resizes the buffers
         void GlHandleBufferResize();
 
-        /// Deletes vertex and index buffers
-        void GlDeleteBuffers() noexcept;
-
         /// Binds the vertex buffers, call this prior to drawing
         void GlBindBuffers() const noexcept;
 
@@ -119,29 +90,12 @@ namespace jactorio::render
         /// \return true if ok to push back into buffers, false if not
         FORCEINLINE bool PrePushBackChecks() noexcept;
 
+        /// 4 values: Position x, y, z, sprite number
+        FORCEINLINE void SetBaseBuffer(uint32_t buffer_index, const Element& element) const noexcept;
+        // TODO reimplement rotation
         FORCEINLINE void SetBufferVertex(uint32_t buffer_index,
-                                         const VertexPositionT& v_pos,
-                                         VertexPositionT::PositionT::ValueT z) const noexcept;
-        FORCEINLINE void SetBufferVertex(uint32_t buffer_index,
-                                         const VertexPositionT& v_pos,
-                                         VertexPositionT::PositionT::ValueT z,
+                                         const Element& element,
                                          float rotate_deg) const noexcept;
-
-        FORCEINLINE void SetBufferUv(uint32_t buffer_index, const UvPositionT& u_pos) const noexcept;
-
-        /// Generates indices to draw tiles using the grid from gen_render_grid
-        /// \returns Indices to be feed into Index_buffer
-        static std::unique_ptr<unsigned int[]> GenRenderGridIndices(uint32_t tile_count);
-
-
-        /// Initializes vertex buffers for rendering vertex and uv buffers + index buffer
-        /// \remark Should only be called once
-        void GlInitBuffers();
-
-        /// Only deletes heap vertex buffers, does not set pointers to nullptr
-        void GlFreeBuffers() const noexcept;
-
-        // ======================================================================
 
 
         /// Buffer index to insert the next element on push_back
@@ -158,35 +112,28 @@ namespace jactorio::render
         bool gResizeVertexBuffers_ = false;
 
         float* vertexBuffer_ = nullptr;
-        float* uvBuffer_     = nullptr;
 
-        VertexArray* vertexArray_ = nullptr;
-        VertexBuffer* vertexVb_   = nullptr;
-        VertexBuffer* uvVb_       = nullptr;
-        IndexBuffer* indexIb_     = nullptr;
+        VertexArray vertexArray_;
+        VertexBuffer baseVb_;
     };
 
-    inline void RendererLayer::PushBack(const Element& element, const VertexPositionT::PositionT::ValueT z) noexcept {
+    inline void RendererLayer::PushBack(const Element& element) noexcept {
         if (!PrePushBackChecks())
             return;
 
-        const auto buffer_index = nextElementIndex_ * kVbIndicesPerElement;
+        const auto buffer_index = nextElementIndex_ * kBaseValsPerElement;
         nextElementIndex_++;
 
-        SetBufferVertex(buffer_index, element.vertex, z);
-        SetBufferUv(buffer_index, element.uv);
+        SetBaseBuffer(buffer_index, element);
     }
-    inline void RendererLayer::PushBack(const Element& element,
-                                        const VertexPositionT::PositionT::ValueT z,
-                                        const float rotate_deg) noexcept {
+    inline void RendererLayer::PushBack(const Element& element, const float rotate_deg) noexcept {
         if (!PrePushBackChecks())
             return;
 
-        const auto buffer_index = nextElementIndex_ * kVbIndicesPerElement;
+        const auto buffer_index = nextElementIndex_ * kBaseValsPerElement;
         nextElementIndex_++;
 
-        SetBufferVertex(buffer_index, element.vertex, z, rotate_deg); // <-- Handles rotations
-        SetBufferUv(buffer_index, element.uv);
+        SetBufferVertex(buffer_index, element, rotate_deg);
     }
 
     inline bool RendererLayer::PrePushBackChecks() noexcept {
@@ -207,30 +154,15 @@ namespace jactorio::render
         return true;
     }
 
-    inline void RendererLayer::SetBufferVertex(const uint32_t buffer_index,
-                                               const VertexPositionT& v_pos,
-                                               VertexPositionT::PositionT::ValueT z) const noexcept {
-        // Populate in following order: topL, topR, bottomR, bottomL (X Y)
-        vertexBuffer_[buffer_index + 0] = v_pos.topLeft.x;
-        vertexBuffer_[buffer_index + 1] = v_pos.topLeft.y;
-        vertexBuffer_[buffer_index + 2] = z;
-
-        vertexBuffer_[buffer_index + 3] = v_pos.bottomRight.x;
-        vertexBuffer_[buffer_index + 4] = v_pos.topLeft.y;
-        vertexBuffer_[buffer_index + 5] = z;
-
-        vertexBuffer_[buffer_index + 6] = v_pos.bottomRight.x;
-        vertexBuffer_[buffer_index + 7] = v_pos.bottomRight.y;
-        vertexBuffer_[buffer_index + 8] = z;
-
-        vertexBuffer_[buffer_index + 9]  = v_pos.topLeft.x;
-        vertexBuffer_[buffer_index + 10] = v_pos.bottomRight.y;
-        vertexBuffer_[buffer_index + 11] = z;
+    inline void RendererLayer::SetBaseBuffer(const uint32_t buffer_index, const Element& element) const noexcept {
+        vertexBuffer_[buffer_index + 0] = element.vertex.x;
+        vertexBuffer_[buffer_index + 1] = element.vertex.y;
+        vertexBuffer_[buffer_index + 2] = element.vertex.z;
     }
     inline void RendererLayer::SetBufferVertex(const uint32_t buffer_index,
-                                               const VertexPositionT& v_pos,
-                                               const VertexPositionT::PositionT::ValueT z,
+                                               const Element& element,
                                                const float rotate_deg) const noexcept {
+        /* // TODO
         // Center origin (0, 0) on sprite
         const auto x_offset = (v_pos.bottomRight.x - v_pos.topLeft.x) / 2;
         assert(x_offset > 0);
@@ -282,25 +214,8 @@ namespace jactorio::render
         vertexBuffer_[buffer_index + 9]  = bl.x;
         vertexBuffer_[buffer_index + 10] = bl.y;
         vertexBuffer_[buffer_index + 11] = z;
+        */
     }
-
-    inline void RendererLayer::SetBufferUv(const uint32_t buffer_index, const UvPositionT& u_pos) const noexcept {
-        // Populate in following order: bottomL, bottomR, topR, topL (X Y) (NOT THE SAME AS ABOVE!!)
-
-        // UV
-        uvBuffer_[buffer_index + 0] = u_pos.topLeft.x;
-        uvBuffer_[buffer_index + 1] = u_pos.bottomRight.y;
-
-        uvBuffer_[buffer_index + 3] = u_pos.bottomRight.x;
-        uvBuffer_[buffer_index + 4] = u_pos.bottomRight.y;
-
-        uvBuffer_[buffer_index + 6] = u_pos.bottomRight.x;
-        uvBuffer_[buffer_index + 7] = u_pos.topLeft.y;
-
-        uvBuffer_[buffer_index + 9]  = u_pos.topLeft.x;
-        uvBuffer_[buffer_index + 10] = u_pos.topLeft.y;
-    }
-
 } // namespace jactorio::render
 
 #endif // JACTORIO_INCLUDE_RENDER_RENDERER_LAYER_H

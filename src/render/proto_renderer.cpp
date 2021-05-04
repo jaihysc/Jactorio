@@ -62,6 +62,8 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
 
         constexpr float pixel_z = kPixelZ;
         // In pixels
+
+        /* // TODO removed
         layer.PushBack(
             {{
                  {
@@ -79,6 +81,7 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
              },
              {uv_pos.topLeft, uv_pos.bottomRight}},
             pixel_z);
+            */
     }
 }
 
@@ -290,6 +293,9 @@ void render::DrawInserterArm(RendererLayer& layer,
                              const Position2<OverlayOffsetAxis>& pixel_offset,
                              const proto::Inserter& inserter_proto,
                              const proto::InserterData& inserter_data) {
+
+    // TODO removed
+    /*
     {
         const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
 
@@ -323,4 +329,5 @@ void render::DrawInserterArm(RendererLayer& layer,
                         {uv.topLeft, uv.bottomRight}},
                        kPixelZ);
     }
+    */
 }

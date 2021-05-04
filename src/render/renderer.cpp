@@ -12,6 +12,7 @@
 #include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/opengl/error.h"
+#include "render/renderer_exception.h"
 
 using namespace jactorio;
 
@@ -30,7 +31,7 @@ render::Renderer::Renderer() {
     GlResizeWindow(m_viewport[2], m_viewport[3]);
 }
 
-void render::Renderer::GlSetup() noexcept {
+void render::Renderer::GlSetup() {
     // Enables transparency in textures
     DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
     DEBUG_OPENGL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -43,6 +44,8 @@ void render::Renderer::GlSetup() noexcept {
     // Do not write to depth buffer if fully transparent
     DEBUG_OPENGL_CALL(glEnable(GL_ALPHA_TEST));
     DEBUG_OPENGL_CALL(glAlphaFunc(GL_GREATER, 0));
+
+    GlSetupTessellation();
 }
 
 void render::Renderer::GlClear() noexcept {
@@ -197,14 +200,11 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
     auto uv = GetSpriteUvCoords(sprite.internalId);
     ApplySpriteUvAdjustment(uv, sprite.GetCoords(set, 0));
 
-    r_layer.PushBack({{
+    // Only capable of render 1 x 1 with current renderer
+    assert(dimension.x == 1);
+    assert(dimension.y == 1);
 
-                          {SafeCast<float>(screen_pos.x), SafeCast<float>(screen_pos.y)},
-
-                          {SafeCast<float>(screen_pos.x) + dimension.x * SafeCast<float>(tileWidth),
-                           SafeCast<float>(screen_pos.y) + dimension.y * SafeCast<float>(tileWidth)}},
-                      {uv.topLeft, uv.bottomRight}},
-                     0.5f);
+    r_layer.PushBack({{SafeCast<float>(screen_pos.x), SafeCast<float>(screen_pos.y), 0.5f}});
 }
 
 
@@ -295,11 +295,41 @@ Position2<int32_t> render::Renderer::WorldCoordToBufferPos(const Position2<float
 
 // ======================================================================
 
-void render::Renderer::GlDraw(const uint64_t index_count) noexcept {
-    DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES,
+void render::Renderer::GlSetupTessellation() {
+    // Setup tessellation
+    constexpr auto input_patch_vertices  = 1;
+    constexpr auto output_patch_vertices = 4;
+
+    GLint max_patch_vertices;
+    DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_PATCH_VERTICES, &max_patch_vertices));
+    if (max_patch_vertices < input_patch_vertices) {
+        throw RendererException("Requested input patch vertices not supported: " +
+                                std::to_string(input_patch_vertices));
+    }
+    if (max_patch_vertices < output_patch_vertices) {
+        throw RendererException("Requested output patch vertices not supported: " +
+                                std::to_string(output_patch_vertices));
+    }
+
+    DEBUG_OPENGL_CALL(glPatchParameteri(GL_PATCH_VERTICES, input_patch_vertices));
+
+
+    const GLfloat inner_level[]{1, 1};
+    const GLfloat outer_level[]{1, 1, 1, 1};
+
+    DEBUG_OPENGL_CALL(glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL, inner_level));
+    DEBUG_OPENGL_CALL(glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, outer_level));
+}
+
+void render::Renderer::GlDraw(const uint64_t count) noexcept {
+    DEBUG_OPENGL_CALL(glDrawArrays(GL_PATCHES, 0, SafeCast<GLsizei>(count)));
+}
+
+void render::Renderer::GlDrawIndex(const uint64_t index_count) noexcept {
+    DEBUG_OPENGL_CALL(glDrawElements(GL_PATCHES,
                                      SafeCast<GLsizei>(index_count),
                                      GL_UNSIGNED_INT,
-                                     nullptr)); // Pointer not needed as buffer is already bound
+                                     nullptr)); // Pointer not needed as index buffer is already bound
 }
 
 void render::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
@@ -469,11 +499,7 @@ FORCEINLINE void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
         const float pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
 
         // TODO do not draw those out of view
-        r_layer.PushBack({{// top left of tile, 1 tile over and down
-                           {pixel_pos.x, pixel_pos.y},
-                           {pixel_pos.x + SafeCast<float>(tileWidth), pixel_pos.y + SafeCast<float>(tileWidth)}},
-                          {uv.topLeft, uv.bottomRight}},
-                         pixel_z);
+        r_layer.PushBack({{pixel_pos, pixel_z}});
     }
 }
 
@@ -489,17 +515,13 @@ FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
 
             ApplySpriteUvAdjustment(uv, overlay.sprite->GetCoords(overlay.spriteSet, 0));
 
-            r_layer.PushBack(
-                {{
+            // Only capable of render 1 x 1 with current renderer
+            assert(overlay.size.x == 1);
+            assert(overlay.size.y == 1);
 
-                     {(render_tile_offset.x + overlay.position.x) * SafeCast<float>(tileWidth),
-
-                      (render_tile_offset.y + overlay.position.y) * SafeCast<float>(tileWidth)},
-                     {(render_tile_offset.x + overlay.position.x + overlay.size.x) * SafeCast<float>(tileWidth),
-
-                      (render_tile_offset.y + overlay.position.y + overlay.size.y) * SafeCast<float>(tileWidth)}},
-                 {uv.topLeft, uv.bottomRight}},
-                overlay.position.z);
+            r_layer.PushBack({{(render_tile_offset.x + overlay.position.x) * SafeCast<float>(tileWidth),
+                               (render_tile_offset.y + overlay.position.y) * SafeCast<float>(tileWidth),
+                               overlay.position.z}});
         }
     }
 }
@@ -549,7 +571,7 @@ void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
     r_layer.GlWriteEnd();
     r_layer.GlBindBuffers();
     r_layer.GlHandleBufferResize();
-    GlDraw(r_layer.GetIndicesCount());
+    GlDraw(r_layer.GetElementCount());
 }
 
 void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {

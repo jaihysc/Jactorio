@@ -17,9 +17,9 @@ namespace jactorio::render
         ~VertexBuffer();
 
         VertexBuffer(const VertexBuffer& other)     = delete;
-        VertexBuffer(VertexBuffer&& other) noexcept = delete;
+        VertexBuffer(VertexBuffer&& other) noexcept = default;
         VertexBuffer& operator=(const VertexBuffer& other) = delete;
-        VertexBuffer& operator=(VertexBuffer&& other) noexcept = delete;
+        VertexBuffer& operator=(VertexBuffer&& other) noexcept = default;
 
         /// Gets pointer to begin modifying buffer data
         J_NODISCARD void* Map() const;

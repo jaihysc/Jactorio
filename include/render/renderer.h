@@ -59,7 +59,8 @@ namespace jactorio::render
         Renderer(Renderer&& other) noexcept = delete;
 
         /// Sets up OpenGl settings, only need to call once on program start
-        static void GlSetup() noexcept;
+        /// \exception RendererException Failed to setup
+        static void GlSetup();
         static void GlClear() noexcept;
 
 
@@ -124,9 +125,14 @@ namespace jactorio::render
         float tileProjectionMatrixOffset = 0;
 
     private:
-        /// Draws current data to the screen
-        /// \param index_count Count of indices to draw
-        static void GlDraw(uint64_t index_count) noexcept;
+        /// \exception RendererException Failed to setup
+        static void GlSetupTessellation();
+
+        /// glDrawArrays
+        static void GlDraw(uint64_t count) noexcept;
+        /// glDrawBuffers
+        /// Requires index buffer bound
+        static void GlDrawIndex(uint64_t index_count) noexcept;
 
 
         void CalculateViewMatrix(float player_x, float player_y) noexcept;

@@ -16,9 +16,9 @@ namespace jactorio::render
         ~IndexBuffer();
 
         IndexBuffer(const IndexBuffer& other)     = delete;
-        IndexBuffer(IndexBuffer&& other) noexcept = delete;
+        IndexBuffer(IndexBuffer&& other) noexcept = default;
         IndexBuffer& operator=(const IndexBuffer& other) = delete;
-        IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
+        IndexBuffer& operator=(IndexBuffer&& other) noexcept = default;
 
         /// Creates a new buffer of provided specifications
         void Reserve(const void* data, uint32_t index_count);

@@ -1,13 +1,9 @@
-#version 300 es
+#version 410 core
 
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec2 tex_coord;
+layout(location = 0) in vec4 base_VS_in;
 
-out vec2 v_tex_coord;
-
-uniform mat4 u_model_view_projection_matrix;
+out vec4 base_ES_in;
 
 void main() {
-	gl_Position = u_model_view_projection_matrix * position;
-	v_tex_coord = tex_coord;
+	base_ES_in = base_VS_in;
 }
