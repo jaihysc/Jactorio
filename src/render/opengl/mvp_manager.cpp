@@ -2,6 +2,8 @@
 
 #include "render/opengl/mvp_manager.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "core/convert.h"
 #include "core/logger.h"
 #include "render/opengl/shader.h"
