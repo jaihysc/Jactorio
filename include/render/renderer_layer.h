@@ -27,7 +27,7 @@ namespace jactorio::render
         static constexpr double kResizeECapacityMultiplier = 1.25;
 
         // Vertex buffer
-        static constexpr int kBaseValsPerElement  = 3;
+        static constexpr int kBaseValsPerElement  = 4;
         static constexpr int kBaseBytesPerElement = kBaseValsPerElement * sizeof(float);
 
     public:
@@ -35,7 +35,11 @@ namespace jactorio::render
 
         struct Element
         {
+            Element(const VertexPositionT vertex, const SpriteTexCoordIndexT tex_coord_index)
+                : vertex(vertex), texCoordIndex(tex_coord_index) {}
+
             VertexPositionT vertex;
+            SpriteTexCoordIndexT texCoordIndex;
         };
 
         explicit RendererLayer();
@@ -111,7 +115,7 @@ namespace jactorio::render
         bool writeEnabled_         = false;
         bool gResizeVertexBuffers_ = false;
 
-        float* vertexBuffer_ = nullptr;
+        float* baseBuffer_ = nullptr;
 
         VertexArray vertexArray_;
         VertexBuffer baseVb_;
@@ -155,9 +159,13 @@ namespace jactorio::render
     }
 
     inline void RendererLayer::SetBaseBuffer(const uint32_t buffer_index, const Element& element) const noexcept {
-        vertexBuffer_[buffer_index + 0] = element.vertex.x;
-        vertexBuffer_[buffer_index + 1] = element.vertex.y;
-        vertexBuffer_[buffer_index + 2] = element.vertex.z;
+        baseBuffer_[buffer_index + 0] = element.vertex.x;
+        baseBuffer_[buffer_index + 1] = element.vertex.y;
+        baseBuffer_[buffer_index + 2] = element.vertex.z;
+
+        // Evil bit hack to shove an int into the bytes that should make up a float
+        static_assert(sizeof(SpriteTexCoordIndexT) == sizeof(float));
+        reinterpret_cast<SpriteTexCoordIndexT*>(baseBuffer_ + buffer_index + 3)[0] = element.texCoordIndex;
     }
     inline void RendererLayer::SetBufferVertex(const uint32_t buffer_index,
                                                const Element& element,

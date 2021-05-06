@@ -55,21 +55,6 @@ int render::Shader::GetUniformLocation(const std::string& name) const noexcept {
     return location;
 }
 
-void render::Shader::SetUniform1I(const int& location, const int v) noexcept {
-    DEBUG_OPENGL_CALL(glUniform1i(location, v));
-}
-
-void render::Shader::SetUniform4F(
-    const int& location, const float& v0, const float& v1, const float& v2, const float& v3) noexcept {
-
-    DEBUG_OPENGL_CALL(glUniform4f(location, v0, v1, v2, v3));
-}
-
-void render::Shader::SetUniformMat4F(const int& location, glm::mat4& mat) noexcept {
-    DEBUG_OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]));
-}
-
-
 GLuint render::Shader::CompileShader(const std::string& filepath, const GLenum shader_type) noexcept {
 
     const std::string source = ReadFile(filepath);

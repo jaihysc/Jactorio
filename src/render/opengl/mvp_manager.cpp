@@ -6,6 +6,7 @@
 
 #include "core/convert.h"
 #include "core/logger.h"
+#include "render/opengl/error.h"
 #include "render/opengl/shader.h"
 
 using namespace jactorio;
@@ -18,7 +19,7 @@ void render::MvpManager::SetMvpUniformLocation(const int location) {
 
 void render::MvpManager::UpdateShaderMvp() {
     CalculateMvpMatrix();
-    Shader::SetUniformMat4F(mvpUniformLocation_, mvpMatrix_);
+    DEBUG_OPENGL_CALL(glUniformMatrix4fv(mvpUniformLocation_, 1, GL_FALSE, &mvpMatrix_[0][0]));
 }
 
 const glm::mat4& render::MvpManager::GetMvpMatrix() const {

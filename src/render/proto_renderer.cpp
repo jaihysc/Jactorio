@@ -58,8 +58,6 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
         // Move the target offset (up or down depending on multiplier)
         *target_offset += line_item.dist.getAsDouble() * multiplier;
 
-        const auto& uv_pos = render::Renderer::GetSpriteUvCoords(uv_coords, line_item.item->sprite->internalId);
-
         constexpr float pixel_z = kPixelZ;
         // In pixels
 

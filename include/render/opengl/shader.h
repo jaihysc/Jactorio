@@ -35,10 +35,6 @@ namespace jactorio::render
         static void Unbind() noexcept;
 
         J_NODISCARD int GetUniformLocation(const std::string& name) const noexcept;
-        static void SetUniform1I(const int& location, int v) noexcept;
-        static void SetUniform4F(
-            const int& location, const float& v0, const float& v1, const float& v2, const float& v3) noexcept;
-        static void SetUniformMat4F(const int& location, glm::mat4& mat) noexcept;
 
     private:
         static GLuint CompileShader(const std::string& filepath, GLenum shader_type) noexcept;

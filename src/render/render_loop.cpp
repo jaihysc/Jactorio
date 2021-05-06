@@ -19,6 +19,7 @@
 #include "gui/menus_debug.h"
 #include "proto/localization.h"
 #include "proto/sprite.h"
+#include "render/opengl/error.h"
 #include "render/opengl/shader.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
@@ -214,7 +215,10 @@ static void Init(ThreadedLoopCommon& common) {
     renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
 
     // Texture will be bound to slot 0 above, tell this to shader
-    Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
+    DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
+
+    GLfloat f[]{0, 1, 0, 1}; // TODO Test only
+    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"), 1, f));
 
 
     // ======================================================================
@@ -256,7 +260,6 @@ static void Init(ThreadedLoopCommon& common) {
     renderer->GlSetDrawThreads(8);
 
     // Terrain
-    renderer->SetSpriteUvCoords(renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions);
     renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
 
     // Gui

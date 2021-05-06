@@ -94,7 +94,6 @@ void render::Renderer::SetPlayerPosition(const Position2<float>& player_position
 }
 
 void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const game::World& world) {
-    assert(spritemapCoords_);
     assert(drawThreads_ > 0);
     assert(renderLayers_.size() == drawThreads_);
 
@@ -167,8 +166,7 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const g
                                                         std::ref(world_gen_mutex),
                                                         row_start,
                                                         chunk_amount.x,
-                                                        render_tile_offset,
-                                                        game_tick);
+                                                        render_tile_offset);
 
         ++started_threads;
     }
@@ -189,17 +187,13 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
                                      const Position2<float>& dimension) {
     auto& r_layer = renderLayers_[0];
 
-
     const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
-
-    auto uv = GetSpriteUvCoords(sprite.internalId);
-    ApplySpriteUvAdjustment(uv, sprite.GetCoords(set, 0));
 
     // Only capable of render 1 x 1 with current renderer
     assert(dimension.x == 1);
     assert(dimension.y == 1);
 
-    r_layer.PushBack({{SafeCast<float>(screen_pos.x), SafeCast<float>(screen_pos.y), 0.5f}});
+    r_layer.PushBack({{SafeCast<float>(screen_pos.x), SafeCast<float>(screen_pos.y), 0.5f}, 0});
 }
 
 
@@ -209,26 +203,6 @@ const render::MvpManager& render::Renderer::GetMvpManager() const {
 
 render::MvpManager& render::Renderer::GetMvpManager() {
     return mvpManager_;
-}
-
-void render::Renderer::SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
-    spritemapCoords_ = &spritemap_coords;
-}
-
-const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const SpriteUvCoordsT& map,
-                                                                        const SpriteUvCoordsT::key_type key) noexcept {
-    try {
-        return const_cast<SpriteUvCoordsT&>(map)[key];
-    }
-    catch (std::exception&) {
-        assert(false); // Should not throw
-        std::terminate();
-    }
-}
-
-const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(
-    const SpriteUvCoordsT::key_type key) const noexcept {
-    return GetSpriteUvCoords(*spritemapCoords_, key);
 }
 
 
@@ -415,8 +389,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
                                        std::mutex& world_gen_mutex,
                                        const Position2<int> row_start,
                                        const int chunk_span,
-                                       const Position2<int> render_tile_offset,
-                                       const GameTickT game_tick) const noexcept {
+                                       const Position2<int> render_tile_offset) const noexcept {
     EXECUTION_PROFILE_SCOPE(profiler, "Prepare row");
 
     for (int x = 0; x < chunk_span; ++x) {
@@ -431,15 +404,13 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
             continue;
         }
 
-        PrepareChunk(
-            r_layer, *chunk, {x * game::Chunk::kChunkWidth + render_tile_offset.x, render_tile_offset.y}, game_tick);
+        PrepareChunk(r_layer, *chunk, {x * game::Chunk::kChunkWidth + render_tile_offset.x, render_tile_offset.y});
     }
 }
 
 FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                                 const game::Chunk& chunk,
-                                                const Position2<int> render_tile_offset,
-                                                const GameTickT game_tick) const noexcept {
+                                                const Position2<int> render_tile_offset) const noexcept {
     // Iterate through and load tiles of a chunk into layer for rendering
     for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
         const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
@@ -447,7 +418,7 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
         for (ChunkTileCoordAxis tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
             const auto pixel_x = SafeCast<float>(render_tile_offset.x + tile_x) * SafeCast<float>(tileWidth);
 
-            PrepareTileLayers(r_layer, chunk, {tile_x, tile_y}, {pixel_x, pixel_y}, game_tick);
+            PrepareTileLayers(r_layer, chunk, {tile_x, tile_y}, {pixel_x, pixel_y});
         }
     }
 
@@ -457,8 +428,7 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 FORCEINLINE void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
                                                      const game::Chunk& chunk,
                                                      const ChunkTileCoord ct_coord,
-                                                     const Position2<float>& pixel_pos,
-                                                     const GameTickT game_tick) const noexcept {
+                                                     const Position2<float>& pixel_pos) const noexcept {
     for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
         const auto& tile = chunk.GetCTile(ct_coord, static_cast<game::TileLayer>(layer_index));
 
@@ -466,35 +436,10 @@ FORCEINLINE void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
         if (proto == nullptr) // Layer not initialized
             continue;
 
-        const auto* unique_data = tile.GetUniqueData();
-
-        // Unique data can be nullptr for certain layers
-
-        SpriteUvCoordsT::mapped_type uv;
-
-        if (unique_data != nullptr) {
-            const auto* sprite = proto->OnRGetSprite(unique_data->set);
-            uv                 = GetSpriteUvCoords(sprite->internalId);
-
-            // Handles rendering portions of sprite
-            const auto sprite_frame = proto->OnRGetSpriteFrame(*unique_data, game_tick);
-            ApplySpriteUvAdjustment(uv, sprite->GetCoords(unique_data->set, sprite_frame));
-
-            // Custom draw function
-            proto->OnRDrawUniqueData(r_layer, *spritemapCoords_, {pixel_pos.x, pixel_pos.y}, unique_data);
-        }
-        else {
-            const auto* sprite = proto->OnRGetSprite(0);
-            uv                 = GetSpriteUvCoords(sprite->internalId);
-        }
-
-        if (tile.IsMultiTile()) // TODO simplify
-            ApplyMultiTileUvAdjustment(uv, tile);
-
-        const float pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
+        const auto pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
 
         // TODO do not draw those out of view
-        r_layer.PushBack({{pixel_pos, pixel_z}});
+        r_layer.PushBack({{pixel_pos, pixel_z}, 0});
     }
 }
 
@@ -506,17 +451,14 @@ FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
         const auto& overlay_container = chunk.overlays[layer_index];
 
         for (const auto& overlay : overlay_container) {
-            auto uv = GetSpriteUvCoords(overlay.sprite->internalId);
-
-            ApplySpriteUvAdjustment(uv, overlay.sprite->GetCoords(overlay.spriteSet, 0));
-
             // Only capable of render 1 x 1 with current renderer
             assert(overlay.size.x == 1);
             assert(overlay.size.y == 1);
 
             r_layer.PushBack({{(render_tile_offset.x + overlay.position.x) * SafeCast<float>(tileWidth),
                                (render_tile_offset.y + overlay.position.y) * SafeCast<float>(tileWidth),
-                               overlay.position.z}});
+                               overlay.position.z},
+                              0});
         }
     }
 }

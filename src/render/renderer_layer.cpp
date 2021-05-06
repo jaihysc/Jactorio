@@ -1,13 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
 #include "render/renderer_layer.h"
-#include "render/opengl/vertex_array.h"
 
 #include "core/convert.h"
 
 using namespace jactorio;
 
-render::RendererLayer::RendererLayer() : baseVb_(vertexBuffer_, eCapacity_ * kBaseBytesPerElement, false) {
+render::RendererLayer::RendererLayer() : baseVb_(baseBuffer_, eCapacity_ * kBaseBytesPerElement, false) {
     vertexArray_.AddBuffer(&baseVb_, kBaseValsPerElement, 0);
 
     Reserve(kInitialSize);
@@ -43,7 +42,7 @@ void render::RendererLayer::GlWriteBegin() noexcept {
     assert(!writeEnabled_);
     assert(eCapacity_ > 0); // Mapping fails unless capacity is at least 1
 
-    vertexBuffer_ = static_cast<float*>(baseVb_.Map());
+    baseBuffer_ = static_cast<float*>(baseVb_.Map());
 
     writeEnabled_ = true;
 }

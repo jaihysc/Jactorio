@@ -102,15 +102,6 @@ namespace jactorio::render
         J_NODISCARD const MvpManager& GetMvpManager() const;
         J_NODISCARD MvpManager& GetMvpManager();
 
-        /// Renderer will lookup uv coords at the provided spritemap_coords
-        void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept;
-
-        /// Faster non range checked get into spritemapCoords_
-        /// \remark Ensure key always exists
-        J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(
-            const SpriteUvCoordsT& map, SpriteUvCoordsT::key_type key) noexcept;
-        J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(SpriteUvCoordsT::key_type key) const noexcept;
-
 
         // Utility
 
@@ -158,19 +149,16 @@ namespace jactorio::render
                              std::mutex& world_gen_mutex,
                              Position2<int> row_start,
                              int chunk_span,
-                             Position2<int> render_tile_offset,
-                             GameTickT game_tick) const noexcept;
+                             Position2<int> render_tile_offset) const noexcept;
 
         void PrepareChunk(RendererLayer& r_layer,
                           const game::Chunk& chunk,
-                          Position2<int> render_tile_offset,
-                          GameTickT game_tick) const noexcept;
+                          Position2<int> render_tile_offset) const noexcept;
 
         void PrepareTileLayers(RendererLayer& r_layer,
                                const game::Chunk& chunk,
                                ChunkTileCoord ct_coord,
-                               const Position2<float>& pixel_pos,
-                               GameTickT game_tick) const noexcept;
+                               const Position2<float>& pixel_pos) const noexcept;
 
         void PrepareOverlayLayers(RendererLayer& r_layer,
                                   const game::Chunk& chunk,
@@ -202,9 +190,6 @@ namespace jactorio::render
         std::vector<RendererLayer> renderLayers_;
 
         MvpManager mvpManager_;
-
-        /// Internal ids to spritemap positions
-        const SpriteUvCoordsT* spritemapCoords_ = nullptr;
 
         /// Cached player's position, for convenience to avoid having to pass player around everywhere
         Position2<float> playerPosition_;
