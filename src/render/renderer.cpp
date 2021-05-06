@@ -40,11 +40,6 @@ void render::Renderer::GlSetup() {
     DEBUG_OPENGL_CALL(glEnable(GL_DEPTH_TEST));
     DEBUG_OPENGL_CALL(glDepthFunc(GL_LEQUAL));
 
-    // Fixes depth buffer transparency issues
-    // Do not write to depth buffer if fully transparent
-    DEBUG_OPENGL_CALL(glEnable(GL_ALPHA_TEST));
-    DEBUG_OPENGL_CALL(glAlphaFunc(GL_GREATER, 0));
-
     GlSetupTessellation();
 }
 
