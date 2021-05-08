@@ -2,6 +2,7 @@
 
 #include "gui/menus_debug.h"
 
+#include <fstream>
 #include <imgui.h>
 #include <ostream>
 
@@ -145,6 +146,14 @@ void gui::DebugTimings() {
     ImGuard guard;
     guard.Begin("Timings");
     ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+    if (ImGui::Button("Write to file")) {
+        std::ofstream ofs("timings_snapshot.txt");
+
+        for (auto& [key, value] : ExecutionTimer::measuredTimes) {
+            ofs << value << " | " << key << "\n";
+        }
+    }
 
     for (auto& [key, value] : ExecutionTimer::measuredTimes) {
         ImGui::Text("%fms (%.1f/s) %s", value, 1000 / value, key.c_str());
