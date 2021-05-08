@@ -127,51 +127,79 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const g
     mvpManager_.CalculateMvpMatrix();
     mvpManager_.UpdateShaderMvp();
 
-    std::size_t started_threads = 0; // Also is index for vector holding futures
-
-
-    auto await_thread_completion = [&]() {
-        for (int i = 0; i < started_threads; ++i) {
-            chunkDrawThreads_[i].wait();
-            auto& r_layer_tile = renderLayers_[i];
-
-            GlPrepareEnd(r_layer_tile);
-        }
-    };
 
     std::mutex world_gen_mutex;
 
-    for (int y = 0; y < chunk_amount.y; ++y) {
+    // Thread order: (Helps reduce stalls as some threads are always active)
+    // - Start all
+    // - Wait for thread 1, draw, continue thread 1
+    // - Wait for thread 2, draw, continue thread 2
+    // ... Repeat until done
 
-        // Wait for started threads to finish before starting new ones
-        if (started_threads == drawThreads_) {
-            await_thread_completion();
-            started_threads = 0;
-        }
+    const auto needed_threads   = chunk_amount.y;
+    const auto threads_to_start = std::min(LossyCast<int>(drawThreads_), needed_threads);
+
+    // Start all threads
+    int i = 0;
+    for (; i < threads_to_start; ++i) {
+        auto& r_layer = renderLayers_[i];
+        GlPrepareBegin(r_layer);
 
 
-        const auto chunk_y = chunk_start.y + y;
+        Position2 row_start{chunk_start.x, chunk_start.y + i};
+        Position2 render_tile_offset{tile_offset.x, i * game::Chunk::kChunkWidth + tile_offset.y};
 
-        auto& r_layer_tile = renderLayers_[started_threads];
-        GlPrepareBegin(r_layer_tile);
-
-        Position2<int> row_start{chunk_start.x, chunk_y};
-        Position2<int> render_tile_offset{tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y};
-
-        chunkDrawThreads_[started_threads] = std::async(std::launch::async,
-                                                        &Renderer::PrepareChunkRow,
-                                                        this,
-                                                        std::ref(r_layer_tile),
-                                                        std::ref(world),
-                                                        std::ref(world_gen_mutex),
-                                                        row_start,
-                                                        chunk_amount.x,
-                                                        render_tile_offset);
-
-        ++started_threads;
+        chunkDrawThreads_[i] = std::async(std::launch::async,
+                                          &Renderer::PrepareChunkRow,
+                                          this,
+                                          std::ref(r_layer),
+                                          std::ref(world),
+                                          std::ref(world_gen_mutex),
+                                          row_start,
+                                          chunk_amount.x,
+                                          render_tile_offset);
     }
 
-    await_thread_completion();
+    // Wait for thread n, draw n, ...
+
+    std::size_t thread_n = 0; // The thread currently waiting for
+    for (; i < needed_threads; ++i) {
+        chunkDrawThreads_[thread_n].wait();
+
+        auto& r_layer = renderLayers_[thread_n];
+        GlPrepareEnd(r_layer);
+
+        GlPrepareBegin(r_layer);
+
+        Position2 row_start{chunk_start.x, chunk_start.y + i};
+        Position2 render_tile_offset{tile_offset.x, i * game::Chunk::kChunkWidth + tile_offset.y};
+
+        chunkDrawThreads_[thread_n] = std::async(std::launch::async,
+                                                 &Renderer::PrepareChunkRow,
+                                                 this,
+                                                 std::ref(r_layer),
+                                                 std::ref(world),
+                                                 std::ref(world_gen_mutex),
+                                                 row_start,
+                                                 chunk_amount.x,
+                                                 render_tile_offset);
+
+        thread_n++;
+        if (thread_n >= drawThreads_)
+            thread_n = 0;
+    }
+
+    // Continue off from prior loop, but only waiting for threads and drawing
+    for (int j = 0; j < threads_to_start; ++j) {
+        chunkDrawThreads_[thread_n].wait();
+
+        auto& r_layer = renderLayers_[thread_n];
+        GlPrepareEnd(r_layer);
+
+        thread_n++;
+        if (thread_n >= drawThreads_)
+            thread_n = 0;
+    }
 }
 
 void render::Renderer::GlPrepareBegin() {
