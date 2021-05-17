@@ -314,7 +314,7 @@ namespace jactorio
 
         T deserialized_val;
         TestDeserialize<T, TArchiver>(deserialized_val);
-        return deserialized_val;
+        return std::move(deserialized_val); // Force a copy to catch bad copy/move constructors
     }
 
 

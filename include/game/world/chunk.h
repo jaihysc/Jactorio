@@ -38,6 +38,7 @@ namespace jactorio::game
 
     private:
         using TileArrayT       = std::array<ChunkTile, kChunkArea>;
+        using TexCoordIdArrayT = std::array<SpriteTexCoordIndexT, kChunkArea * kTileLayerCount>;
         using OverlayArrayT    = std::array<OverlayContainerT, kOverlayLayerCount>;
         using LogicGroupArrayT = std::array<LogicGroupContainerT, kLogicGroupCount>;
 
@@ -60,7 +61,13 @@ namespace jactorio::game
         Chunk() = default;
 
         /// Default initialization of chunk tiles
-        explicit Chunk(const ChunkCoord& c_coord) : position_(c_coord) {}
+        explicit Chunk(const ChunkCoord& c_coord) : position_(c_coord) {
+            // TODO think of some method to set the tex coord id as a prototype is set on a tile
+            // For now simulate the tex coord id of ground by setting to some non zero number
+            for (int i = 0; i < texCoordId_.size(); i += 3) {
+                texCoordId_[i] = 2;
+            }
+        }
 
         ~Chunk() = default;
 
@@ -78,6 +85,7 @@ namespace jactorio::game
             swap(lhs.logicGroups, rhs.logicGroups);
             swap(lhs.position_, rhs.position_);
             swap(lhs.layers_, rhs.layers_);
+            swap(lhs.texCoordId_, rhs.texCoordId_);
         }
 
 
@@ -94,6 +102,13 @@ namespace jactorio::game
         }
         J_NODISCARD FORCEINLINE const TileArrayT& Tiles(TileLayer tlayer) const noexcept {
             return layers_[static_cast<int>(tlayer)];
+        }
+
+        J_NODISCARD FORCEINLINE TexCoordIdArrayT& GetTexCoordIds() noexcept {
+            return texCoordId_;
+        }
+        J_NODISCARD FORCEINLINE const TexCoordIdArrayT& GetTexCoordIds() const noexcept {
+            return texCoordId_;
         }
 
         /// Gets tile at x, y offset from top left of chunk
@@ -125,14 +140,14 @@ namespace jactorio::game
 
         CEREAL_LOAD(archive) {
             SerialLogicGroupArrayT serial_logic;
-            archive(position_, layers_, serial_logic);
+            archive(position_, layers_, serial_logic, texCoordId_);
 
             FromSerializeLogicGroupArray(serial_logic);
         }
 
         CEREAL_SAVE(archive) {
             auto serial_logic = ToSerializeLogicGroupArray();
-            archive(position_, layers_, serial_logic);
+            archive(position_, layers_, serial_logic, texCoordId_);
         }
 
 
@@ -144,6 +159,12 @@ namespace jactorio::game
     private:
         ChunkCoord position_;
         std::array<TileArrayT, kTileLayerCount> layers_;
+
+        /// Format: | 0 1 2 | 0 1 2 |
+        ///         <1 tile >
+        /// 0 1 2 are the different layers, layer 0 first
+        /// Kept contiguous for rendering cache locality
+        TexCoordIdArrayT texCoordId_{};
 
         /// Other chunk has logic entries pointing to tiles within itself,
         /// this will recreate the entries, pointing to this chunk's tiles

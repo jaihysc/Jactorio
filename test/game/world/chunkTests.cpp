@@ -57,4 +57,13 @@ namespace jactorio::game
         ASSERT_EQ(result_logic.size(), 1);
         EXPECT_EQ(result_logic[0], &result.GetCTile({4, 10}, TileLayer::entity));
     }
+
+    TEST(Chunk, SerializeTexCoordIds) {
+        Chunk chunk{{0, 0}};
+
+        chunk.GetTexCoordIds()[20] = 43;
+
+        auto result = TestSerializeDeserialize(chunk);
+        EXPECT_EQ(result.GetTexCoordIds()[20], 43);
+    }
 } // namespace jactorio::game

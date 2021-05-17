@@ -439,36 +439,32 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
 FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                                 const game::Chunk& chunk,
                                                 const Position2<int> render_tile_offset) const noexcept {
+    auto& tex_coord_ids = chunk.GetTexCoordIds();
+
     // Iterate through and load tiles of a chunk into layer for rendering
     for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
-        const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
+        const auto pixel_y          = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
+        const auto tile_offset_base = tile_y * game::Chunk::kChunkWidth;
 
         for (ChunkTileCoordAxis tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
-            const auto pixel_x = SafeCast<float>(render_tile_offset.x + tile_x) * SafeCast<float>(tileWidth);
+            const auto pixel_x         = SafeCast<float>(render_tile_offset.x + tile_x) * SafeCast<float>(tileWidth);
+            const auto id_array_offset = (tile_offset_base + tile_x) * game::kTileLayerCount;
 
-            PrepareTileLayers(r_layer, chunk, {tile_x, tile_y}, {pixel_x, pixel_y});
+            for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
+                const auto tex_coord_id = tex_coord_ids[id_array_offset + layer_index];
+
+                if (tex_coord_id == 0) // Layer not initialized
+                    continue;
+
+                const auto pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
+
+                // TODO do not draw those out of view
+                r_layer.PushBack({{{pixel_x, pixel_y}, pixel_z}, 0});
+            }
         }
     }
 
     PrepareOverlayLayers(r_layer, chunk, render_tile_offset);
-}
-
-FORCEINLINE void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
-                                                     const game::Chunk& chunk,
-                                                     const ChunkTileCoord ct_coord,
-                                                     const Position2<float>& pixel_pos) const noexcept {
-    for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
-        const auto& tile = chunk.GetCTile(ct_coord, static_cast<game::TileLayer>(layer_index));
-
-        const auto* proto = tile.GetPrototype();
-        if (proto == nullptr) // Layer not initialized
-            continue;
-
-        const auto pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
-
-        // TODO do not draw those out of view
-        r_layer.PushBack({{pixel_pos, pixel_z}, 0});
-    }
 }
 
 FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,

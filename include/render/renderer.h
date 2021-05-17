@@ -155,11 +155,6 @@ namespace jactorio::render
                           const game::Chunk& chunk,
                           Position2<int> render_tile_offset) const noexcept;
 
-        void PrepareTileLayers(RendererLayer& r_layer,
-                               const game::Chunk& chunk,
-                               ChunkTileCoord ct_coord,
-                               const Position2<float>& pixel_pos) const noexcept;
-
         void PrepareOverlayLayers(RendererLayer& r_layer,
                                   const game::Chunk& chunk,
                                   Position2<int> render_tile_offset) const;

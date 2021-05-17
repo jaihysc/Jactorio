@@ -5,7 +5,11 @@
 using namespace jactorio;
 
 game::Chunk::Chunk(const Chunk& other)
-    : overlays{other.overlays}, logicGroups{other.logicGroups}, position_{other.position_}, layers_{other.layers_} {
+    : overlays{other.overlays},
+      logicGroups{other.logicGroups},
+      position_{other.position_},
+      layers_{other.layers_},
+      texCoordId_{other.texCoordId_} {
 
     ResolveLogicEntries(other);
 }
@@ -14,7 +18,8 @@ game::Chunk::Chunk(Chunk&& other) noexcept
     : overlays{std::move(other.overlays)},
       logicGroups{std::move(other.logicGroups)},
       position_{other.position_},
-      layers_{std::move(other.layers_)} {
+      layers_{std::move(other.layers_)},
+      texCoordId_{std::move(other.texCoordId_)} {
 
     ResolveLogicEntries(other);
 }
