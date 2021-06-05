@@ -57,6 +57,7 @@ set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 # ======================================== Test files .cpp
 set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/convertTests.cpp
+	${JACTORIO_TEST_DIR}/core/dvectorTests.cpp
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
 	${JACTORIO_TEST_DIR}/core/orientationTests.cpp
