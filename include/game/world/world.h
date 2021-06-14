@@ -11,6 +11,7 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
+#include "core/dvector.h"
 #include "game/world/chunk.h"
 #include "game/world/update_dispatcher.h"
 
@@ -31,9 +32,13 @@ namespace jactorio::game
         using LogicChunkContainerT       = std::vector<Chunk*>;
         using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
 
-    public:
-        static constexpr auto kChunkWidth = Chunk::kChunkWidth;
+        /// Format: | 0 1 2 | 0 1 2 |
+        ///         <1 tile >
+        /// 0 1 2 are the different layers, layer 0 first
+        /// Kept contiguous for rendering cache locality
+        using TexCoordIdArrayT = std::array<SpriteTexCoordIndexT, Chunk::kChunkArea * kTileLayerCount>;
 
+    public:
         static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis coord);
         static ChunkCoord WorldCToChunkC(const WorldCoord& coord);
         /// Chunk coord -> World coord at first tile of chunk
@@ -60,6 +65,7 @@ namespace jactorio::game
         friend void swap(World& lhs, World& rhs) noexcept {
             using std::swap;
             swap(lhs.updateDispatcher, rhs.updateDispatcher);
+            swap(lhs.chunkTexCoordIds_, rhs.chunkTexCoordIds_);
             swap(lhs.worldChunks_, rhs.worldChunks_);
             swap(lhs.logicChunks_, rhs.logicChunks_);
             swap(lhs.worldGenSeed_, rhs.worldGenSeed_);
@@ -75,6 +81,31 @@ namespace jactorio::game
             const auto& [it, success] = worldChunks_.emplace(
                 std::piecewise_construct, std::make_tuple(c_coord.x, c_coord.y), std::make_tuple(c_coord, args...));
             assert(success); // Attempted to insert at already existent location
+
+            /// Ensures there is an element available for provided coordinate axis
+            auto fill_to_axis = [](auto& dvector, const ChunkCoordAxis coord_axis) {
+                if (coord_axis < 0) {
+                    dvector.reserve(-coord_axis * 2); // Avoid unnecessary resize if short on capacity
+                    while (dvector.size_front() < -coord_axis) {
+                        dvector.emplace_front();
+                    }
+                }
+                else {
+                    dvector.reserve((coord_axis + 1) * 2); // index 0 counts as element
+                    while (dvector.size_back() < coord_axis + 1) {
+                        dvector.emplace_back();
+                    }
+                }
+            };
+
+            fill_to_axis(chunkTexCoordIds_, c_coord.y);
+            fill_to_axis(chunkTexCoordIds_[c_coord.y], c_coord.x);
+
+            // TODO temp, renders same tile
+            auto& tex_coord_ids = chunkTexCoordIds_[c_coord.y][c_coord.x];
+            for (int i = 0; i < tex_coord_ids.size(); i += 3) {
+                tex_coord_ids[i] = 2;
+            }
 
             return it->second;
         }
@@ -115,6 +146,20 @@ namespace jactorio::game
         /// \return nullptr if no tile exists
         J_NODISCARD const ChunkTile* GetTile(WorldCoord coord, TileLayer tlayer) const;
 
+
+        // Rendering methods
+
+
+        /// \return First: Pointer to contiguous tex coord ids, starting at first tile of requested chunk,
+        /// increments per tile right then down, then next chunk first tile
+        /// \return Second: Number of chunks that can be read from the pointer
+        J_NODISCARD std::pair<SpriteTexCoordIndexT*, int> GetChunkTexCoordIds(const ChunkCoord& c_coord) noexcept;
+
+        /// \return First: Pointer to contiguous tex coord ids, starting at first tile of requested chunk,
+        /// increments per tile right then down, then next chunk first tile
+        /// \return Second: Number of chunks that can be read from the pointer
+        J_NODISCARD std::pair<const SpriteTexCoordIndexT*, int> GetChunkTexCoordIds(
+            const ChunkCoord& c_coord) const noexcept;
 
         // ======================================================================
         // Placement
@@ -218,6 +263,8 @@ namespace jactorio::game
     private:
         using ChunkKey    = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
         using ChunkHasher = hash<ChunkKey>;
+
+        DVector<DVector<TexCoordIdArrayT>> chunkTexCoordIds_;
 
         /// Chunks increment heading right and down
         std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;

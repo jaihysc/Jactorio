@@ -439,7 +439,9 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
 FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                                 const game::Chunk& chunk,
                                                 const Position2<int> render_tile_offset) const noexcept {
-    auto* tex_coord_ids = chunk.GetTexCoordIds().data();
+    return;
+
+    int* tex_coord_ids = nullptr; // chunk.GetTexCoordIds().data();
     assert(tex_coord_ids != nullptr);
 
     // Iterate through and load tiles of a chunk into layer for rendering

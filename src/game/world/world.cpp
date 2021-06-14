@@ -30,7 +30,7 @@ ChunkCoord game::World::WorldCToChunkC(const WorldCoord& coord) {
 
 
 WorldCoordAxis game::World::ChunkCToWorldC(const ChunkCoordAxis chunk_coord) {
-    return chunk_coord * kChunkWidth;
+    return chunk_coord * Chunk::kChunkWidth;
 }
 
 WorldCoord game::World::ChunkCToWorldC(const ChunkCoord& chunk_coord) {
@@ -42,10 +42,10 @@ OverlayOffsetAxis game::World::WorldCToOverlayC(const WorldCoordAxis coord) {
     WorldCoordAxis val;
 
     if (coord < 0) {
-        val = ((coord + 1) % kChunkWidth) + kChunkWidth - 1;
+        val = ((coord + 1) % Chunk::kChunkWidth) + Chunk::kChunkWidth - 1;
     }
     else {
-        val = coord % kChunkWidth;
+        val = coord % Chunk::kChunkWidth;
     }
 
     return SafeCast<OverlayOffsetAxis>(val);
@@ -59,6 +59,7 @@ Position2<OverlayOffsetAxis> game::World::WorldCToOverlayC(const WorldCoord& coo
 
 game::World::World(const World& other)
     : updateDispatcher{other.updateDispatcher},
+      chunkTexCoordIds_{other.chunkTexCoordIds_},
       worldChunks_{other.worldChunks_},
       logicChunks_{other.logicChunks_},
       worldGenSeed_{other.worldGenSeed_},
@@ -71,6 +72,13 @@ game::World::World(const World& other)
 
 void game::World::DeleteChunk(const ChunkCoord& c_coord) {
     worldChunks_.erase(std::make_tuple(c_coord.x, c_coord.y));
+
+    auto [tex_ids, readable_chunks] = GetChunkTexCoordIds(c_coord);
+    if (readable_chunks > 0) {
+        for (std::size_t i = 0; i < SafeCast<std::size_t>(Chunk::kChunkArea) * kTileLayerCount; ++i) {
+            tex_ids[i] = 0;
+        }
+    }
 }
 
 void game::World::Clear() {
@@ -150,6 +158,43 @@ const game::ChunkTile* game::World::GetTile(WorldCoord coord, const TileLayer tl
     }
 
     return nullptr;
+}
+
+std::pair<SpriteTexCoordIndexT*, int> game::World::GetChunkTexCoordIds(const ChunkCoord& c_coord) noexcept {
+    const auto pair = const_cast<const World*>(this)->GetChunkTexCoordIds(c_coord);
+    return {const_cast<SpriteTexCoordIndexT*>(pair.first), pair.second};
+}
+
+
+std::pair<const SpriteTexCoordIndexT*, int> game::World::GetChunkTexCoordIds(const ChunkCoord& c_coord) const noexcept {
+    // TODO think of some method to set the tex coord id as a prototype is set on a tile
+    // For now simulate the tex coord id of ground by setting to some non zero number
+
+    const auto& x_dvector = chunkTexCoordIds_[c_coord.y];
+
+    // Check y dvector in range
+    if (-c_coord.y > SafeCast<ChunkCoordAxis>(chunkTexCoordIds_.size_front()) ||
+        c_coord.y >= SafeCast<ChunkCoordAxis>(chunkTexCoordIds_.size_back())) {
+        return {nullptr, 0};
+    }
+
+    const auto size_front = SafeCast<ChunkCoordAxis>(x_dvector.size_front());
+    const auto size_back  = SafeCast<ChunkCoordAxis>(x_dvector.size_back());
+
+    int readable_amount = 0;
+    // Check x dvector in range
+    if (c_coord.x < 0) {
+        if (-c_coord.x <= size_front) {
+            readable_amount = -c_coord.x + size_back;
+        }
+    }
+    else if (c_coord.x >= 0) {
+        if (c_coord.x < size_back) {
+            readable_amount = size_back - c_coord.x;
+        }
+    }
+
+    return {x_dvector[c_coord.x].data(), readable_amount};
 }
 
 
@@ -457,8 +502,8 @@ void game::World::DeserializePostProcess() {
         [&](const std::function<void(const WorldCoord& coord, ChunkTile& tile, TileLayer tlayer)>& callback) {
             for (auto& [c_coord, chunk] : worldChunks_) {
 
-                for (uint32_t y = 0; y < kChunkWidth; ++y) { // x, y is position within current chunk
-                    for (uint32_t x = 0; x < kChunkWidth; ++x) {
+                for (uint32_t y = 0; y < Chunk::kChunkWidth; ++y) { // x, y is position within current chunk
+                    for (uint32_t x = 0; x < Chunk::kChunkWidth; ++x) {
 
                         auto coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
                         coord.x += x;

@@ -74,19 +74,28 @@ namespace jactorio::game
         EXPECT_EQ(*world_move.LogicGetChunks().begin(), world_move.GetChunkC({0, 0}));
     }
 
-    TEST_F(WorldTest, WorldAddChunk) {
+    TEST_F(WorldTest, AddChunk) {
         const auto& added_chunk = world_.EmplaceChunk({5, 1});
 
-        // Chunk knows its own location
         EXPECT_EQ(added_chunk.GetPosition().x, 5);
         EXPECT_EQ(added_chunk.GetPosition().y, 1);
 
         // Should not initialize other chunks
         EXPECT_EQ(world_.GetChunkC({-1, -1}), nullptr);
         EXPECT_EQ(world_.GetChunkC({1, 1}), nullptr);
+
+
+        auto [ptr, readable_chunks] = world_.GetChunkTexCoordIds({0, 1});
+        EXPECT_NE(ptr, nullptr);
+        EXPECT_EQ(readable_chunks, 6);
+
+        EXPECT_EQ(world_.GetChunkTexCoordIds({5, 1}).second, 1);
+        EXPECT_EQ(world_.GetChunkTexCoordIds({5, 0}).second, 0);
+        EXPECT_EQ(world_.GetChunkTexCoordIds({-1, 1}).second, 0);
+        EXPECT_EQ(world_.GetChunkTexCoordIds({6, 1}).second, 0);
     }
 
-    TEST_F(WorldTest, WorldAddChunkNegative) {
+    TEST_F(WorldTest, AddChunkNegative) {
         // Chunks initialized with empty tiles
         // Returns pointer to chunk which was added
         auto& added_chunk = world_.EmplaceChunk({-5, -1});
@@ -99,19 +108,31 @@ namespace jactorio::game
         // Should not initialize other chunks
         EXPECT_EQ(world_.GetChunkC({-1, -1}), nullptr);
         EXPECT_EQ(world_.GetChunkC({1, 1}), nullptr);
+
+        auto [ptr, readable_chunks] = world_.GetChunkTexCoordIds({-5, -1});
+        EXPECT_NE(ptr, nullptr);
+        EXPECT_EQ(readable_chunks, 5);
     }
 
-    TEST_F(WorldTest, WorldDeleteChunk) {
+    TEST_F(WorldTest, DeleteChunk) {
         world_.EmplaceChunk({3, 2});
+        world_.GetChunkTexCoordIds({3, 2}).first[0] = 100; // Check that this was zeroed
+
         world_.DeleteChunk({3, 2});
 
         EXPECT_EQ(world_.GetChunkC({3, 2}), nullptr);
 
+        auto [ptr, readable_chunks] = world_.GetChunkTexCoordIds({3, 2});
+        EXPECT_EQ(readable_chunks, 1); // Still readable
+        for (int i = 0; i < Chunk::kChunkArea * kTileLayerCount; ++i) {
+            EXPECT_EQ(ptr[i], 0);
+        }
+
         // No effect, no chunk
-        world_.DeleteChunk({2, 2});
+        world_.DeleteChunk({2000, 2000});
     }
 
-    TEST_F(WorldTest, WorldGetChunkChunkCoords) {
+    TEST_F(WorldTest, GetChunkChunkCoords) {
         const auto& added_chunk = world_.EmplaceChunk({5, 1});
 
         EXPECT_EQ(world_.GetChunkC({0, 0}), nullptr);
@@ -161,6 +182,15 @@ namespace jactorio::game
 
             EXPECT_EQ(world_.GetChunkW({-1, 0}), &chunk);
         }
+    }
+
+    TEST_F(WorldTest, SerializeTexCoordIds) {
+        // TODO
+        // world_.
+        // chunk.GetTexCoordIds()[20] = 43;
+        //
+        // auto result = TestSerializeDeserialize(chunk);
+        // EXPECT_EQ(result.GetTexCoordIds()[20], 43);
     }
 
     TEST_F(WorldTest, Clear) {
