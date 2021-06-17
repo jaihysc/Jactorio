@@ -151,8 +151,10 @@ namespace jactorio::render
                              int chunk_span,
                              Position2<int> render_tile_offset) const noexcept;
 
+        /// Prepares 1 chunk to r_layer using data from tex_coord_ids
+        /// tex_coord_ids should never be nullptr
         void PrepareChunk(RendererLayer& r_layer,
-                          const game::Chunk& chunk,
+                          const SpriteTexCoordIndexT* tex_coord_ids,
                           Position2<int> render_tile_offset) const noexcept;
 
         void PrepareOverlayLayers(RendererLayer& r_layer,

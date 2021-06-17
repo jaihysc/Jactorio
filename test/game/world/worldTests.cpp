@@ -185,12 +185,21 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, SerializeTexCoordIds) {
-        // TODO
-        // world_.
-        // chunk.GetTexCoordIds()[20] = 43;
-        //
-        // auto result = TestSerializeDeserialize(chunk);
-        // EXPECT_EQ(result.GetTexCoordIds()[20], 43);
+        world_.EmplaceChunk({1, 2});
+        {
+            auto [ptr, readable_amount] = world_.GetChunkTexCoordIds({1, 2});
+            for (int i = 0; i < 1000; ++i) {
+                ptr[i] = i;
+            }
+        }
+
+        auto result = TestSerializeDeserialize(world_);
+
+        auto [ptr, readable_amount] = result.GetChunkTexCoordIds({1, 2});
+        EXPECT_EQ(readable_amount, 1);
+        for (int i = 0; i < 1000; ++i) {
+            EXPECT_EQ(ptr[i], i);
+        }
     }
 
     TEST_F(WorldTest, Clear) {

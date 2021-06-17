@@ -420,31 +420,27 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
                                        const Position2<int> render_tile_offset) const noexcept {
     EXECUTION_PROFILE_SCOPE(profiler, "Prepare row");
 
-    for (int x = 0; x < chunk_span; ++x) {
-        const auto chunk_x = x + row_start.x;
+    auto [tex_ids, readable_chunks] = world.GetChunkTexCoordIds(row_start);
 
-        const auto* chunk = world.GetChunkC({chunk_x, row_start.y});
+    if (readable_chunks < chunk_span) {
+        std::lock_guard gen_guard{world_gen_mutex};
 
-        // Queue chunk for generation if it does not exist
-        if (chunk == nullptr) {
-            std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
+        for (int x = readable_chunks; x < chunk_span; ++x) {
+            const auto chunk_x = x + row_start.x;
             world.QueueChunkGeneration({chunk_x, row_start.y});
-            continue;
         }
+    }
 
-        PrepareChunk(r_layer, *chunk, {x * game::Chunk::kChunkWidth + render_tile_offset.x, render_tile_offset.y});
+    for (int x = 0; x < readable_chunks; ++x) {
+        // PrepareOverlayLayers(r_layer, chunk, render_tile_offset); // Unused
+        PrepareChunk(r_layer, tex_ids, {x * game::Chunk::kChunkWidth + render_tile_offset.x, render_tile_offset.y});
+        tex_ids += game::Chunk::kChunkArea * game::kTileLayerCount;
     }
 }
 
 FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
-                                                const game::Chunk& chunk,
+                                                const SpriteTexCoordIndexT* tex_coord_ids,
                                                 const Position2<int> render_tile_offset) const noexcept {
-    return;
-
-    int* tex_coord_ids = nullptr; // chunk.GetTexCoordIds().data();
-    assert(tex_coord_ids != nullptr);
-
-    // Iterate through and load tiles of a chunk into layer for rendering
     for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
         const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
 
@@ -465,8 +461,6 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
             }
         }
     }
-
-    PrepareOverlayLayers(r_layer, chunk, render_tile_offset);
 }
 
 FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,

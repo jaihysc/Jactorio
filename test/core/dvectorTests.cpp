@@ -4,6 +4,8 @@
 
 #include "core/dvector.h"
 
+#include "jactorioTests.h"
+
 #include <algorithm>
 
 namespace jactorio
@@ -47,6 +49,10 @@ namespace jactorio
             destructorCalls  = 0;
             copyCalls        = 0;
             moveCalls        = 0;
+        }
+
+        CEREAL_SERIALIZE(archive) {
+            assert(member_ == 0xAB); // Ensures class is valid (Failed? -> Constructor not called)
         }
 
         static int constructorCalls;
@@ -875,5 +881,40 @@ namespace jactorio
 
         std::fill(v.begin(), v.end(), 1);
         EXPECT_EQ(std::count(v.begin(), v.end(), 1), 100);
+    }
+
+    TEST(DVector, SerializeInt) {
+        DVector<int> v;
+        v.reserve(101);
+        for (int i = 1; i <= 50; ++i) {
+            v.push_front(-i);
+        }
+        for (int i = 0; i <= 50; ++i) {
+            v.push_back(i);
+        }
+
+        auto result = TestSerializeDeserialize(v);
+        EXPECT_EQ(result.size(), 101);
+        for (int i = -50; i <= 50; ++i) {
+            EXPECT_EQ(result[i], i);
+        }
+    }
+
+    TEST(DVector, SerializeClass) {
+        DVector<TestClass> v;
+        v.reserve(41);
+        for (int i = 1; i <= 20; ++i) {
+            v.emplace_front();
+        }
+        for (int i = 0; i <= 20; ++i) {
+            v.emplace_back();
+        }
+
+        TestClass::ResetCounter();
+        auto result = TestSerializeDeserialize(v);
+        EXPECT_EQ(result.size(), 41);
+
+        EXPECT_EQ(TestClass::constructorCalls, 41);
+        EXPECT_EQ(TestClass::moveCalls, 41);
     }
 } // namespace jactorio

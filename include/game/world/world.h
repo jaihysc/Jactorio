@@ -245,7 +245,7 @@ namespace jactorio::game
 
         CEREAL_LOAD(archive) {
             SerialLogicChunkContainerT logic_chunks;
-            archive(updateDispatcher, worldChunks_, worldGenSeed_, logic_chunks);
+            archive(updateDispatcher, chunkTexCoordIds_, worldChunks_, worldGenSeed_, logic_chunks);
 
             logicChunks_.clear();
 
@@ -254,7 +254,7 @@ namespace jactorio::game
 
         CEREAL_SAVE(archive) {
             auto logic_chunks = ToSerializeLogicChunkContainer();
-            archive(updateDispatcher, worldChunks_, worldGenSeed_, logic_chunks);
+            archive(updateDispatcher, chunkTexCoordIds_, worldChunks_, worldGenSeed_, logic_chunks);
         }
 
 

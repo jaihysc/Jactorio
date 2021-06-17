@@ -15,6 +15,7 @@
 #include "jactorio.h"
 
 #include "core/convert.h"
+#include "data/cereal/serialize.h"
 
 namespace jactorio
 {
@@ -313,6 +314,7 @@ namespace jactorio
 
     /// Dual ended contiguous vector,
     /// almost resembles std::vector, some methods are removed
+    /// - Allocator is not saved when serialized and is default constructed
     /// \tparam T Containing type
     /// \tparam Allocator Memory allocator type
     template <typename T, typename Allocator = std::allocator<T>>
@@ -375,7 +377,10 @@ namespace jactorio
                 std::allocator_traits<allocator_type>::destroy(allocator_, frontPtr_);
                 ++frontPtr_;
             }
-            allocator_.deallocate(data_, capacity_);
+            if (data_ != nullptr) {
+                // std::deallocate does NOT accept nullptr unlike delete
+                allocator_.deallocate(data_, capacity_);
+            }
         }
 
         // Copy constructors
@@ -849,6 +854,38 @@ namespace jactorio
             swap(frontPtr_, other.frontPtr_);
             swap(backPtr_, other.backPtr_);
             swap(midpoint_, other.midpoint_);
+        }
+
+        CEREAL_SAVE(archive) {
+            archive(size_front(), size_back());
+
+            for (const auto& element : *this) {
+                archive(element);
+            }
+        }
+
+        CEREAL_LOAD(archive) {
+            size_type size_front, size_back;
+            archive(size_front, size_back);
+
+            reserve(std::max(size_front, size_back) * 2);
+
+            frontPtr_ -= size_front;
+            backPtr_ += size_back;
+
+            auto* element_ptr = frontPtr_;
+            while (element_ptr != backPtr_) {
+                // Most serialization methods expect a default constructed object instead of uninitialized memory
+                value_type val;
+                archive(val);
+
+                std::allocator_traits<allocator_type>::construct(allocator_, element_ptr, std::move(val));
+                ++element_ptr;
+            }
+
+            assert(this->size_front() == size_front);
+            assert(this->size_back() == size_back);
+            assert(this->size() == size_front + size_back);
         }
 
     private:
