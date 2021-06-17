@@ -664,23 +664,38 @@ namespace jactorio
             backPtr_  = midpoint_;
         }
 
-        // TODO insert, emplace, erase front and back
+        // TODO insert, erase front and back
 
-        /*
         /// Inserts a new element into the container directly before pos
+        /// - If pos <  midpoint: Existing elements moved forwards
+        /// - If pos >= midpoint: Existing elements moved back
         /// \return Iterator pointing to the emplaced element
         template <class... TArgs>
         iterator emplace(const const_iterator pos, TArgs&&... args) {
             auto new_element = T(std::forward<TArgs>(args)...); // Strong exception guarantee
 
-            const auto index = pos.GetPointer() - data_; // Iterators will be invalidated
-            CreateElementGap(index, 1);
+            // Given: 0 1 2 3 4
+            //              ^
+            // Move to front: 0 1 2 _ 3 4
+            //                        ^
+            // Move to back: 0 1 2 _ 3 4
+            //                     ^
+
+            auto index = pos.GetPointer() - data_; // Iterators will be invalidated
+            if (pos.GetPointer() < midpoint_) {
+                --index; // Since moving to the front, do not modify element at pos
+                CreateElementGapFront(index, 1);
+            }
+            else {
+                CreateElementGapBack(index, 1);
+            }
 
             auto* emplace_ptr = data_ + index;
             std::allocator_traits<allocator_type>::construct(allocator_, emplace_ptr, std::move(new_element));
             return iterator(emplace_ptr);
         }
 
+        /*
         /// Removes the element at pos
         /// - Invalidates all iterators after pos, including end()
         /// \return Iterator following the removed element
@@ -886,10 +901,30 @@ namespace jactorio
         }
 
 
-        /*
-        /// Creates a gap of element size count starting at element_offset from data_
-        /// (start moved backwards if count >= 1);
-        void CreateElementGap(const size_type element_offset, const size_type count) {
+        /// Creates a gap of count elements starting with element at element_offset from data_
+        /// by moving elements to the front of the container
+        /// \param element_offset Elements from data_
+        void CreateElementGapFront(const size_type element_offset, const size_type count) {
+            assert(count != 0);
+
+            reserve(size() + count * 2); // Reversed capacity is split between front and back
+
+            auto current_element = frontPtr_;
+            const auto* end      = data_ + element_offset;
+
+            while (current_element <= end) {
+                std::allocator_traits<allocator_type>::construct(
+                    allocator_, current_element - count, std::move(*current_element));
+                std::allocator_traits<allocator_type>::destroy(allocator_, current_element);
+                ++current_element;
+            }
+            frontPtr_ -= count;
+        }
+
+        /// Creates a gap of element size count starting with element at element_offset from data_
+        /// by moving elements to the back of the container
+        /// \param element_offset Elements from data_
+        void CreateElementGapBack(const size_type element_offset, const size_type count) {
             assert(count != 0);
 
             reserve(size() + count * 2); // Reversed capacity is split between front and back
@@ -906,6 +941,7 @@ namespace jactorio
             backPtr_ += count;
         }
 
+        /*
         /// Remove count elements starting at start (start removed if count >= 1)
         void RemoveElements(const pointer start, size_type count) {
             assert(count != 0);

@@ -585,7 +585,43 @@ namespace jactorio
         EXPECT_EQ(TestClass::destructorCalls, 3);
     }
 
-    /*
+    TEST(DVector, EmplaceMoveFront) {
+        DVector<int> v;
+        v.push_front(3);
+        v.push_front(2);
+        v.push_front(1);
+        v.push_front(0);
+
+        v.emplace(v.end() - 1, 50);
+
+        ASSERT_EQ(v.size(), 5);
+        EXPECT_EQ(v[-5], 0);
+        EXPECT_EQ(v[-4], 1);
+        EXPECT_EQ(v[-3], 2);
+        EXPECT_EQ(v[-2], 50);
+        EXPECT_EQ(v[-1], 3);
+    }
+
+    TEST(DVector, EmplaceMidpointMoveBack) {
+        DVector<int> v;
+        v.push_front(3);
+        v.push_front(2);
+        v.push_front(1);
+        v.push_back(4);
+
+        // 1 2 3 4
+        //       ^ Midpoint
+
+        v.emplace(v.end() - 1, 100);
+
+        ASSERT_EQ(v.size(), 5);
+        EXPECT_EQ(v[-3], 1);
+        EXPECT_EQ(v[-2], 2);
+        EXPECT_EQ(v[-1], 3);
+        EXPECT_EQ(v[0], 100);
+        EXPECT_EQ(v[1], 4);
+    }
+
     TEST(DVector, EmplaceMoveBack) {
         DVector v{1, 2, 3, 4, 5, 6};
         auto it = v.emplace(v.begin() + 3, 100);
@@ -636,6 +672,7 @@ namespace jactorio
         EXPECT_EQ(TestClass::moveCalls, 11);
     }
 
+    /*
     TEST(DVector, EraseElement) {
         DVector v{1, 2, 3, 4, 5};
         auto it = v.erase(v.begin() + 1);
