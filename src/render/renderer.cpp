@@ -221,7 +221,7 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
     assert(dimension.x == 1);
     assert(dimension.y == 1);
 
-    r_layer.PushBack({{SafeCast<float>(screen_pos.x), SafeCast<float>(screen_pos.y), 0.5f}, 0});
+    r_layer.PushBack({{screen_pos.x, screen_pos.y, 5}, 0});
 }
 
 
@@ -268,8 +268,8 @@ WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& playe
     return {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
 }
 
-Position2<int32_t> render::Renderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
-                                                           const WorldCoord& coord) const {
+Position2<uint16_t> render::Renderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
+                                                            const WorldCoord& coord) const {
     const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
     const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
 
@@ -287,7 +287,7 @@ Position2<int32_t> render::Renderer::WorldCoordToBufferPos(const Position2<float
     buffer_pos_y -= SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
 
     // Sometimes has float 8.99999, which is wrongly truncated to 8, thus must round first
-    return {LossyCast<int32_t>(std::round(buffer_pos_x)), LossyCast<int32_t>(std::round(buffer_pos_y))};
+    return {LossyCast<uint16_t>(std::round(buffer_pos_x)), LossyCast<uint16_t>(std::round(buffer_pos_y))};
 }
 
 // ======================================================================
@@ -442,22 +442,29 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                                 const SpriteTexCoordIndexT* tex_coord_ids,
                                                 const Position2<int> render_tile_offset) const noexcept {
     for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
-        const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
+        const auto pixel_y = (render_tile_offset.y + tile_y) * SafeCast<int>(tileWidth);
+        if (pixel_y < 0 || pixel_y > windowHeight_) {
+            continue;
+        }
 
         for (ChunkTileCoordAxis tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
-            const auto pixel_x = SafeCast<float>(render_tile_offset.x + tile_x) * SafeCast<float>(tileWidth);
+            const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
+            if (pixel_x < 0 || pixel_y > windowWidth_) {
+                continue;
+            }
 
-            for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
+            for (uint8_t layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
                 const auto tex_coord_id = *tex_coord_ids;
                 tex_coord_ids++;
 
-                if (tex_coord_id == 0) // Layer not initialized
+                // Layer not initialized
+                if (tex_coord_id == 0) {
                     continue;
+                }
 
-                const auto pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
-
-                // TODO do not draw those out of view
-                r_layer.PushBack({{{pixel_x, pixel_y}, pixel_z}, 0});
+                // TODO Just divide by 10 0000 in shader to turn this into 0.<number> for depth buffer
+                const auto pixel_z = layer_index;
+                r_layer.PushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), pixel_z}, 0});
             }
         }
     }
@@ -466,6 +473,7 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
                                                         const game::Chunk& chunk,
                                                         const Position2<int> render_tile_offset) const {
+    assert(false); // PushBack usage needs to be updated
 
     for (int layer_index = 0; layer_index < game::kOverlayLayerCount; ++layer_index) {
         const auto& overlay_container = chunk.overlays[layer_index];
@@ -475,10 +483,11 @@ FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
             assert(overlay.size.x == 1);
             assert(overlay.size.y == 1);
 
-            r_layer.PushBack({{(render_tile_offset.x + overlay.position.x) * SafeCast<float>(tileWidth),
-                               (render_tile_offset.y + overlay.position.y) * SafeCast<float>(tileWidth),
-                               overlay.position.z},
-                              0});
+            // Fix when this method is used
+            // r_layer.PushBack({{(render_tile_offset.x + overlay.position.x) * SafeCast<float>(tileWidth),
+            //                    (render_tile_offset.y + overlay.position.y) * SafeCast<float>(tileWidth),
+            //                    overlay.position.z},
+            // 0});
         }
     }
 }

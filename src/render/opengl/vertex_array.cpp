@@ -26,7 +26,7 @@ void render::VertexArray::AddBuffer(const VertexBuffer* vb, const unsigned span,
     // location here is referenced by the shader
     DEBUG_OPENGL_CALL(glEnableVertexAttribArray(location));
     DEBUG_OPENGL_CALL(glVertexAttribPointer(
-        location, span, GL_FLOAT, GL_FALSE, sizeof(float) * span, static_cast<const void*>(nullptr)));
+        location, span, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(ElementT) * span, static_cast<const void*>(nullptr)));
 }
 
 void render::VertexArray::Bind() const {

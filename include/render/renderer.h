@@ -109,8 +109,8 @@ namespace jactorio::render
                                                      const Position2<int32_t>& screen_pos) const;
 
         /// \return On screen position of world coord, suitable for sending to buffers for rendering
-        J_NODISCARD Position2<int32_t> WorldCoordToBufferPos(const Position2<float>& player_pos,
-                                                             const WorldCoord& coord) const;
+        J_NODISCARD Position2<uint16_t> WorldCoordToBufferPos(const Position2<float>& player_pos,
+                                                              const WorldCoord& coord) const;
 
         /// Changes zoom
         float tileProjectionMatrixOffset = 0;

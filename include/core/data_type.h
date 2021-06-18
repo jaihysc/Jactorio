@@ -34,7 +34,7 @@ namespace jactorio
     using SpriteSetT           = uint16_t;
     using SpriteFrameT         = uint16_t;
     using SpriteTrimT          = uint16_t;
-    using SpriteTexCoordIndexT = uint32_t;
+    using SpriteTexCoordIndexT = uint16_t;
 
     using ResourceEntityResourceCount = uint32_t;
 

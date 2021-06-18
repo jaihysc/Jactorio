@@ -13,6 +13,8 @@ namespace jactorio::render
         unsigned int id_ = 0;
 
     public:
+        using ElementT = unsigned short;
+
         VertexArray();
         ~VertexArray();
 

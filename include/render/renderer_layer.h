@@ -28,10 +28,10 @@ namespace jactorio::render
 
         // Vertex buffer
         static constexpr int kBaseValsPerElement  = 4;
-        static constexpr int kBaseBytesPerElement = kBaseValsPerElement * sizeof(float);
+        static constexpr int kBaseBytesPerElement = kBaseValsPerElement * sizeof(VertexArray::ElementT);
 
     public:
-        using VertexPositionT = Position3<float>;
+        using VertexPositionT = Position3<VertexArray::ElementT>;
 
         struct Element
         {
@@ -40,6 +40,9 @@ namespace jactorio::render
 
             VertexPositionT vertex;
             SpriteTexCoordIndexT texCoordIndex;
+
+            // VertexArray expects 4 elements of same size
+            static_assert(sizeof(texCoordIndex) == sizeof(VertexArray::ElementT));
         };
 
         explicit RendererLayer();
@@ -115,7 +118,7 @@ namespace jactorio::render
         bool writeEnabled_         = false;
         bool gResizeVertexBuffers_ = false;
 
-        float* baseBuffer_ = nullptr;
+        VertexArray::ElementT* baseBuffer_ = nullptr;
 
         VertexArray vertexArray_;
         VertexBuffer baseVb_;
@@ -162,10 +165,7 @@ namespace jactorio::render
         baseBuffer_[buffer_index + 0] = element.vertex.x;
         baseBuffer_[buffer_index + 1] = element.vertex.y;
         baseBuffer_[buffer_index + 2] = element.vertex.z;
-
-        // Evil bit hack to shove an int into the bytes that should make up a float
-        static_assert(sizeof(SpriteTexCoordIndexT) == sizeof(float));
-        reinterpret_cast<SpriteTexCoordIndexT*>(baseBuffer_ + buffer_index + 3)[0] = element.texCoordIndex;
+        baseBuffer_[buffer_index + 3] = element.texCoordIndex;
     }
     inline void RendererLayer::SetBufferVertex(const uint32_t buffer_index,
                                                const Element& element,

@@ -42,7 +42,7 @@ void render::RendererLayer::GlWriteBegin() noexcept {
     assert(!writeEnabled_);
     assert(eCapacity_ > 0); // Mapping fails unless capacity is at least 1
 
-    baseBuffer_ = static_cast<float*>(baseVb_.Map());
+    baseBuffer_ = static_cast<VertexArray::ElementT*>(baseVb_.Map());
 
     writeEnabled_ = true;
 }
