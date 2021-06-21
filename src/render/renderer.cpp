@@ -418,8 +418,6 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
                                        const Position2<int> row_start,
                                        const int chunk_span,
                                        const Position2<int> render_tile_offset) const noexcept {
-    EXECUTION_PROFILE_SCOPE(profiler, "Prepare row");
-
     auto [tex_ids, readable_chunks] = world.GetChunkTexCoordIds(row_start);
 
     if (readable_chunks < chunk_span) {
@@ -429,6 +427,13 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
             const auto chunk_x = x + row_start.x;
             world.QueueChunkGeneration({chunk_x, row_start.y});
         }
+    }
+
+    // Allocate for the maximum possible tile layers to render
+    const auto required_r_layer_capacity = chunk_span * game::Chunk::kChunkArea * game::kTileLayerCount;
+    if (required_r_layer_capacity >= r_layer.Capacity()) {
+        r_layer.Reserve(required_r_layer_capacity);
+        return;
     }
 
     for (int x = 0; x < readable_chunks; ++x) {
@@ -443,12 +448,14 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                                 const Position2<int> render_tile_offset) const noexcept {
     for (ChunkTileCoordAxis tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
         const auto pixel_y = (render_tile_offset.y + tile_y) * SafeCast<int>(tileWidth);
+        // TODO if lift out of this function
         if (pixel_y < 0 || pixel_y > windowHeight_) {
             continue;
         }
 
         for (ChunkTileCoordAxis tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
             const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
+            // TODO lift if out of this function
             if (pixel_x < 0 || pixel_y > windowWidth_) {
                 continue;
             }
@@ -464,7 +471,7 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 
                 // TODO Just divide by 10 0000 in shader to turn this into 0.<number> for depth buffer
                 const auto pixel_z = layer_index;
-                r_layer.PushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), pixel_z}, 0});
+                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), pixel_z}, 0});
             }
         }
     }
@@ -537,7 +544,7 @@ void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
     r_layer.GlWriteEnd();
     r_layer.GlBindBuffers();
     r_layer.GlHandleBufferResize();
-    GlDraw(r_layer.GetElementCount());
+    GlDraw(r_layer.Size());
 }
 
 void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {

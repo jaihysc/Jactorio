@@ -14,12 +14,8 @@ render::RendererLayer::RendererLayer() : baseVb_(baseBuffer_, eCapacity_ * kBase
 }
 
 
-uint32_t render::RendererLayer::GetCapacity() const noexcept {
+uint32_t render::RendererLayer::Capacity() const noexcept {
     return eCapacity_;
-}
-
-uint32_t render::RendererLayer::GetElementCount() const noexcept {
-    return nextElementIndex_;
 }
 
 void render::RendererLayer::Reserve(const uint32_t count) noexcept {
@@ -35,7 +31,7 @@ void render::RendererLayer::ResizeDefault() noexcept {
 }
 
 void render::RendererLayer::Clear() noexcept {
-    nextElementIndex_ = 0;
+    writePtr_ = baseBuffer_;
 }
 
 void render::RendererLayer::GlWriteBegin() noexcept {
@@ -43,6 +39,7 @@ void render::RendererLayer::GlWriteBegin() noexcept {
     assert(eCapacity_ > 0); // Mapping fails unless capacity is at least 1
 
     baseBuffer_ = static_cast<VertexArray::ElementT*>(baseVb_.Map());
+    writePtr_   = baseBuffer_;
 
     writeEnabled_ = true;
 }

@@ -55,16 +55,24 @@ namespace jactorio::render
         RendererLayer& operator=(RendererLayer&& other) noexcept = default;
 
 
-        /// Appends element to layer, after the highest element index where values were assigned
-        /// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
+        /// Appends element
+        /// \remark Ensure GlWriteBegin() has been called first before calling this
         FORCEINLINE void PushBack(const Element& element) noexcept;
+
+        /// Appends element
+        /// \remark Ensure GlWriteBegin() has been called first before calling this
         FORCEINLINE void PushBack(const Element& element, float rotate_deg) noexcept;
 
-        /// Returns current element capacity of buffers
-        J_NODISCARD uint32_t GetCapacity() const noexcept;
+        /// Appends element without checking for sufficient capacity
+        /// \remark Ensure GlWriteBegin() has been called first before calling this
+        FORCEINLINE void UncheckedPushBack(const Element& element) noexcept;
 
-        /// Returns count of elements' index in buffers
-        J_NODISCARD uint32_t GetElementCount() const noexcept;
+
+        /// Returns current element capacity of buffers
+        J_NODISCARD uint32_t Capacity() const noexcept;
+
+        /// Returns count of elements in buffers
+        J_NODISCARD FORCEINLINE uint32_t Size() const noexcept;
 
         /// Queues allocation to hold element count
         /// \remark Performs reserves upon calling GlHandleBufferResize
@@ -97,16 +105,9 @@ namespace jactorio::render
         /// \return true if ok to push back into buffers, false if not
         FORCEINLINE bool PrePushBackChecks() noexcept;
 
-        /// 4 values: Position x, y, z, sprite number
-        FORCEINLINE void SetBaseBuffer(uint32_t buffer_index, const Element& element) const noexcept;
         // TODO reimplement rotation
-        FORCEINLINE void SetBufferVertex(uint32_t buffer_index,
-                                         const Element& element,
-                                         float rotate_deg) const noexcept;
+        FORCEINLINE void SetBufferVertex(const Element& element, float rotate_deg) const noexcept;
 
-
-        /// Buffer index to insert the next element on push_back
-        uint32_t nextElementIndex_ = 0;
 
         /// Element capacity which will be requested on the next GUpdateData
         uint32_t queuedECapacity_ = 0;
@@ -120,6 +121,9 @@ namespace jactorio::render
 
         VertexArray::ElementT* baseBuffer_ = nullptr;
 
+        /// Location to insert next element in baseBuffer_ on PushBack
+        VertexArray::ElementT* writePtr_ = nullptr;
+
         VertexArray vertexArray_;
         VertexBuffer baseVb_;
     };
@@ -128,19 +132,22 @@ namespace jactorio::render
         if (!PrePushBackChecks())
             return;
 
-        const auto buffer_index = nextElementIndex_ * kBaseValsPerElement;
-        nextElementIndex_++;
-
-        SetBaseBuffer(buffer_index, element);
+        UncheckedPushBack(element);
     }
+
     inline void RendererLayer::PushBack(const Element& element, const float rotate_deg) noexcept {
         if (!PrePushBackChecks())
             return;
 
-        const auto buffer_index = nextElementIndex_ * kBaseValsPerElement;
-        nextElementIndex_++;
+        SetBufferVertex(element, rotate_deg);
+    }
 
-        SetBufferVertex(buffer_index, element, rotate_deg);
+    inline void RendererLayer::UncheckedPushBack(const Element& element) noexcept {
+        writePtr_[0] = element.vertex.x;
+        writePtr_[1] = element.vertex.y;
+        writePtr_[2] = element.vertex.z;
+        writePtr_[3] = element.texCoordIndex;
+        writePtr_ += 4;
     }
 
     inline bool RendererLayer::PrePushBackChecks() noexcept {
@@ -152,7 +159,7 @@ namespace jactorio::render
             return false;
         }
 
-        if (nextElementIndex_ >= eCapacity_) {
+        if (Size() >= eCapacity_) {
             // No more space, reserve, will be repopulated on next update
             Reserve(eCapacity_ + 1);
             return false;
@@ -161,15 +168,8 @@ namespace jactorio::render
         return true;
     }
 
-    inline void RendererLayer::SetBaseBuffer(const uint32_t buffer_index, const Element& element) const noexcept {
-        baseBuffer_[buffer_index + 0] = element.vertex.x;
-        baseBuffer_[buffer_index + 1] = element.vertex.y;
-        baseBuffer_[buffer_index + 2] = element.vertex.z;
-        baseBuffer_[buffer_index + 3] = element.texCoordIndex;
-    }
-    inline void RendererLayer::SetBufferVertex(const uint32_t buffer_index,
-                                               const Element& element,
-                                               const float rotate_deg) const noexcept {
+
+    inline void RendererLayer::SetBufferVertex(const Element& element, const float rotate_deg) const noexcept {
         /* // TODO
         // Center origin (0, 0) on sprite
         const auto x_offset = (v_pos.bottomRight.x - v_pos.topLeft.x) / 2;
@@ -223,6 +223,10 @@ namespace jactorio::render
         vertexBuffer_[buffer_index + 10] = bl.y;
         vertexBuffer_[buffer_index + 11] = z;
         */
+    }
+
+    inline uint32_t RendererLayer::Size() const noexcept {
+        return (writePtr_ - baseBuffer_) / kBaseValsPerElement;
     }
 } // namespace jactorio::render
 
