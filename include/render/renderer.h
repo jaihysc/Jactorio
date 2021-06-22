@@ -153,9 +153,11 @@ namespace jactorio::render
 
         /// Prepares 1 chunk to r_layer using data from tex_coord_ids
         /// tex_coord_ids should never be nullptr
+        /// \param tile_start Upper left corner of chunk to start preparing. {0, 0} for top left
         void PrepareChunk(RendererLayer& r_layer,
                           const SpriteTexCoordIndexT* tex_coord_ids,
-                          Position2<int> render_tile_offset) const noexcept;
+                          Position2<int> render_tile_offset,
+                          Position2<uint8_t> tile_start) const noexcept;
 
         void PrepareOverlayLayers(RendererLayer& r_layer,
                                   const game::Chunk& chunk,
