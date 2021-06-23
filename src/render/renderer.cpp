@@ -473,19 +473,27 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
         for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
             const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
 
-            for (uint8_t layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
-                const auto tex_coord_id = *tex_coord_ids;
-                tex_coord_ids++;
+            // TODO Just divide pixel_y by 10 0000 in shader to turn this into 0.<number> for depth buffer
 
-                // Layer not initialized
-                if (tex_coord_id == 0) {
-                    continue;
-                }
+            // Manually unrolled 3 times
+            static_assert(3 == game::kTileLayerCount);
 
-                // TODO Just divide by 10 0000 in shader to turn this into 0.<number> for depth buffer
-                const auto pixel_z = layer_index;
-                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), pixel_z}, 0});
+            // 1
+            if (tex_coord_ids[0] != 0) {
+                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 0}, 0});
             }
+
+            // 2
+            if (tex_coord_ids[1] != 0) {
+                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 1}, 0});
+            }
+
+            // 3
+            if (tex_coord_ids[2] != 0) {
+                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 2}, 0});
+            }
+
+            tex_coord_ids += 3;
         }
     }
 }
