@@ -160,11 +160,11 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
 
 
 proto::Sprite::SpriteDimension render::RendererSprites::GetSpriteWidth(const proto::Sprite* sprite) {
-    return sprite->GetWidth() + 2 * sprite_border;
+    return sprite->GetImage().width + 2 * sprite_border;
 }
 
 proto::Sprite::SpriteDimension render::RendererSprites::GetSpriteHeight(const proto::Sprite* sprite) {
-    return sprite->GetHeight() + 2 * sprite_border;
+    return sprite->GetImage().height + 2 * sprite_border;
 }
 
 void render::RendererSprites::SortInputSprites(std::vector<const proto::Sprite*>& sprites) {
@@ -310,11 +310,11 @@ void render::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture::S
     while (true) {
         adjusted_x_offset += sprite_border;
 
-        const auto* sprite               = current_node->sprite;
-        const unsigned char* sprite_data = sprite->GetSpritePtr();
+        const auto* sprite      = current_node->sprite;
+        const auto* sprite_data = sprite->GetImage().buffer;
 
-        const auto sprite_width  = sprite->GetWidth();
-        const auto sprite_height = sprite->GetHeight();
+        const auto sprite_width  = sprite->GetImage().width;
+        const auto sprite_height = sprite->GetImage().height;
 
         // Extend edge pixels into sprite_border
         // NOTE: This does not handle the 4 corner pixels

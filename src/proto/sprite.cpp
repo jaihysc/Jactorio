@@ -10,58 +10,72 @@
 #include <utility>
 
 #include "core/convert.h"
-#include "core/coordinate_tuple.h"
 #include "data/prototype_manager.h"
 
 using namespace jactorio;
 
-proto::Sprite::Sprite(const std::string& sprite_path) {
-    LoadImage(sprite_path);
-}
+proto::Sprite::ImageContainer::ImageContainer(const std::string& image_path) {
+    buffer = stbi_load(image_path.c_str(),
+                       &width,
+                       &height,
+                       &bytesPerPixel,
+                       4 // 4 desired channels for RGBA
+    );
 
-proto::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group) : group(std::move(group)) {
-    LoadImage(sprite_path);
-}
+    if (buffer == nullptr) {
+        LOG_MESSAGE_F(error, "Failed to read sprite at: %s", image_path.c_str());
 
-proto::Sprite::~Sprite() {
-    stbi_image_free(spriteBuffer_);
-}
+        std::ostringstream sstr;
+        sstr << "Failed to read sprite at: " << image_path;
 
-proto::Sprite::Sprite(const Sprite& other)
-    : FrameworkBase{other},
-      group{other.group},
-      invertSetFrame{other.invertSetFrame},
-      frames{other.frames},
-      sets{other.sets},
-      trim{other.trim},
-      width_{other.width_},
-      height_{other.height_},
-      bytesPerPixel_{other.bytesPerPixel_},
-      spritePath_{other.spritePath_},
-      spriteBuffer_{other.spriteBuffer_} {
-
-    const auto size = SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
-    spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_))); // NOLINT: stbi uses malloc
-    for (std::size_t i = 0; i < size; ++i) {
-        spriteBuffer_[i] = other.spriteBuffer_[i];
+        throw ProtoError(sstr.str());
     }
 }
 
-proto::Sprite::Sprite(Sprite&& other) noexcept
-    : FrameworkBase{std::move(other)},
-      group{std::move(other.group)},
-      frames{other.frames},
-      sets{other.sets},
-      trim{other.trim},
-      width_{other.width_},
-      height_{other.height_},
-      bytesPerPixel_{other.bytesPerPixel_},
-      spritePath_{std::move(other.spritePath_)},
-      spriteBuffer_{other.spriteBuffer_} {
-    other.spriteBuffer_ = nullptr;
+proto::Sprite::ImageContainer::~ImageContainer() {
+    stbi_image_free(buffer);
+}
+
+proto::Sprite::ImageContainer::ImageContainer(const ImageContainer& other)
+    : width{other.width}, height{other.height}, bytesPerPixel{other.bytesPerPixel} {
+
+    const auto size = SafeCast<std::size_t>(other.width) * other.height * other.bytesPerPixel;
+    buffer          = static_cast<unsigned char*>(malloc(size * sizeof(*buffer))); // NOLINT: stbi uses malloc
+
+    if (buffer == nullptr) {
+        throw std::bad_alloc();
+    }
+
+    for (std::size_t i = 0; i < size; ++i) {
+        buffer[i] = other.buffer[i];
+    }
+}
+
+proto::Sprite::ImageContainer::ImageContainer(ImageContainer&& other) noexcept
+    : width{other.width}, height{other.height}, bytesPerPixel{other.bytesPerPixel}, buffer{other.buffer} {
+    other.buffer = nullptr;
 }
 
 // ======================================================================
+
+proto::Sprite::Sprite(const std::string& sprite_path) {
+    Load(sprite_path);
+}
+
+proto::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group) : group(std::move(group)) {
+    Load(sprite_path);
+}
+
+proto::Sprite* proto::Sprite::Load(const std::string& image_path) {
+    spritePath_ = std::string(data::PrototypeManager::kDataFolder) + "/" + image_path;
+    image_      = ImageContainer(spritePath_);
+
+    return this;
+}
+
+const proto::Sprite::ImageContainer& proto::Sprite::GetImage() const noexcept {
+    return image_;
+}
 
 bool proto::Sprite::IsInGroup(const SpriteGroup group) const {
     for (const auto& i : this->group) {
@@ -82,65 +96,6 @@ void proto::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group
     if (group.empty()) {
         group = new_group;
     }
-}
-
-void proto::Sprite::LoadImageFromFile() {
-    spriteBuffer_ = stbi_load(spritePath_.c_str(),
-                              &width_,
-                              &height_,
-                              &bytesPerPixel_,
-                              4 // 4 desired channels for RGBA
-    );
-
-    if (spriteBuffer_ == nullptr) {
-        LOG_MESSAGE_F(error, "Failed to read sprite at: %s", spritePath_.c_str());
-
-        std::ostringstream sstr;
-        sstr << "Failed to read sprite at: " << spritePath_;
-
-        throw ProtoError(sstr.str());
-    }
-}
-
-
-UvPositionT proto::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
-    float width_base  = SafeCast<float>(width_) / SafeCast<float>(frames);
-    float height_base = SafeCast<float>(height_) / SafeCast<float>(sets);
-
-    // If inverted:
-    // Set   = X axis
-    // Frame = Y axis
-    if (invertSetFrame) {
-        width_base  = SafeCast<float>(width_) / SafeCast<float>(sets);
-        height_base = SafeCast<float>(height_) / SafeCast<float>(frames);
-
-        AdjustSetFrame<false>(frame, set);
-
-        assert(set < frames); // Out of range
-        assert(frame < sets);
-    }
-    else {
-        AdjustSetFrame<true>(set, frame);
-
-        assert(set < sets); // Out of range
-        assert(frame < frames);
-    }
-
-    return {{(width_base * SafeCast<float>(frame) + SafeCast<float>(trim)) / SafeCast<float>(width_),
-             (height_base * SafeCast<float>(set) + SafeCast<float>(trim)) / SafeCast<float>(height_)},
-            {(width_base * SafeCast<float>(frame + 1) - SafeCast<float>(trim)) / SafeCast<float>(width_),
-             (height_base * SafeCast<float>(set + 1) - SafeCast<float>(trim)) / SafeCast<float>(height_)}};
-}
-
-const unsigned char* proto::Sprite::GetSpritePtr() const {
-    return spriteBuffer_;
-}
-
-proto::Sprite* proto::Sprite::LoadImage(const std::string& image_path) {
-    spritePath_ = std::string(data::PrototypeManager::kDataFolder) + "/" + image_path;
-    LoadImageFromFile();
-
-    return this;
 }
 
 void proto::Sprite::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {

@@ -136,8 +136,8 @@ namespace jactorio::data
 
         EXPECT_EQ(proto->name, "__test__/test_tile");
 
-        EXPECT_EQ(proto->GetWidth(), 32);
-        EXPECT_EQ(proto->GetHeight(), 32);
+        EXPECT_EQ(proto->GetImage().width, 32);
+        EXPECT_EQ(proto->GetImage().height, 32);
     }
 
     TEST_F(PrototypeManagerTest, LoadInvalidPath) {

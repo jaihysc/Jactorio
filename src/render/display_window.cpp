@@ -89,11 +89,11 @@ int render::DisplayWindow::Init(const int width, const int height) {
         const auto icon = proto::Sprite("core/graphics/jactorio-64-64.png"); // <-- This will throw if it fails
 
         // Convert the loaded Image into a surface for setting the icon
-        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(const_cast<unsigned char*>(icon.GetSpritePtr()),
-                                                        icon.GetWidth(),
-                                                        icon.GetHeight(),
+        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(icon.GetImage().buffer,
+                                                        icon.GetImage().width,
+                                                        icon.GetImage().height,
                                                         32,
-                                                        sizeof(unsigned char) * 4 * icon.GetWidth(),
+                                                        sizeof(unsigned char) * 4 * icon.GetImage().width,
                                                         0x000000ff,
                                                         0x0000ff00,
                                                         0x00ff0000,
