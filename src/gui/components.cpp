@@ -133,7 +133,7 @@ void gui::GuiItemSlots::DrawSlot(const SpriteTexCoordIndexT tex_coord_id, const 
 }
 
 void gui::GuiItemSlots::DrawSlot(const game::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
-    DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
+    DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->texCoordId, item_stack.count, callback);
 }
 
 void gui::GuiItemSlots::DrawBackingButton() const {
