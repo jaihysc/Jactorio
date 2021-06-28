@@ -14,11 +14,39 @@
 
 namespace jactorio::proto
 {
+    /// Simplifies copy/move constructor for sprite
+    struct ImageContainer
+    {
+        ImageContainer() = default;
+        /// Loads image from image_path
+        /// \exception ProtoError Failed to load from file
+        explicit ImageContainer(const std::string& image_path);
+        ~ImageContainer();
+
+        ImageContainer(const ImageContainer& other);
+        ImageContainer(ImageContainer&& other) noexcept;
+
+        ImageContainer& operator=(ImageContainer other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
+
+        friend void swap(ImageContainer& lhs, ImageContainer& rhs) noexcept {
+            using std::swap;
+            swap(lhs.width, rhs.width);
+            swap(lhs.height, rhs.height);
+            swap(lhs.bytesPerPixel, rhs.bytesPerPixel);
+            swap(lhs.buffer, rhs.buffer);
+        }
+
+        int width = 0, height = 0, bytesPerPixel = 0;
+        unsigned char* buffer = nullptr;
+    };
+
     /// Unique data: Renderable_data
     class Sprite final : public FrameworkBase
     {
-        struct ImageContainer;
-
     public:
         PROTOTYPE_CATEGORY(sprite);
 
@@ -79,38 +107,9 @@ namespace jactorio::proto
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
+        SpriteTexCoordIndexT texCoordId = 0;
+
     private:
-        /// Simplifies copy/move constructor for sprite
-        struct ImageContainer
-        {
-            ImageContainer() = default;
-            /// Loads image from image_path
-            /// \exception ProtoError Failed to load from file
-            explicit ImageContainer(const std::string& image_path);
-            ~ImageContainer();
-
-            ImageContainer(const ImageContainer& other);
-            ImageContainer(ImageContainer&& other) noexcept;
-
-            ImageContainer& operator=(ImageContainer other) {
-                using std::swap;
-                swap(*this, other);
-                return *this;
-            }
-
-            friend void swap(ImageContainer& lhs, ImageContainer& rhs) noexcept {
-                using std::swap;
-                swap(lhs.width, rhs.width);
-                swap(lhs.height, rhs.height);
-                swap(lhs.bytesPerPixel, rhs.bytesPerPixel);
-                swap(lhs.buffer, rhs.buffer);
-            }
-
-            int width = 0, height = 0, bytesPerPixel = 0;
-            unsigned char* buffer = nullptr;
-        };
-
-
         ImageContainer image_;
         /// Full path to sprite
         std::string spritePath_;

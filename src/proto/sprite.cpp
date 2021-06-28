@@ -14,7 +14,7 @@
 
 using namespace jactorio;
 
-proto::Sprite::ImageContainer::ImageContainer(const std::string& image_path) {
+proto::ImageContainer::ImageContainer(const std::string& image_path) {
     buffer = stbi_load(image_path.c_str(),
                        &width,
                        &height,
@@ -32,11 +32,11 @@ proto::Sprite::ImageContainer::ImageContainer(const std::string& image_path) {
     }
 }
 
-proto::Sprite::ImageContainer::~ImageContainer() {
+proto::ImageContainer::~ImageContainer() {
     stbi_image_free(buffer);
 }
 
-proto::Sprite::ImageContainer::ImageContainer(const ImageContainer& other)
+proto::ImageContainer::ImageContainer(const ImageContainer& other)
     : width{other.width}, height{other.height}, bytesPerPixel{other.bytesPerPixel} {
 
     const auto size = SafeCast<std::size_t>(other.width) * other.height * other.bytesPerPixel;
@@ -51,7 +51,7 @@ proto::Sprite::ImageContainer::ImageContainer(const ImageContainer& other)
     }
 }
 
-proto::Sprite::ImageContainer::ImageContainer(ImageContainer&& other) noexcept
+proto::ImageContainer::ImageContainer(ImageContainer&& other) noexcept
     : width{other.width}, height{other.height}, bytesPerPixel{other.bytesPerPixel}, buffer{other.buffer} {
     other.buffer = nullptr;
 }
@@ -73,7 +73,7 @@ proto::Sprite* proto::Sprite::Load(const std::string& image_path) {
     return this;
 }
 
-const proto::Sprite::ImageContainer& proto::Sprite::GetImage() const noexcept {
+const proto::ImageContainer& proto::Sprite::GetImage() const noexcept {
     return image_;
 }
 
