@@ -88,7 +88,7 @@ namespace jactorio::proto
         // ======================================================================
 
         void OnRDrawUniqueData(render::RendererLayer& layer,
-                               const SpriteUvCoordsT& uv_coords,
+                               const SpriteTexCoords& uv_coords,
                                const Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 

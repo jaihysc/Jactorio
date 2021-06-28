@@ -26,7 +26,7 @@
 
 using namespace jactorio;
 
-const SpriteUvCoordsT* sprite_positions = nullptr;
+const SpriteTexCoords* sprite_positions = nullptr;
 unsigned int tex_id                     = 0; // Assigned by openGL
 
 void gui::SetupCharacterData(render::RendererSprites& renderer_sprites) {

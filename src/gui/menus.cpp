@@ -171,7 +171,7 @@ void RecipeMenu(const gui::Context context,
         if (index == player.crafting.RecipeGroupGetSelected())
             recipe_group_guard.PushStyleColor(ImGuiCol_Button, gui::kGuiColButtonHover);
 
-        group_slots.DrawSlot(recipe_group->sprite->internalId, [&]() {
+        group_slots.DrawSlot(recipe_group->sprite->texCoordId, [&]() {
             if (ImGui::IsItemClicked())
                 player.crafting.RecipeGroupSelect(index);
 
@@ -201,7 +201,7 @@ void RecipeMenu(const gui::Context context,
             if (!matches_search_str(product->GetLocalizedName(), player.crafting.recipeSearchText))
                 return;
 
-            recipe_row.DrawSlot(product->sprite->internalId, [&]() { item_slot_draw(*recipe); });
+            recipe_row.DrawSlot(product->sprite->texCoordId, [&]() { item_slot_draw(*recipe); });
         });
     }
 }
@@ -230,7 +230,7 @@ void RecipeHoverTooltip(const gui::Context& context, const proto::Recipe& recipe
             const auto* item = proto.Get<proto::Item>(ingredient_name);
 
             gui::GuiItemSlots ingredient_row(context);
-            ingredient_row.DrawSlot(item->sprite->internalId);
+            ingredient_row.DrawSlot(item->sprite->texCoordId);
 
             ImGui::SameLine(gui::kInventorySlotWidth * 1.5);
 
@@ -281,7 +281,7 @@ void RecipeHoverTooltip(const gui::Context& context, const proto::Recipe& recipe
             // else
             // 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
 
-            raw_item_slots.DrawSlot(item->sprite->internalId, item_count_required);
+            raw_item_slots.DrawSlot(item->sprite->texCoordId, item_count_required);
         });
     });
 }
@@ -341,7 +341,7 @@ void gui::CursorWindow(const Context& context,
         menu.AppendFlags(ImGuiWindowFlags_NoBackground);
         menu.Begin("_selected_item");
 
-        const auto& positions = context.menuData.spritePositions.at(selected_stack->item->sprite->internalId);
+        const auto& positions = context.menuData.spritePositions.at(selected_stack->item->sprite->texCoordId);
 
         ImGui::SameLine(10.f);
         ImGui::Image(reinterpret_cast<void*>(context.menuData.texId),
@@ -397,7 +397,7 @@ void gui::CraftingQueue(const Context& context,
         assert(recipe != nullptr);
 
         const auto* item = context.proto.Get<proto::Item>(recipe->product.first);
-        queued_item_row.DrawSlot(item->sprite->internalId, recipe->product.second);
+        queued_item_row.DrawSlot(item->sprite->texCoordId, recipe->product.second);
     });
 }
 
@@ -521,7 +521,7 @@ void gui::AssemblyMachine(const Context& context,
                 auto* reset_icon = proto.Get<proto::Item>(proto::Item::kResetIname);
                 assert(reset_icon != nullptr);
 
-                ingredient_slots.DrawSlot(reset_icon->sprite->internalId, [&]() {
+                ingredient_slots.DrawSlot(reset_icon->sprite->texCoordId, [&]() {
                     if (ImGui::IsItemClicked()) {
                         machine_data.ChangeRecipe(logic, proto, nullptr);
                     }
@@ -536,7 +536,7 @@ void gui::AssemblyMachine(const Context& context,
             // Amount of item possessed
 
             ingredient_slots.DrawSlot(
-                ingredient_item->sprite->internalId, machine_data.ingredientInv[index].count, [&]() {
+                ingredient_item->sprite->texCoordId, machine_data.ingredientInv[index].count, [&]() {
                     HandleInvClicked(context, machine_data.ingredientInv, index, [&]() {
                         machine_proto.TryBeginCrafting(logic, machine_data);
                     });
@@ -574,7 +574,7 @@ void gui::AssemblyMachine(const Context& context,
             auto* product_item = proto.Get<proto::Item>(machine_data.GetRecipe()->product.first);
 
             assert(product_item != nullptr);
-            product_slots.DrawSlot(product_item->sprite->internalId, machine_data.productInv[0].count, [&]() {
+            product_slots.DrawSlot(product_item->sprite->texCoordId, machine_data.productInv[0].count, [&]() {
                 HandleInvClicked(context, machine_data.productInv, 0, [&]() {
                     machine_proto.TryBeginCrafting(logic, machine_data);
                 });

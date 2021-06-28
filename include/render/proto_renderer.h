@@ -26,12 +26,12 @@ namespace jactorio::render
     class RendererLayer;
 
     void DrawConveyorSegmentItems(RendererLayer& layer,
-                                  const SpriteUvCoordsT& uv_coords,
+                                  const SpriteTexCoords& uv_coords,
                                   const Position2<float>& pixel_offset,
                                   game::ConveyorStruct& line_segment);
 
     void DrawInserterArm(RendererLayer& layer,
-                         const SpriteUvCoordsT& uv_coords,
+                         const SpriteTexCoords& uv_coords,
                          const Position2<float>& pixel_offset,
                          const proto::Inserter& inserter_proto,
                          const proto::InserterData& inserter_data);

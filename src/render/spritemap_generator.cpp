@@ -101,6 +101,10 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(std
         }
     });
 
+    SpriteTexCoords tex_coords;
+    tex_coords.reserve(sprites.size() + 1);
+    tex_coords.push_back({{}, {}}); // Index 0 is unused
+
     {
         SortInputSprites(sprites);
 
@@ -124,22 +128,19 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(std
     std::shared_ptr<Texture::SpriteBufferT> spritemap_buffer(new Texture::SpriteBufferT[spritemap_buffer_size],
                                                              [](const Texture::SpriteBufferT* p) { delete[] p; });
 
-    // TODO since ths ids are continuous, no need to make it a unordered map
-    SpriteUvCoordsT image_positions;
-    GeneratorContext context{spritemap_buffer.get(), spritemap_x, image_positions, invert_sprites};
+    SpriteTexCoordIndexT tex_coord_id = 1;
+    GeneratorContext context{spritemap_buffer.get(), spritemap_x, tex_coords, invert_sprites, &tex_coord_id};
 
     GenerateSpritemapOutput(context, *node_buffer[0], {0, 0});
 
 
     // Normalize positions based on image size to value between 0 - 1
-    for (auto& image : image_positions) {
-        auto& position = image.second;
+    for (auto& coord : tex_coords) {
+        coord.topLeft.x /= SafeCast<float>(spritemap_x);
+        coord.topLeft.y /= SafeCast<float>(spritemap_y);
 
-        position.topLeft.x /= SafeCast<float>(spritemap_x);
-        position.topLeft.y /= SafeCast<float>(spritemap_y);
-
-        position.bottomRight.x /= SafeCast<float>(spritemap_x);
-        position.bottomRight.y /= SafeCast<float>(spritemap_y);
+        coord.bottomRight.x /= SafeCast<float>(spritemap_x);
+        coord.bottomRight.y /= SafeCast<float>(spritemap_y);
     }
 
 
@@ -148,7 +149,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(std
     spritemap_data.width        = spritemap_x;
     spritemap_data.height       = spritemap_y;
 
-    spritemap_data.spritePositions = image_positions;
+    spritemap_data.spritePositions = std::move(tex_coords);
 
     return spritemap_data;
 }
@@ -183,11 +184,11 @@ void render::RendererSprites::GenerateSpritemapNodes(std::vector<proto::Sprite*>
     GeneratorNode* current_node = &parent_node;
 
     while (!sprites.empty()) {
-        bool found_sprite           = false;
-        const proto::Sprite* sprite = nullptr;
+        bool found_sprite     = false;
+        proto::Sprite* sprite = nullptr;
 
         for (std::size_t i = 0; i < sprites.size(); ++i) {
-            const auto* i_sprite = sprites[i];
+            auto* i_sprite = sprites[i];
 
             if (TotalSpriteWidth(i_sprite) <= max_width && TotalSpriteHeight(i_sprite) <= max_height) {
                 sprite = i_sprite;
@@ -319,8 +320,8 @@ void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
     auto* current_node = &base_node;
 
     while (true) {
-        const auto* sprite = current_node->sprite;
-        const auto& image  = sprite->GetImage();
+        auto* sprite      = current_node->sprite;
+        const auto& image = sprite->GetImage();
 
         SetImageBorder(context, image, offset);
 
@@ -334,17 +335,11 @@ void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
             }
         }
 
-        // Keep track of image positions within the spritemap
-        // TODO Assign tex coord id
-        // Increment tex coord id
-
-        auto& image_position = context.texCoords[sprite->internalId];
-
-        image_position.topLeft = {SafeCast<float>(offset.x + kSpriteBorder), //
-                                  SafeCast<float>(offset.y + kSpriteBorder)};
-
-        image_position.bottomRight = {SafeCast<float>(offset.x + kSpriteBorder + image.width),
-                                      SafeCast<float>(offset.y + kSpriteBorder + image.height)};
+        context.texCoords.push_back({{SafeCast<float>(offset.x + kSpriteBorder), //
+                                      SafeCast<float>(offset.y + kSpriteBorder)},
+                                     {SafeCast<float>(offset.x + kSpriteBorder + image.width),
+                                      SafeCast<float>(offset.y + kSpriteBorder + image.height)}});
+        sprite->texCoordId = (*context.texCoordIdCounter)++;
 
         if (current_node->above != nullptr) {
             GenerateSpritemapOutput(context, *current_node->above, {offset.x, offset.y + TotalSpriteHeight(sprite)});

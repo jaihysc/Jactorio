@@ -85,17 +85,17 @@ namespace jactorio::gui
         /// \param callback Use to draw slot
         void Begin(std::size_t slot_count, const BeginCallbackT& callback) const;
 
-        /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
+        /// \param tex_coord_id Tex coord id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param item_count Number to display on the item, 0 to hide
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            PrototypeIdT sprite_id, uint16_t item_count, const DrawSlotCallbackT& callback = [] {}) const;
+            SpriteTexCoordIndexT tex_coord_id, uint16_t item_count, const DrawSlotCallbackT& callback = [] {}) const;
 
         /// Draws slot without item count
-        /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
+        /// \param tex_coord_id Tex coord id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {}) const;
+            SpriteTexCoordIndexT tex_coord_id, const DrawSlotCallbackT& callback = [] {}) const;
 
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(

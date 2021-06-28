@@ -520,7 +520,7 @@ FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
     }
 }
 
-void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_sub) noexcept {
+void render::Renderer::ApplySpriteUvAdjustment(TexCoord& uv, const TexCoord& uv_sub) noexcept {
     const auto diff_x = uv.bottomRight.x - uv.topLeft.x;
     const auto diff_y = uv.bottomRight.y - uv.topLeft.y;
 
@@ -535,7 +535,7 @@ void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPosition
     uv.topLeft.y += diff_y * uv_sub.topLeft.y;
 }
 
-void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept {
+void render::Renderer::ApplyMultiTileUvAdjustment(TexCoord& uv, const game::ChunkTile& tile) noexcept {
     const auto& mt_data = tile.GetDimension();
 
     // Calculate the correct UV coordinates for multi-tile entities
@@ -549,8 +549,8 @@ void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::C
     const double y_multiplier = tile.GetOffsetY();
 
     // Opengl flips vertically, thus the y multiplier is inverted
-    uv.bottomRight.x = uv.topLeft.x + LossyCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));
-    uv.bottomRight.y = uv.bottomRight.y - LossyCast<UvPositionT::PositionT::ValueT>(len_y * y_multiplier);
+    uv.bottomRight.x = uv.topLeft.x + LossyCast<TexCoord::PositionT::ValueT>(len_x * (x_multiplier + 1));
+    uv.bottomRight.y = uv.bottomRight.y - LossyCast<TexCoord::PositionT::ValueT>(len_y * y_multiplier);
 
     uv.topLeft.x = uv.bottomRight.x - len_x;
     uv.topLeft.y = uv.bottomRight.y - len_y;

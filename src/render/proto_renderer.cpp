@@ -16,7 +16,7 @@ constexpr float kPixelZ = 0.1f;
 
 /// \param tile_offset Tile offset (for distance after each item)
 void PrepareConveyorSegmentData(render::RendererLayer& layer,
-                                const SpriteUvCoordsT& uv_coords,
+                                const SpriteTexCoords& uv_coords,
                                 const game::ConveyorStruct& line_segment,
                                 std::deque<game::ConveyorItem>& line_segment_side,
                                 Position2<double> tile_offset,
@@ -84,7 +84,7 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
 }
 
 void render::DrawConveyorSegmentItems(RendererLayer& layer,
-                                      const SpriteUvCoordsT& uv_coords,
+                                      const SpriteTexCoords& uv_coords,
                                       const Position2<OverlayOffsetAxis>& pixel_offset,
                                       game::ConveyorStruct& line_segment) {
     Position2<double> tile_offset;
@@ -287,7 +287,7 @@ prepare_right:
 // ======================================================================
 
 void render::DrawInserterArm(RendererLayer& layer,
-                             const SpriteUvCoordsT& uv_coords,
+                             const SpriteTexCoords& uv_coords,
                              const Position2<OverlayOffsetAxis>& pixel_offset,
                              const proto::Inserter& inserter_proto,
                              const proto::InserterData& inserter_data) {

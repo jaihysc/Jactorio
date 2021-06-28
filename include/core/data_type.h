@@ -92,9 +92,10 @@ namespace jactorio
 
     // Rendering
 
-    using UvPositionT = QuadPosition<Position2<float>>;
-    /// Internal id of sprite to uv coordinates
-    using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
+    using TexCoord = QuadPosition<Position2<float>>;
+    /// texCoordId as index to sprite texture coordinates
+    /// 0 = invalid id
+    using SpriteTexCoords = std::vector<TexCoord>;
 
 } // namespace jactorio
 

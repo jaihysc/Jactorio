@@ -10,10 +10,10 @@ namespace jactorio::gui
 {
     struct MenuData
     {
-        MenuData(const SpriteUvCoordsT& sprite_positions, const unsigned tex_id)
+        MenuData(const SpriteTexCoords& sprite_positions, const unsigned tex_id)
             : spritePositions(sprite_positions), texId(tex_id) {}
 
-        const SpriteUvCoordsT& spritePositions;
+        const SpriteTexCoords& spritePositions;
         unsigned int texId = 0; // Assigned by openGL
     };
 } // namespace jactorio::gui

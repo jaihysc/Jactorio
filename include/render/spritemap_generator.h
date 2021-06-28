@@ -43,7 +43,7 @@ namespace jactorio::render
             // 0 - 1 positions of the sprite within the spritemap
             // Upper left is 0, 0 - bottom right is 1, 1
             // std::string is internal name of prototype
-            SpriteUvCoordsT spritePositions;
+            SpriteTexCoords spritePositions;
         };
 
         // ======================================================================
@@ -97,9 +97,9 @@ namespace jactorio::render
         /// Holds a sprite and its neighbors on the spritemap
         struct GeneratorNode
         {
-            explicit GeneratorNode(const proto::Sprite* sprite) : sprite(sprite) {}
+            explicit GeneratorNode(proto::Sprite* sprite) : sprite(sprite) {}
 
-            const proto::Sprite* sprite;
+            proto::Sprite* sprite;
 
             GeneratorNode* above = nullptr;
             GeneratorNode* right = nullptr;
@@ -109,8 +109,9 @@ namespace jactorio::render
         {
             Texture::SpriteBufferT* spritemapBuffer;
             SpritemapDimensionT spritemapWidth;
-            SpriteUvCoordsT& texCoords;
+            SpriteTexCoords& texCoords;
             bool invertSprites;
+            SpriteTexCoordIndexT* texCoordIdCounter;
         };
 
 
@@ -149,7 +150,10 @@ namespace jactorio::render
                                    const proto::ImageContainer& image,
                                    Position2<SpritemapDimensionT> offset);
 
-        /// Recursively outputs GeneratorNodes into provided sprite buffer
+        /// Recursively processes GeneratorNodes
+        /// - outputs sprites into into provided sprite buffer
+        /// - Assigns tex coord id to sprites
+        /// - sets NON-normalized tex coord
         /// \param offset Offset for writing into spritemap
         static void GenerateSpritemapOutput(GeneratorContext& context,
                                             GeneratorNode& base_node,

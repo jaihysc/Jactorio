@@ -168,9 +168,9 @@ namespace jactorio::render
         /// ----    ****
         /// ---- -> **--
         /// ----    **--
-        static void ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_sub) noexcept;
+        static void ApplySpriteUvAdjustment(TexCoord& uv, const TexCoord& uv_sub) noexcept;
 
-        static void ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept;
+        static void ApplyMultiTileUvAdjustment(TexCoord& uv, const game::ChunkTile& tile) noexcept;
 
 
         /// Allows layer to be drawn on

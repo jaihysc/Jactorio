@@ -17,9 +17,9 @@ namespace jactorio::render
 
     TEST_F(SpritemapCreationTest, CreateSpritemap) {
         // Sprite data delete by guard
-        proto_.Make<proto::Sprite>(
+        auto& p1 = proto_.Make<proto::Sprite>(
             "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
-        proto_.Make<proto::Sprite>(
+        auto& p2 = proto_.Make<proto::Sprite>(
             "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
 
         proto_.Make<proto::Sprite>(
@@ -32,6 +32,10 @@ namespace jactorio::render
 
         EXPECT_EQ(data.width, 68);  // 64 + 2(2)
         EXPECT_EQ(data.height, 34); // 32 + 2
+
+        // Assigned tex coord id to sprites
+        EXPECT_EQ(p1.texCoordId, 1);
+        EXPECT_EQ(p2.texCoordId, 2);
     }
 
     TEST_F(SpritemapCreationTest, CreateSpritemapCategoryNone) {
