@@ -8,6 +8,16 @@
 
 namespace jactorio::game
 {
+    TEST(Chunk, WorldCoordToChunkTileCoord) {
+        EXPECT_EQ(Chunk::WorldCToChunkTileC(987654), 6);
+
+        EXPECT_EQ(Chunk::WorldCToChunkTileC(-32), 0);
+        EXPECT_EQ(Chunk::WorldCToChunkTileC(-1), 31);
+        EXPECT_EQ(Chunk::WorldCToChunkTileC(-2), 30);
+
+        EXPECT_EQ(Chunk::WorldCToChunkTileC(-33), 31);
+    }
+
     TEST(Chunk, LogicCopy) {
         Chunk chunk_a({0, 0});
         chunk_a.GetLogicGroup(LogicGroup::conveyor).push_back(&chunk_a.GetCTile({3, 4}, TileLayer::base));

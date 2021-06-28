@@ -83,6 +83,9 @@ namespace jactorio::game
 
         // ======================================================================
 
+        J_NODISCARD static ChunkTileCoordAxis WorldCToChunkTileC(WorldCoordAxis coord);
+        J_NODISCARD static ChunkTileCoord WorldCToChunkTileC(const WorldCoord& coord);
+
 
         J_NODISCARD ChunkCoord GetPosition() const {
             return position_;

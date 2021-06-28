@@ -101,12 +101,6 @@ namespace jactorio::game
             fill_to_axis(chunkTexCoordIds_, c_coord.y);
             fill_to_axis(chunkTexCoordIds_[c_coord.y], c_coord.x);
 
-            // TODO temp, renders same tile
-            auto& tex_coord_ids = chunkTexCoordIds_[c_coord.y][c_coord.x];
-            for (int i = 0; i < tex_coord_ids.size(); i += 3) {
-                tex_coord_ids[i] = 2;
-            }
-
             return it->second;
         }
 
@@ -144,7 +138,7 @@ namespace jactorio::game
 
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(WorldCoord coord, TileLayer tlayer) const;
+        J_NODISCARD const ChunkTile* GetTile(const WorldCoord& coord, TileLayer tlayer) const;
 
 
         // Rendering methods
@@ -160,6 +154,16 @@ namespace jactorio::game
         /// \return Second: Number of chunks that can be read from the pointer
         J_NODISCARD std::pair<const SpriteTexCoordIndexT*, int> GetChunkTexCoordIds(
             const ChunkCoord& c_coord) const noexcept;
+
+        /// Sets tex coord id for given world coord at layer
+        void SetTexCoordId(const WorldCoord& coord, TileLayer layer, SpriteTexCoordIndexT id) noexcept;
+
+        /// Sets tex coord id for given chunk coord, chunk tile coord at layer
+        void SetTexCoordId(const ChunkCoord& c_coord,
+                           const ChunkTileCoord& ct_coord,
+                           TileLayer layer,
+                           SpriteTexCoordIndexT id) noexcept;
+
 
         // ======================================================================
         // Placement

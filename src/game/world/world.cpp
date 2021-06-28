@@ -9,6 +9,7 @@
 #include <set>
 
 #include "proto/noise_layer.h"
+#include "proto/sprite.h"
 
 using namespace jactorio;
 
@@ -116,45 +117,11 @@ const game::Chunk* game::World::GetChunkW(const WorldCoord& coord) const {
 game::ChunkTile* game::World::GetTile(const WorldCoord& coord, const TileLayer tlayer) {
     return const_cast<ChunkTile*>(static_cast<const World*>(this)->GetTile(coord, tlayer));
 }
-const game::ChunkTile* game::World::GetTile(WorldCoord coord, const TileLayer tlayer) const {
-    // The negative chunks start at -1, unlike positive chunks at 0
-    // Thus add 1 to become 0 so the calculations can be performed
-    bool negative_x = false;
-    bool negative_y = false;
-
-    float chunk_index_x = 0;
-    float chunk_index_y = 0;
-
-    if (coord.x < 0) {
-        negative_x = true;
-        chunk_index_x -= 1;
-        coord.x += 1;
-    }
-    if (coord.y < 0) {
-        negative_y = true;
-        chunk_index_y -= 1;
-        coord.y += 1;
-    }
-
-    chunk_index_x += SafeCast<float>(coord.x) / Chunk::kChunkWidth;
-    chunk_index_y += SafeCast<float>(coord.y) / Chunk::kChunkWidth;
-
-
-    const auto* chunk = GetChunkC({LossyCast<ChunkCoordAxis>(chunk_index_x), LossyCast<ChunkCoordAxis>(chunk_index_y)});
+const game::ChunkTile* game::World::GetTile(const WorldCoord& coord, const TileLayer tlayer) const {
+    const auto* chunk = GetChunkC(WorldCToChunkC(coord));
 
     if (chunk != nullptr) {
-        auto tile_index_x = coord.x % Chunk::kChunkWidth;
-        auto tile_index_y = coord.y % Chunk::kChunkWidth;
-
-        if (negative_x) {
-            tile_index_x = Chunk::kChunkWidth - 1 - tile_index_x * -1;
-        }
-        if (negative_y) {
-            tile_index_y = Chunk::kChunkWidth - 1 - tile_index_y * -1;
-        }
-
-        return &chunk->GetCTile(
-            {SafeCast<ChunkTileCoordAxis>(tile_index_x), SafeCast<ChunkTileCoordAxis>(tile_index_y)}, tlayer);
+        return &chunk->GetCTile(Chunk::WorldCToChunkTileC(coord), tlayer);
     }
 
     return nullptr;
@@ -167,9 +134,6 @@ std::pair<SpriteTexCoordIndexT*, int> game::World::GetChunkTexCoordIds(const Chu
 
 
 std::pair<const SpriteTexCoordIndexT*, int> game::World::GetChunkTexCoordIds(const ChunkCoord& c_coord) const noexcept {
-    // TODO think of some method to set the tex coord id as a prototype is set on a tile
-    // For now simulate the tex coord id of ground by setting to some non zero number
-
     const auto& x_dvector = chunkTexCoordIds_[c_coord.y];
 
     // Check y dvector in range
@@ -195,6 +159,20 @@ std::pair<const SpriteTexCoordIndexT*, int> game::World::GetChunkTexCoordIds(con
     }
 
     return {x_dvector[c_coord.x].data(), readable_amount};
+}
+
+void game::World::SetTexCoordId(const WorldCoord& coord,
+                                const TileLayer layer,
+                                const SpriteTexCoordIndexT id) noexcept {
+    SetTexCoordId(WorldCToChunkC(coord), Chunk::WorldCToChunkTileC(coord), layer, id);
+}
+
+void game::World::SetTexCoordId(const ChunkCoord& c_coord,
+                                const ChunkTileCoord& ct_coord,
+                                TileLayer layer,
+                                const SpriteTexCoordIndexT id) noexcept {
+    chunkTexCoordIds_[c_coord.y][c_coord.x]
+                     [(ct_coord.y * Chunk::kChunkWidth + ct_coord.x) * kTileLayerCount + static_cast<int>(layer)] = id;
 }
 
 
@@ -351,7 +329,8 @@ void GenerateChunk(game::World& world,
                    const data::PrototypeManager& proto,
                    const ChunkCoord& chunk_coord,
                    const proto::Category data_category,
-                   void (*func)(game::Chunk& chunk,
+                   void (*func)(game::World& l_world,
+                                game::Chunk& chunk,
                                 ChunkTileCoord ct_coord,
                                 const T* prototype,
                                 const proto::NoiseLayer<T>& noise_layer,
@@ -406,7 +385,7 @@ void GenerateChunk(game::World& world,
                 assert(chunk != nullptr);
                 assert(noise_layer != nullptr);
 
-                func(*chunk, {x, y}, prototype, *noise_layer, noise_val);
+                func(world, *chunk, {x, y}, prototype, *noise_layer, noise_val);
             }
         }
     }
@@ -423,12 +402,18 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
         proto,
         {chunk_x, chunk_y},
         proto::Category::noise_layer_tile,
-        [](auto& chunk, auto ct_coord, const auto* prototype, const auto& /*noise_layer*/, float /*noise_val*/) {
+        [](auto& l_world,
+           auto& chunk,
+           auto ct_coord,
+           const auto* prototype,
+           const auto& /*noise_layer*/,
+           float /*noise_val*/) {
             if (prototype == nullptr)
                 return;
 
             auto& tile = chunk.GetCTile(ct_coord, game::TileLayer::base);
             tile.SetPrototype(Orientation::up, prototype);
+            l_world.SetTexCoordId(chunk.GetPosition(), ct_coord, game::TileLayer::base, prototype->sprite->texCoordId);
         });
 
     // Resources
@@ -437,7 +422,7 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
         proto,
         {chunk_x, chunk_y},
         proto::Category::noise_layer_entity,
-        [](auto& chunk, auto ct_coord, auto* prototype, const auto& noise_layer, float noise_val) {
+        [](auto& l_world, auto& chunk, auto ct_coord, auto* prototype, const auto& noise_layer, float noise_val) {
             if (prototype == nullptr)
                 return;
 
@@ -466,6 +451,8 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
 
             // Place new resource
             tile_resource.SetPrototype(Orientation::up, prototype);
+            l_world.SetTexCoordId(
+                chunk.GetPosition(), ct_coord, game::TileLayer::resource, prototype->sprite->texCoordId);
 
             assert(resource_amount > 0);
             tile_resource.template MakeUniqueData<proto::ResourceEntityData>(resource_amount);

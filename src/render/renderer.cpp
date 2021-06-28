@@ -473,8 +473,6 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
         for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
             const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
 
-            // TODO Just divide pixel_y by 10 0000 in shader to turn this into 0.<number> for depth buffer
-
             // Manually unrolled 3 times
             static_assert(3 == game::kTileLayerCount);
 

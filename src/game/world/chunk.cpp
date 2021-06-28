@@ -20,6 +20,16 @@ game::Chunk::Chunk(Chunk&& other) noexcept
 
 // ======================================================================
 
+ChunkTileCoordAxis game::Chunk::WorldCToChunkTileC(const WorldCoordAxis coord) {
+    if (coord < 0) {
+        return (kChunkWidth - 1) - (-coord - 1) % kChunkWidth;
+    }
+    return coord % kChunkWidth;
+}
+ChunkTileCoord game::Chunk::WorldCToChunkTileC(const WorldCoord& coord) {
+    return {WorldCToChunkTileC(coord.x), WorldCToChunkTileC(coord.y)};
+}
+
 game::Chunk::OverlayContainerT& game::Chunk::GetOverlay(const OverlayLayer layer) {
     return const_cast<OverlayContainerT&>(static_cast<const Chunk*>(this)->GetOverlay(layer));
 }
