@@ -820,6 +820,7 @@ namespace jactorio
 
             for (size_type i = 0; i < std::min(old_size, max_iterate); ++i) {
                 std::allocator_traits<allocator_type>::construct(allocator_, new_start, std::move(*old_start));
+                std::allocator_traits<allocator_type>::destroy(allocator_, old_start);
                 ++new_start;
                 ++old_start;
             }
