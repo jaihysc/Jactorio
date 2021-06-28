@@ -1,9 +1,9 @@
 #version 410 core
 
-layout(location = 0) in vec4 base_VS_in;
+layout(location = 0) in uvec4 data_VS_in; // Data prepared by renderer
 
-out vec4 base_ES_in;
+out uvec4 data_ES_in;
 
 void main() {
-	base_ES_in = base_VS_in;
+	data_ES_in = data_VS_in;
 }

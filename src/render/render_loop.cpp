@@ -217,9 +217,6 @@ static void Init(ThreadedLoopCommon& common) {
     // Texture will be bound to slot 0 above, tell this to shader
     DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
 
-    GLfloat f[]{0, 1, 0, 1}; // TODO Test only
-    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"), 1, f));
-
 
     // ======================================================================
     // Accessing game data
@@ -254,6 +251,14 @@ static void Init(ThreadedLoopCommon& common) {
     auto renderer_sprites = RendererSprites();
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, true);
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
+
+
+    auto& tex_coords = renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions;
+
+    static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
+    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"),
+                                   tex_coords.size(),
+                                   reinterpret_cast<const GLfloat*>(tex_coords.data())));
 
 
     Renderer::GlSetup();

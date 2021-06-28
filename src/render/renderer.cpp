@@ -480,17 +480,20 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 
             // 1
             if (tex_coord_ids[0] != 0) {
-                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 0}, 0});
+                r_layer.UncheckedPushBack(
+                    {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 0}, tex_coord_ids[0]});
             }
 
             // 2
             if (tex_coord_ids[1] != 0) {
-                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 1}, 0});
+                r_layer.UncheckedPushBack(
+                    {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 1}, tex_coord_ids[1]});
             }
 
             // 3
             if (tex_coord_ids[2] != 0) {
-                r_layer.UncheckedPushBack({{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 2}, 0});
+                r_layer.UncheckedPushBack(
+                    {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 2}, tex_coord_ids[2]});
             }
 
             tex_coord_ids += 3;
