@@ -4,18 +4,20 @@
 
 #include "core/filesystem.h"
 #include "core/logger.h"
+#include "core/utility.h"
 #include "render/opengl/error.h"
 #include "render/opengl/shader.h"
 #include "render/renderer_exception.h"
 
 using namespace jactorio;
 
-render::Shader::Shader(const std::vector<ShaderCreationInput>& inputs) : id_(0) {
+render::Shader::Shader(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols)
+    : id_(0) {
     DEBUG_OPENGL_CALL(id_ = glCreateProgram());
 
     std::vector<unsigned int> shader_ids;
     for (const auto& [filepath, shaderType] : inputs) {
-        const unsigned int shader_id = CompileShader(filepath, shaderType);
+        const unsigned int shader_id = CompileShader(filepath, shaderType, symbols);
         DEBUG_OPENGL_CALL(glAttachShader(id_, shader_id));
         shader_ids.push_back(shader_id);
     }
@@ -55,9 +57,15 @@ int render::Shader::GetUniformLocation(const std::string& name) const noexcept {
     return location;
 }
 
-GLuint render::Shader::CompileShader(const std::string& filepath, const GLenum shader_type) noexcept {
+GLuint render::Shader::CompileShader(const std::string& filepath,
+                                     const GLenum shader_type,
+                                     const std::vector<ShaderSymbol>& symbols) noexcept {
 
-    const std::string source = ReadFile(filepath);
+    std::string source = ReadFile(filepath);
+
+    for (const auto& [name, value] : symbols) {
+        StrReplaceInPlace(source, name, value);
+    }
 
     if (source.empty()) {
         LOG_MESSAGE_F(error, "Shader compilation received empty string, type %d %s", shader_type, filepath.c_str());

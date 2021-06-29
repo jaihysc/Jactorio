@@ -36,4 +36,11 @@ namespace jactorio
         EXPECT_EQ(StrMatchLen("abc", 0), "abc");
         EXPECT_EQ(StrMatchLen("", 5, '-'), "-----");
     }
+
+    TEST(Utility, StrReplaceInPlace) {
+        std::string s = "abc def ghi jkl mno pqr stu";
+
+        StrReplaceInPlace(s, " def ", "!~!");
+        EXPECT_EQ(s, "abc!~!ghi jkl mno pqr stu");
+    }
 } // namespace jactorio

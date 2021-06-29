@@ -206,17 +206,6 @@ static void Init(ThreadedLoopCommon& common) {
     auto renderer   = std::make_unique<Renderer>();
     common.renderer = renderer.get();
 
-    // Shader
-
-    const Shader shader(std::vector<ShaderCreationInput>{{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-                                                         {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
-                                                         {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}});
-    shader.Bind();
-    renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
-
-    // Texture will be bound to slot 0 above, tell this to shader
-    DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
-
 
     // ======================================================================
     // Accessing game data
@@ -253,12 +242,24 @@ static void Init(ThreadedLoopCommon& common) {
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
-    auto& tex_coords = renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions;
+    auto& terrain_tex_coords = renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions;
+
+    // Shader
+
+    const Shader shader({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
+                         {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
+                         {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
+                        {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coords.size())}});
+    shader.Bind();
+    renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
+
+    // Texture will be bound to slot 0 above, tell this to shader
+    DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
 
     static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
     DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"),
-                                   tex_coords.size(),
-                                   reinterpret_cast<const GLfloat*>(tex_coords.data())));
+                                   terrain_tex_coords.size(),
+                                   reinterpret_cast<const GLfloat*>(terrain_tex_coords.data())));
 
 
     Renderer::GlSetup();

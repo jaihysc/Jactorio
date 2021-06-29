@@ -19,11 +19,21 @@ namespace jactorio::render
         GLenum shaderType;
     };
 
+    struct ShaderSymbol
+    {
+        /// Looks for this value
+        std::string name;
+        /// Replaced with this
+        std::string value;
+    };
+
     class Shader
     {
     public:
+        /// \param symbols Defines symbol for shader compilation, the symbol in shader programs will be replaced with
+        /// value
         /// \exception RendererException Shader program is invalid for use
-        explicit Shader(const std::vector<ShaderCreationInput>& inputs);
+        explicit Shader(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols = {});
         ~Shader();
 
         Shader(const Shader& other)     = delete;
@@ -37,7 +47,9 @@ namespace jactorio::render
         J_NODISCARD int GetUniformLocation(const std::string& name) const noexcept;
 
     private:
-        static GLuint CompileShader(const std::string& filepath, GLenum shader_type) noexcept;
+        static GLuint CompileShader(const std::string& filepath,
+                                    GLenum shader_type,
+                                    const std::vector<ShaderSymbol>& symbols) noexcept;
         void LinkProgram() const noexcept;
         /// \exception RendererException Validation failed
         void ValidateProgram() const;

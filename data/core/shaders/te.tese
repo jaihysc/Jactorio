@@ -3,7 +3,7 @@
 layout(quads, equal_spacing, cw) in;
 
 uniform mat4 u_model_view_projection_matrix;
-uniform vec4 u_tex_coords[100]; // x1, y1, x2, y2 // TODO add replaceable constant
+uniform vec4 u_tex_coords[__terrain_tex_coords_size]; // x1, y1, x2, y2 // Replaced with constant during Jactorio shader compilation
 
 in uvec4 data_ES_in[];
 
