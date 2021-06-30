@@ -442,6 +442,11 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
         skip_tiles_top = 0;
     }
 
+    auto tiles_prepare_y = (windowHeight_ - render_tile_offset.y) / SafeCast<int>(tileWidth);
+    if (tiles_prepare_y > game::Chunk::kChunkWidth) {
+        tiles_prepare_y = game::Chunk::kChunkWidth;
+    }
+
     for (int x = 0; x < readable_chunks; ++x) {
         const auto chunk_render_tile_offset_x = x * game::Chunk::kChunkWidth + render_tile_offset.x;
 
@@ -450,11 +455,17 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
             skip_tiles_left = 0;
         }
 
+        auto tiles_prepare_x = (windowWidth_ - render_tile_offset.y) / SafeCast<int>(tileWidth);
+        if (tiles_prepare_x > game::Chunk::kChunkWidth) {
+            tiles_prepare_x = game::Chunk::kChunkWidth;
+        }
+
         // PrepareOverlayLayers(r_layer, chunk, render_tile_offset); // Unused
         PrepareChunk(r_layer,
                      tex_ids,
                      {chunk_render_tile_offset_x, render_tile_offset.y},
-                     {SafeCast<uint8_t>(skip_tiles_left), SafeCast<uint8_t>(skip_tiles_top)});
+                     {SafeCast<uint8_t>(skip_tiles_left), SafeCast<uint8_t>(skip_tiles_top)},
+                     {SafeCast<uint8_t>(tiles_prepare_x), SafeCast<uint8_t>(tiles_prepare_y)});
         tex_ids += game::Chunk::kChunkArea * game::kTileLayerCount;
     }
 }
@@ -462,15 +473,17 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
 FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                                 const SpriteTexCoordIndexT* tex_coord_ids,
                                                 const Position2<int> render_tile_offset,
-                                                const Position2<uint8_t> tile_start) const noexcept {
-    // TODO do not render if past bottom or right of screen
-    tex_coord_ids += (tile_start.y * game::Chunk::kChunkWidth + tile_start.x) * game::kTileLayerCount;
+                                                const Position2<uint8_t> tile_start,
+                                                const Position2<uint8_t> tile_end) const noexcept {
+    tex_coord_ids += tile_start.y * game::Chunk::kChunkWidth * game::kTileLayerCount;
 
 
-    for (ChunkTileCoordAxis tile_y = tile_start.y; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
+    for (ChunkTileCoordAxis tile_y = tile_start.y; tile_y < tile_end.y; ++tile_y) {
         const auto pixel_y = (render_tile_offset.y + tile_y) * SafeCast<int>(tileWidth);
 
-        for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
+        tex_coord_ids += tile_start.x * game::kTileLayerCount;
+
+        for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < tile_end.x; ++tile_x) {
             const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
 
             // Manually unrolled 3 times
@@ -496,6 +509,8 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 
             tex_coord_ids += 3;
         }
+
+        tex_coord_ids += (game::Chunk::kChunkWidth - tile_end.x) * game::kTileLayerCount;
     }
 }
 
