@@ -20,7 +20,7 @@ namespace jactorio::render
         auto& p1 = proto_.Make<proto::Sprite>(
             "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
         auto& p2 = proto_.Make<proto::Sprite>(
-            "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
+            "sprite2", proto::Sprite("test/graphics/test/5x1.png", {proto::Sprite::SpriteGroup::terrain}));
 
         proto_.Make<proto::Sprite>(
             "sprite3", proto::Sprite("test/graphics/test/test_tile2.png", {proto::Sprite::SpriteGroup::gui}));
@@ -30,8 +30,8 @@ namespace jactorio::render
         // Should filter out to only 2 entries
         const auto data = RendererSprites::CreateSpritemap(proto_, proto::Sprite::SpriteGroup::terrain, false);
 
-        EXPECT_EQ(data.width, 68);  // 64 + 2(2)
-        EXPECT_EQ(data.height, 34); // 32 + 2
+        EXPECT_EQ(data.width, 32 + 2 + 5 + 2);
+        EXPECT_EQ(data.height, 32 + 2);
 
         // Assigned tex coord id to sprites
         EXPECT_EQ(p1.texCoordId, 1);
