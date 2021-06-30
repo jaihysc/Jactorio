@@ -289,7 +289,7 @@ void render::RendererSprites::SetImageBorder(GeneratorContext& context,
                                              const Position2<SpritemapDimensionT> offset) {
     for (unsigned border_i = 0; border_i < kSpriteBorder; ++border_i) {
         // Top and bottom
-        for (unsigned i = 0; i < image.width; ++i) {
+        for (unsigned i = 0; i < SafeCast<unsigned>(image.width); ++i) {
             SetSpritemapPixel(context, //
                               {offset.x + kSpriteBorder + i, offset.y + border_i},
                               image,
@@ -301,7 +301,7 @@ void render::RendererSprites::SetImageBorder(GeneratorContext& context,
         }
 
         // Left and right
-        for (unsigned i = 0; i < image.height; ++i) {
+        for (unsigned i = 0; i < SafeCast<unsigned>(image.height); ++i) {
             SetSpritemapPixel(context, //
                               {offset.x + border_i, offset.y + kSpriteBorder + i},
                               image,
@@ -312,6 +312,8 @@ void render::RendererSprites::SetImageBorder(GeneratorContext& context,
                               {SafeCast<unsigned>(image.width - 1), i});
         }
     }
+
+    // Including the corners does not reduce black line artifacts
 }
 
 void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
@@ -326,8 +328,8 @@ void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
         SetImageBorder(context, image, offset);
 
         // Copy image onto spritemap
-        for (unsigned y = 0; y < image.height; ++y) {
-            for (unsigned x = 0; x < image.width; ++x) {
+        for (unsigned y = 0; y < SafeCast<unsigned>(image.height); ++y) {
+            for (unsigned x = 0; x < SafeCast<unsigned>(image.width); ++x) {
                 SetSpritemapPixel(context, //
                                   {offset.x + kSpriteBorder + x, offset.y + kSpriteBorder + y},
                                   image,
