@@ -238,7 +238,7 @@ static void Init(ThreadedLoopCommon& common) {
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
-    renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, true);
+    renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, false);
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
