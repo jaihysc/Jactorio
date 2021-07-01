@@ -4,6 +4,7 @@
 
 #include "render/renderer.h"
 
+#include <algorithm>
 #include <cmath>
 #include <future>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +21,7 @@ unsigned int render::Renderer::windowWidth_  = 0;
 unsigned int render::Renderer::windowHeight_ = 0;
 
 render::Renderer::Renderer() {
-    // Initialize model matrix
+    // This does not need to change as everything is already prepared in world space
     const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
     mvpManager_.GlSetModelMatrix(model_matrix);
 
@@ -88,6 +89,20 @@ void render::Renderer::GlSetDrawThreads(const size_t threads) {
     assert(renderLayers_.size() == drawThreads_);
 }
 
+float render::Renderer::GetZoom() const noexcept {
+    return zoom_;
+}
+
+void render::Renderer::SetZoom(float zoom) noexcept {
+    if (zoom < 0.f) {
+        zoom = 0.f;
+    }
+    else if (zoom > 1.f) {
+        zoom = 1.f;
+    }
+
+    zoom_ = zoom;
+}
 
 void render::Renderer::SetPlayerPosition(const Position2<float>& player_position) noexcept {
     playerPosition_ = player_position;
@@ -110,6 +125,19 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const g
     // 540 pixels form top
     // Right and bottom varies depending on tile size
 
+
+    GlUpdateTileProjectionMatrix();
+    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
+    mvpManager_.CalculateMvpMatrix();
+
+    // View matrix depends on mvp matrix to calculate correct camera offset
+    // Thus we must calculate the mvp matrix twice
+    // Once so we can properly calculate the view matrix, then a second time for final mvp
+    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
+    mvpManager_.CalculateMvpMatrix();
+    mvpManager_.UpdateShaderMvp();
+
+
     // Player position with decimal removed
     const auto position_x = LossyCast<int>(playerPosition_.x);
     const auto position_y = LossyCast<int>(playerPosition_.y);
@@ -119,13 +147,6 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const g
 
     const auto chunk_start  = GetChunkDrawStart(position_x, position_y);
     const auto chunk_amount = GetChunkDrawAmount(position_x, position_y);
-
-
-    // Must be calculated after tile_offset, chunk_start and chunk_amount. Otherwise, zooming becomes jagged
-    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
-    GlUpdateTileProjectionMatrix();
-    mvpManager_.CalculateMvpMatrix();
-    mvpManager_.UpdateShaderMvp();
 
 
     std::mutex world_gen_mutex;
@@ -585,28 +606,14 @@ void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
 }
 
 void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {
-    const auto max_tile_width = SafeCast<float>(tileWidth * 2);
+    // Must subtract some because zooming to EXACTLY half leaves no pixels remaining, making everything invisible
+    const auto max_pixel_zoom = std::min(windowWidth_, windowHeight_) / 2 - 2 * tileWidth;
 
-    if (tileProjectionMatrixOffset < max_tile_width)
-        // Prevent zooming out too far
-        tileProjectionMatrixOffset = max_tile_width;
-    else {
-        // Prevent zooming too far in
-        unsigned int smallest_axis;
-        if (windowWidth_ > windowHeight_) {
-            smallest_axis = windowHeight_;
-        }
-        else {
-            smallest_axis = windowWidth_;
-        }
+    // Discard pixels around x,y = 0 because the camera can move into negative x,y to give the illusion of motion,
+    // causing a black bar appear where as tiles cannot be rendered at x,y < 0
+    const auto top_left_offset = 3.f;
 
-        // Maximum zoom is 30 from center
-        const int max_zoom_offset = 30;
-        if (tileProjectionMatrixOffset > SafeCast<float>(smallest_axis) / 2 - max_zoom_offset) {
-            tileProjectionMatrixOffset = SafeCast<float>(smallest_axis) / 2 - max_zoom_offset;
-        }
-    }
-
+    const auto pixel_zoom = zoom_ * max_pixel_zoom;
     mvpManager_.GlSetProjectionMatrix(
-        MvpManager::ToProjMatrix(windowWidth_, windowHeight_, tileProjectionMatrixOffset));
+        MvpManager::ToProjMatrix(windowWidth_, windowHeight_, pixel_zoom, top_left_offset));
 }

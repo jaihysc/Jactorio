@@ -78,6 +78,11 @@ namespace jactorio::render
         J_NODISCARD size_t GetDrawThreads() const noexcept;
         void GlSetDrawThreads(size_t threads);
 
+        /// \return Zoom between [0,1] 0: Furthest out; 1:Furthest in
+        J_NODISCARD float GetZoom() const noexcept;
+
+        /// \param zoom Between [0,1] 0: Furthest out; 1:Furthest in. Auto clamps if out of range
+        void SetZoom(float zoom) noexcept;
 
         /// Used for rendering methods, set prior to drawing
         void SetPlayerPosition(const Position2<float>& player_position) noexcept;
@@ -111,9 +116,6 @@ namespace jactorio::render
         /// \return On screen position of world coord, suitable for sending to buffers for rendering
         J_NODISCARD Position2<uint16_t> WorldCoordToBufferPos(const Position2<float>& player_pos,
                                                               const WorldCoord& coord) const;
-
-        /// Changes zoom
-        float tileProjectionMatrixOffset = 0;
 
     private:
         /// \exception RendererException Failed to setup
@@ -191,6 +193,8 @@ namespace jactorio::render
         std::vector<RendererLayer> renderLayers_;
 
         MvpManager mvpManager_;
+
+        float zoom_ = 0.5f;
 
         /// Cached player's position, for convenience to avoid having to pass player around everywhere
         Position2<float> playerPosition_;

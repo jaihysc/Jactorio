@@ -45,9 +45,13 @@ namespace jactorio::render
         /// May offset more in a certain axis to preserve aspect ratio
         /// \param window_width width of display area in pixels
         /// \param window_height Height of display area in pixels
-        /// \param offset number of tiles horizontally to from the edge to hide (giving a zoom effect)
-        /// Vertical tiles is calculated based on ration of tiles in tile_data
-        static glm::mat4 ToProjMatrix(unsigned window_width, unsigned window_height, float offset);
+        /// \param pixel_zoom Number of pixels to hide starting from the border,
+        /// will zoom more if necessary on an axis to maintain aspect ratio
+        /// \param top_left_offset Pixels from top left to discard
+        static glm::mat4 ToProjMatrix(unsigned window_width,
+                                      unsigned window_height,
+                                      float pixel_zoom,
+                                      float top_left_offset);
 
     private:
         int mvpUniformLocation_ = -1;

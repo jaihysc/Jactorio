@@ -243,8 +243,11 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         game::MouseSelection::SetCursor({sdl_event.motion.x, sdl_event.motion.y});
         break;
     case SDL_MOUSEWHEEL:
-        if (!gui::input_mouse_captured)
-            common.renderer->tileProjectionMatrixOffset += SafeCast<float>(sdl_event.wheel.y * 10);
+        if (!gui::input_mouse_captured) {
+            constexpr auto mouse_zoom_sensitivity = 0.03f;
+            common.renderer->SetZoom(common.renderer->GetZoom() +
+                                     SafeCast<float>(sdl_event.wheel.y) * mouse_zoom_sensitivity);
+        }
         break;
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:

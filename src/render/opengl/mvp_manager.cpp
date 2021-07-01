@@ -72,22 +72,27 @@ void render::MvpManager::UpdateViewTransform() {
 
 glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
                                            const unsigned window_height,
-                                           const float offset) {
-    // Calculate aspect ratio scale based on "larger / smaller"
-    float x_zoom_ratio = 1.f;
-    float y_zoom_ratio = 1.f;
+                                           const float pixel_zoom,
+                                           const float top_left_offset) {
+    auto x_scale = 1.f;
+    auto y_scale = 1.f;
     if (window_width > window_height) {
-        x_zoom_ratio = SafeCast<float>(window_width) / SafeCast<float>(window_height);
+        x_scale = SafeCast<float>(window_width) / SafeCast<float>(window_height);
     }
     else {
-        y_zoom_ratio = SafeCast<float>(window_height) / SafeCast<float>(window_width);
+        y_scale = SafeCast<float>(window_height) / SafeCast<float>(window_width);
     }
 
-    return glm::ortho(offset * x_zoom_ratio,
-                      SafeCast<float>(window_width) - offset * x_zoom_ratio,
+    // 1 unit = 1 pixel
+    // Since both values are inclusive [0, window x], must subtract 1 to map each pixel to a natural number
+    // Since floating point, subtract additional 0.5 to make up for inaccuracies
+    // Just cannot not be over, as a each pixel would then have width of (e.g 0.99), which is invalid. Must be >= 1
 
-                      SafeCast<float>(window_height) - offset * y_zoom_ratio,
-                      offset * y_zoom_ratio,
+    return glm::ortho(top_left_offset + pixel_zoom * x_scale,
+                      SafeCast<float>(window_width) - 1.5f - pixel_zoom * x_scale,
+
+                      SafeCast<float>(window_height) - 1.5f - pixel_zoom * y_scale,
+                      top_left_offset + pixel_zoom * y_scale,
 
                       -1.f,
                       1.f);
