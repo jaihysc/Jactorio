@@ -500,10 +500,10 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
             }
 
             // 3
-            if (tex_coord_ids[2] != 0) {
-                r_layer.UncheckedPushBack(
-                    {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 2}, tex_coord_ids[2]});
-            }
+            // if (tex_coord_ids[2] != 0) {
+            //     r_layer.UncheckedPushBack(
+            //         {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 2}, tex_coord_ids[2]});
+            // }
 
             tex_coord_ids += 3;
         }

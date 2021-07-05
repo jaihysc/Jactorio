@@ -40,23 +40,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(
 
     // Filter to group only
     sprites.erase(
-        std::remove_if(
-            sprites.begin(),
-            sprites.end(),
-            [group](auto* ptr) {
-                // Return false to NOT remove
-                // Category of none is never removed
-                if (ptr->group.empty()) {
-                    LOG_MESSAGE_F(
-                        warning,
-                        "Sprite prototype '%s' does not have a category, and will be added to all sprite groups."
-                        " Consider giving it a category",
-                        ptr->name.c_str());
-                    return false;
-                }
-
-                return !ptr->IsInGroup(group);
-            }),
+        std::remove_if(sprites.begin(), sprites.end(), [group](auto* sprite) { return sprite->group != group; }),
         sprites.end());
 
     return GenSpritemap(sprites, invert_sprites);
@@ -108,7 +92,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(std
     {
         SortInputSprites(sprites);
 
-        spritemap_y = TotalSpriteHeight(sprites[0]);
+        spritemap_y = TotalSpriteHeight(*sprites[0]);
 
         GeneratorNode parent_node{nullptr};
         GenerateSpritemapNodes(sprites, node_buffer, parent_node, kMaxSpritemapWidth, spritemap_y);
@@ -155,22 +139,22 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(std
 }
 
 
-proto::Sprite::SpriteDimension render::RendererSprites::TotalSpriteWidth(const proto::Sprite* sprite) noexcept {
-    return sprite->GetImage().width + 2 * kSpriteBorder;
+proto::Sprite::SpriteDimension render::RendererSprites::TotalSpriteWidth(const proto::Sprite& sprite) noexcept {
+    return sprite.GetImage().width + 2 * kSpriteBorder;
 }
 
-proto::Sprite::SpriteDimension render::RendererSprites::TotalSpriteHeight(const proto::Sprite* sprite) noexcept {
-    return sprite->GetImage().height + 2 * kSpriteBorder;
+proto::Sprite::SpriteDimension render::RendererSprites::TotalSpriteHeight(const proto::Sprite& sprite) noexcept {
+    return sprite.GetImage().height + 2 * kSpriteBorder;
 }
 
 void render::RendererSprites::SortInputSprites(std::vector<proto::Sprite*>& sprites) {
     std::sort(sprites.begin(), sprites.end(), [](auto* first, auto* second) {
-        const auto first_h  = TotalSpriteHeight(first);
-        const auto second_h = TotalSpriteHeight(second);
+        const auto first_h  = TotalSpriteHeight(*first);
+        const auto second_h = TotalSpriteHeight(*second);
 
         // Sort in descending order, by height then by width
         if (first_h == second_h)
-            return TotalSpriteWidth(first) > TotalSpriteWidth(second);
+            return TotalSpriteWidth(*first) > TotalSpriteWidth(*second);
 
         return first_h > second_h;
     });
@@ -190,7 +174,7 @@ void render::RendererSprites::GenerateSpritemapNodes(std::vector<proto::Sprite*>
         for (std::size_t i = 0; i < sprites.size(); ++i) {
             auto* i_sprite = sprites[i];
 
-            if (TotalSpriteWidth(i_sprite) <= max_width && TotalSpriteHeight(i_sprite) <= max_height) {
+            if (TotalSpriteWidth(*i_sprite) <= max_width && TotalSpriteHeight(*i_sprite) <= max_height) {
                 sprite = i_sprite;
                 // Erase since it was used
                 sprites.erase(sprites.begin() + i);
@@ -203,8 +187,8 @@ void render::RendererSprites::GenerateSpritemapNodes(std::vector<proto::Sprite*>
             return;
 
 
-        max_width -= TotalSpriteWidth(sprite);
-        const auto remaining_height = max_height - TotalSpriteHeight(sprite);
+        max_width -= TotalSpriteWidth(*sprite);
+        const auto remaining_height = max_height - TotalSpriteHeight(*sprite);
 
 
         auto* node = node_buffer.emplace_back(new GeneratorNode(sprite));
@@ -218,7 +202,7 @@ void render::RendererSprites::GenerateSpritemapNodes(std::vector<proto::Sprite*>
 
         // Try to create node above
         if (remaining_height != 0) {
-            GenerateSpritemapNodes(sprites, node_buffer, *node, TotalSpriteWidth(sprite), remaining_height);
+            GenerateSpritemapNodes(sprites, node_buffer, *node, TotalSpriteWidth(*sprite), remaining_height);
         }
 
         current_node = node;
@@ -231,7 +215,7 @@ render::RendererSprites::SpritemapDimensionT render::RendererSprites::GetSpritem
     GeneratorNode* current_node = &base_node;
 
     while (true) {
-        width += TotalSpriteWidth(current_node->sprite);
+        width += TotalSpriteWidth(*current_node->sprite);
 
         if (current_node->right != nullptr)
             current_node = current_node->right;
@@ -316,14 +300,48 @@ void render::RendererSprites::SetImageBorder(GeneratorContext& context,
     // Including the corners does not reduce black line artifacts
 }
 
+void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
+                                                const Position2<SpritemapDimensionT> offset,
+                                                proto::Sprite& sprite) {
+    // TODO sprite.invertSetFrame
+
+    const auto& image = sprite.GetImage();
+
+    const auto top_left = TexCoord::PositionT{SafeCast<float>(offset.x + kSpriteBorder), //
+                                              SafeCast<float>(offset.y + kSpriteBorder)};
+
+    const auto bottom_right = TexCoord::PositionT{SafeCast<float>(offset.x + kSpriteBorder + image.width),
+                                                  SafeCast<float>(offset.y + kSpriteBorder + image.height)};
+
+    const auto h_span = bottom_right.x - top_left.x;
+    const auto v_span = bottom_right.y - top_left.y;
+
+    const auto h_fraction = h_span / LossyCast<float>(sprite.frames);
+    const auto v_fraction = v_span / LossyCast<float>(sprite.sets);
+
+    assert(sprite.frames >= 1);
+    assert(sprite.sets >= 1);
+    for (int y = 0; y < sprite.sets; ++y) {
+        for (int x = 0; x < sprite.frames; ++x) {
+            context.texCoords.push_back({{top_left.x + LossyCast<float>(x) * h_fraction,     //
+                                          top_left.y + LossyCast<float>(y) * v_fraction},    //
+                                         {top_left.x + LossyCast<float>(x + 1) * h_fraction, //
+                                          top_left.y + LossyCast<float>(y + 1) * v_fraction}});
+
+            sprite.texCoordId = (*context.texCoordIdCounter)++;
+        }
+    }
+}
+
 void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
                                                       GeneratorNode& base_node,
                                                       Position2<SpritemapDimensionT> offset) {
     auto* current_node = &base_node;
 
     while (true) {
-        auto* sprite      = current_node->sprite;
-        const auto& image = sprite->GetImage();
+        assert(current_node->sprite != nullptr);
+        auto& sprite      = *current_node->sprite;
+        const auto& image = sprite.GetImage();
 
         SetImageBorder(context, image, offset);
 
@@ -337,11 +355,7 @@ void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
             }
         }
 
-        context.texCoords.push_back({{SafeCast<float>(offset.x + kSpriteBorder), //
-                                      SafeCast<float>(offset.y + kSpriteBorder)},
-                                     {SafeCast<float>(offset.x + kSpriteBorder + image.width),
-                                      SafeCast<float>(offset.y + kSpriteBorder + image.height)}});
-        sprite->texCoordId = (*context.texCoordIdCounter)++;
+        GenerateTexCoords(context, offset, sprite);
 
         if (current_node->above != nullptr) {
             GenerateSpritemapOutput(context, *current_node->above, {offset.x, offset.y + TotalSpriteHeight(sprite)});

@@ -40,9 +40,6 @@ namespace jactorio::proto
 
         /// Number of items which can be together
         PYTHON_PROP_REF(StackCount, stackSize);
-
-
-        void ValidatedPostLoad() override;
     };
 } // namespace jactorio::proto
 

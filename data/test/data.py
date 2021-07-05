@@ -5,7 +5,7 @@ import test.subdir.test
 def addProto(name, sprite_path):
     (j.Sprite(name)
         .load(sprite_path)
-        .group([j.spriteGroup.Terrain])
+        .group(j.SpriteGroup.TERRAIN)
     )
 
 addProto("test_tile", "test/graphics/test/test_tile.png")

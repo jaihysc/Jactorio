@@ -163,9 +163,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_PROP(Sprite, trim)
     PYBIND_PROP(Sprite, invertSetFrame).def("load", &Sprite::Load);
 
-    py::enum_<Sprite::SpriteGroup>(m, "spriteGroup")
-        .value("Terrain", Sprite::SpriteGroup::terrain)
-        .value("Gui", Sprite::SpriteGroup::gui);
+    py::enum_<Sprite::SpriteGroup>(m, "SpriteGroup")
+        .value("TERRAIN", Sprite::SpriteGroup::terrain)
+        .value("GUI", Sprite::SpriteGroup::gui)
+        .value("ENTITY", Sprite::SpriteGroup::entity);
 
     PYBIND_DATA_CLASS(Item, Item, FrameworkBase)
     PYBIND_PROP(Item, sprite)

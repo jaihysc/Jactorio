@@ -116,9 +116,9 @@ namespace jactorio::render
 
 
         /// Sprite width with border
-        static proto::Sprite::SpriteDimension TotalSpriteWidth(const proto::Sprite* sprite) noexcept;
+        static proto::Sprite::SpriteDimension TotalSpriteWidth(const proto::Sprite& sprite) noexcept;
         /// Sprite height with border
-        static proto::Sprite::SpriteDimension TotalSpriteHeight(const proto::Sprite* sprite) noexcept;
+        static proto::Sprite::SpriteDimension TotalSpriteHeight(const proto::Sprite& sprite) noexcept;
 
 
         static void SortInputSprites(std::vector<proto::Sprite*>& sprites);
@@ -149,6 +149,10 @@ namespace jactorio::render
         static void SetImageBorder(GeneratorContext& context,
                                    const proto::ImageContainer& image,
                                    Position2<SpritemapDimensionT> offset);
+
+        static void GenerateTexCoords(GeneratorContext& context,
+                                      Position2<SpritemapDimensionT> offset,
+                                      proto::Sprite& sprite);
 
         /// Recursively processes GeneratorNodes
         /// - outputs sprites into into provided sprite buffer

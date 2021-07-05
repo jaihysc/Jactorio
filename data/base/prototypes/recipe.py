@@ -6,6 +6,7 @@ def addRecipeGroup(name, spritePath):
                 .sprite(
                     j.Sprite()
                         .load(spritePath)
+                        .group(j.SpriteGroup.GUI)
                 )
             )
 

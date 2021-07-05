@@ -38,32 +38,6 @@ namespace jactorio::render
         EXPECT_EQ(p2.texCoordId, 2);
     }
 
-    TEST_F(SpritemapCreationTest, CreateSpritemapCategoryNone) {
-        // If a sprite does not have a group specified (sprite_group::none):
-
-        // Sprite data delete by guard
-        // Terrain
-        proto_.Make<proto::Sprite>(
-            "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
-        proto_.Make<proto::Sprite>(
-            "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
-
-        // Gui
-        proto_.Make<proto::Sprite>(
-            "sprite3", proto::Sprite("test/graphics/test/test_tile2.png", {proto::Sprite::SpriteGroup::gui}));
-        proto_.Make<proto::Sprite>(
-            "sprite4", proto::Sprite("test/graphics/test/test_tile3.png", {proto::Sprite::SpriteGroup::gui}));
-
-        // None
-        proto_.Make<proto::Sprite>("spriteNone", proto::Sprite("test/graphics/test/test_tile.png", {}));
-
-        // Should filter out to 3 entries, total width of 32 * 3
-        const auto data = RendererSprites::CreateSpritemap(proto_, proto::Sprite::SpriteGroup::terrain, false);
-
-        EXPECT_EQ(data.width, 102); // 96 + 3(2)
-        EXPECT_EQ(data.height, 34); // 32 + 2
-    }
-
 
     // ======================================================================
 
@@ -100,13 +74,15 @@ namespace jactorio::render
 
         std::vector<proto::Sprite*> prototypes_;
 
-        void AddSprite(const std::string& image_path) {
+        proto::Sprite& AddSprite(const std::string& image_path) {
             auto* sprite       = new proto::Sprite;
             sprite->internalId = static_cast<unsigned>(nextId_);
             sprite->Load(image_path);
 
             prototypes_.push_back(sprite);
             nextId_++;
+
+            return *sprite;
         }
 
     private:
@@ -188,5 +164,17 @@ namespace jactorio::render
 
         EXPECT_EQ(spritemap.width, 0);
         EXPECT_EQ(spritemap.height, 0);
+    }
+
+    TEST_F(SpritemapGeneratorTest, TexCoordsMultiTile) {
+        auto& sprite  = AddSprite("test/graphics/test/test_tile.png");
+        sprite.sets   = 2;
+        sprite.frames = 3;
+
+        const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
+
+        EXPECT_EQ(positions.size(), 7);
+
+        // Because of the sprite border, it is difficult to compute the tex coord values by hand
     }
 } // namespace jactorio::render

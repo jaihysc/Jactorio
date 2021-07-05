@@ -54,14 +54,16 @@ namespace jactorio::proto
 
         enum class SpriteGroup
         {
-            terrain = 0,
+            none = 0,
+            terrain,
             gui,
+            entity, // Excludes resources
             count_
         };
 
         Sprite() = default;
         explicit Sprite(const std::string& sprite_path);
-        Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group);
+        Sprite(const std::string& sprite_path, SpriteGroup group);
 
         /// Loads image from image_path
         /// \remark Do not include ~/data/
@@ -71,8 +73,8 @@ namespace jactorio::proto
 
         // Sprite properties
 
-        /// Group(s) determines which spritemap(s) this sprite is placed on
-        PYTHON_PROP_REF(std::vector<SpriteGroup>, group);
+        /// Determines which spritemap this sprite is placed on
+        PYTHON_PROP_REF_I(SpriteGroup, group, SpriteGroup::none);
 
         /*
          *     F0 F1 F2 F3 F4
@@ -94,15 +96,8 @@ namespace jactorio::proto
         /// Y axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteSetT, sets, 1);
 
-        /// Pixels to remove from the border when GetCoord() is called
+        /// Pixels to remove from the border
         PYTHON_PROP_REF_I(SpriteTrimT, trim, 0);
-
-
-        /// \return true is Sprite is in specified group
-        J_NODISCARD bool IsInGroup(SpriteGroup group) const;
-
-        /// If group is empty, it is set to the group provided
-        void DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group);
 
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;

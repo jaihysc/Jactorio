@@ -5,7 +5,7 @@ def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
                 .sprite(
                     j.Sprite()
                         .load(spritePath)
-                        .group([j.spriteGroup.Terrain])
+                        .group(j.SpriteGroup.TERRAIN)
                 )
                 .isWater(isWater)
     )
@@ -34,7 +34,7 @@ def addResourceEntity(noiseLayer, endRange, name, tileSpritePath, itemSpritePath
         .sprite(
             j.Sprite()
                 .load(itemSpritePath)
-                .group([j.spriteGroup.Terrain, j.spriteGroup.Gui])
+                .group(j.SpriteGroup.GUI)
         )
     )
 
@@ -42,7 +42,7 @@ def addResourceEntity(noiseLayer, endRange, name, tileSpritePath, itemSpritePath
                         .sprite(
                             j.Sprite()
                                 .load(tileSpritePath)
-                                .group([j.spriteGroup.Terrain])
+                                .group(j.SpriteGroup.TERRAIN)
                         )
                         .item(product)
     )

@@ -131,7 +131,6 @@ namespace jactorio::proto
 
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
-        void ValidatedPostLoad() override;
 
     private:
         static bool InitializeOutput(game::World& world, const WorldCoord& output_coord, MiningDrillData* drill_data);

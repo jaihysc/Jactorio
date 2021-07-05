@@ -113,10 +113,6 @@ void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto*/) 
     J_PROTO_ASSERT(handSprite != nullptr, "Hand sprite not provided");
 }
 
-void proto::Inserter::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-}
-
 // ======================================================================
 
 WorldCoord proto::Inserter::GetDropoffCoord(const WorldCoord& coord, const Orientation orientation) const {

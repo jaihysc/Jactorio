@@ -69,7 +69,6 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/proto/assembly_machine.cpp
         ${JACTORIO_DIR}/proto/container_entity.cpp
         ${JACTORIO_DIR}/proto/inserter.cpp
-        ${JACTORIO_DIR}/proto/item.cpp
         ${JACTORIO_DIR}/proto/mining_drill.cpp
         ${JACTORIO_DIR}/proto/recipe.cpp
         ${JACTORIO_DIR}/proto/recipe_group.cpp

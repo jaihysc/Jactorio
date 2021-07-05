@@ -119,7 +119,6 @@ namespace jactorio::proto
 
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
-        void ValidatedPostLoad() override;
 
     private:
         J_NODISCARD WorldCoord GetDropoffCoord(const WorldCoord& coord, Orientation orientation) const;

@@ -202,14 +202,6 @@ void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*proto*
     J_PROTO_ASSERT(spriteW != nullptr, "West sprite not provided");
 }
 
-void proto::MiningDrill::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-}
-
-
 // ======================================================================
 
 

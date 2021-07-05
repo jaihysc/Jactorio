@@ -4,6 +4,7 @@ import jactorioData as j
 def addSprite(spritePath):
     return (j.Sprite()
             .load(spritePath)
+            .group(j.SpriteGroup.ENTITY)
             .frames(8)
             .sets(4)
             )
@@ -17,6 +18,7 @@ def createSplitter(name, icon, spriteN, spriteE, spriteS, spriteW):
             .sprite(
                     j.Sprite()
                     .load(icon)
+                    .group(j.SpriteGroup.GUI)
             )
         )
         .sprite(addSprite(spriteN))

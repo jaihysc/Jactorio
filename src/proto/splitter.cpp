@@ -61,13 +61,6 @@ void proto::Splitter::PostLoadValidate(const data::PrototypeManager& proto) cons
     J_PROTO_ASSERT(this->GetHeight(Orientation::up) == 1, "Tile height must be 1");
 }
 
-void proto::Splitter::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-}
-
 // ======================================================================
 
 WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world,

@@ -241,11 +241,18 @@ static void Init(ThreadedLoopCommon& common) {
     auto renderer_sprites = RendererSprites();
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, false);
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
+    renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::entity, true);
 
 
     auto& terrain_tex_coords = renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions;
+    LOG_MESSAGE_F(info, "%zu tex coords for tesselation renderer", terrain_tex_coords.size());
 
     // Shader
+    GLint max_uniform_component;
+    DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS, &max_uniform_component));
+    if (terrain_tex_coords.size() > max_uniform_component / 4) {
+        throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_uniform_component / 4));
+    }
 
     const Shader shader({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
                          {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},

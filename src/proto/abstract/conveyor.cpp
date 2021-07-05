@@ -132,7 +132,3 @@ void proto::Conveyor::PostLoadValidate(const data::PrototypeManager& /*proto*/) 
     // Cannot exceed item_width because of limitations in the logic
     J_PROTO_ASSERT(speedFloat < 0.25, "Conveyor speed equal or above maximum of 0.25");
 }
-
-void proto::Conveyor::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-}

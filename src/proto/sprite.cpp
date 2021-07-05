@@ -62,7 +62,7 @@ proto::Sprite::Sprite(const std::string& sprite_path) {
     Load(sprite_path);
 }
 
-proto::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group) : group(std::move(group)) {
+proto::Sprite::Sprite(const std::string& sprite_path, const SpriteGroup group) : group(group) {
     Load(sprite_path);
 }
 
@@ -77,28 +77,9 @@ const proto::ImageContainer& proto::Sprite::GetImage() const noexcept {
     return image_;
 }
 
-bool proto::Sprite::IsInGroup(const SpriteGroup group) const {
-    for (const auto& i : this->group) {
-        if (i == group)
-            return true;
-    }
-
-    return false;
-}
-
-void proto::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
-    LOG_MESSAGE(debug, "Using default sprite group:");
-    for (const auto& group : new_group) {
-        LOG_MESSAGE_F(debug, "    %d", static_cast<int>(group));
-    }
-
-
-    if (group.empty()) {
-        group = new_group;
-    }
-}
-
 void proto::Sprite::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
     J_PROTO_ASSERT(frames > 0, "Frames must be at least 1");
     J_PROTO_ASSERT(sets > 0, "Sets must be at least 1");
+
+    J_PROTO_ASSERT(group != SpriteGroup::none, "Sprite must be in a group");
 }

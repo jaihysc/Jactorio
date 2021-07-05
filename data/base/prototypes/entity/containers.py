@@ -14,12 +14,14 @@ def addContainer(name, invSize, health, worldSprite, itemSprite):
         .sprite(
             j.Sprite()
                 .load(worldSprite)
+                .group(j.SpriteGroup.ENTITY)
         )
         .item(
             j.Item(name + "-item")
                 .sprite(
                     j.Sprite()
                         .load(itemSprite)
+                        .group(j.SpriteGroup.GUI)
                 )
         )
      )

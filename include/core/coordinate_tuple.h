@@ -110,6 +110,14 @@ namespace jactorio
 
         TPosition topLeft;
         TPosition bottomRight;
+
+        friend bool operator==(const QuadPosition& lhs, const QuadPosition& rhs) {
+            return std::tie(lhs.topLeft, lhs.bottomRight) == std::tie(rhs.topLeft, rhs.bottomRight);
+        }
+
+        friend bool operator!=(const QuadPosition& lhs, const QuadPosition& rhs) {
+            return !(lhs == rhs);
+        }
     };
 } // namespace jactorio
 

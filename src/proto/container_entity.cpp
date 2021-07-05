@@ -20,7 +20,3 @@ bool proto::ContainerEntity::OnRShowGui(const gui::Context& context, game::Chunk
     gui::ContainerEntity(context, this, tile->GetUniqueData<ContainerEntityData>());
     return true;
 }
-
-void proto::ContainerEntity::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-}

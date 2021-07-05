@@ -4,6 +4,8 @@
 
 #include "proto/sprite.h"
 
+#include "data/prototype_manager.h"
+
 namespace jactorio::proto
 {
     TEST(Sprite, SpriteCopy) {
@@ -25,29 +27,6 @@ namespace jactorio::proto
         EXPECT_NE(second.GetImage().buffer, nullptr);
     }
 
-    TEST(Sprite, TrySetDefaultSpriteGroup) {
-        {
-            // Item's sprite group should be set to terrain and gui if blank
-            Sprite sprite;
-
-            auto& group = sprite.group;
-
-            sprite.DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
-
-            EXPECT_NE(std::find(group.begin(), group.end(), Sprite::SpriteGroup::terrain), group.end());
-            EXPECT_NE(std::find(group.begin(), group.end(), Sprite::SpriteGroup::gui), group.end());
-        }
-        {
-            // If not blank, use initialization provided sprite groups
-            Sprite sprite;
-
-            auto& group = sprite.group;
-            group.push_back(Sprite::SpriteGroup::gui);
-
-            EXPECT_EQ(group.size(), 1);
-        }
-    }
-
     TEST(Sprite, LoadSprite) {
         {
             Sprite sprite;
@@ -65,6 +44,29 @@ namespace jactorio::proto
 
             EXPECT_EQ(sprite.GetImage().width, 20);
             EXPECT_EQ(sprite.GetImage().height, 59);
+        }
+    }
+
+    TEST(Sprite, ErrorNoSpriteGroup) {
+        data::PrototypeManager proto;
+
+        Sprite sprite1;
+        sprite1.group = {Sprite::SpriteGroup::entity};
+        try {
+            sprite1.PostLoadValidate(proto);
+            SUCCEED();
+        }
+        catch (std::exception&) {
+            FAIL();
+        }
+
+        const Sprite sprite2;
+        try {
+            sprite2.PostLoadValidate(proto);
+            FAIL();
+        }
+        catch (std::exception&) {
+            SUCCEED();
         }
     }
 } // namespace jactorio::proto

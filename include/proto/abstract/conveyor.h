@@ -109,7 +109,6 @@ namespace jactorio::proto
 
         void PostLoad() override;
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
-        void ValidatedPostLoad() override;
     };
 } // namespace jactorio::proto
 
