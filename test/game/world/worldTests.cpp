@@ -6,6 +6,8 @@
 
 #include "jactorioTests.h"
 
+#include "proto/noise_layer.h"
+
 namespace jactorio::game
 {
     class WorldTest : public testing::Test
@@ -214,6 +216,22 @@ namespace jactorio::game
         for (int i = 0; i < 1000; ++i) {
             EXPECT_EQ(ptr[i], i);
         }
+    }
+
+    TEST_F(WorldTest, GenerateChunk) {
+        auto& chunk = world_.EmplaceChunk({1, 2});
+
+        // Does nothing since chunk already exists
+        world_.QueueChunkGeneration({1, 2});
+
+        data::PrototypeManager proto;
+        proto::Tile tile;
+        auto& noise_layer = proto.Make<proto::NoiseLayer<proto::Tile>>();
+        noise_layer.Add(1, &tile);
+        noise_layer.normalize = true;
+
+        world_.GenChunk(proto, 200);
+        EXPECT_NE(chunk.GetCTile({0, 0}, TileLayer::base).GetPrototype(), &tile);
     }
 
     TEST_F(WorldTest, Clear) {

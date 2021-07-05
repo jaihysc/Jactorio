@@ -476,8 +476,11 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
 
 
 void game::World::QueueChunkGeneration(const ChunkCoord& c_coord) const {
-    // .find is not needed to check for duplicates as insert already does that
-    worldGenChunks_.insert({c_coord.x, c_coord.y});
+    // NO need to regenerate existing chunks
+    if (GetChunkC(c_coord) == nullptr) {
+        // .find is not needed to check for duplicates as insert already does that
+        worldGenChunks_.insert({c_coord.x, c_coord.y});
+    }
 }
 
 void game::World::GenChunk(const data::PrototypeManager& proto, uint8_t amount) {
