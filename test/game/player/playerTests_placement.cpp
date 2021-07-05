@@ -115,6 +115,7 @@ namespace jactorio::game
             auto& chunk = world_.EmplaceChunk({0, 0});
 
             container_.SetItem(&item_);
+            container_.sprite = &sprite_;
 
             tile_.isWater = false;
 
@@ -133,6 +134,7 @@ namespace jactorio::game
         /// Item for container_
         proto::Item item_;
         proto::ContainerEntity container_;
+        proto::Sprite sprite_;
     };
 
 
@@ -251,6 +253,7 @@ namespace jactorio::game
         auto* tile = world_.GetTile({0, 0}, TileLayer::resource);
         tile->SetPrototype(Orientation::up, &resource);
         auto& resource_data = tile->MakeUniqueData<proto::ResourceEntityData>(2);
+        world_.SetTexCoordId({0, 0}, TileLayer::resource, 1234);
 
 
         player_.placement.TryPickup(world_, logic_, {0, 0}, 180);
@@ -269,6 +272,7 @@ namespace jactorio::game
 
         player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
         EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
+        EXPECT_EQ(world_.GetTexCoordId({0, 0}, TileLayer::resource), 0);
 
         EXPECT_EQ(player_.inventory.inventory[0].item, &item);
         EXPECT_EQ(player_.inventory.inventory[0].count, 2);
@@ -348,6 +352,9 @@ namespace jactorio::game
             mutable int onUpdateCalled           = 0;
             mutable proto::UpdateType updateType = proto::UpdateType::place;
         } mock;
+        proto::Sprite sprite;
+        mock.sprite = &sprite;
+
         mock.SetDimension({3, 2});
         mock.SetItem(&item_);
 
@@ -393,6 +400,8 @@ namespace jactorio::game
                 receiveCoords.push_back(receive_coord);
             }
         } mock;
+        proto::Sprite sprite;
+        mock.sprite = &sprite;
 
         proto::Item item;
         mock.SetDimension({2, 3});

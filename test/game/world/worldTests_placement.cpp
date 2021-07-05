@@ -5,6 +5,7 @@
 #include "game/world/world.h"
 
 #include "proto/container_entity.h"
+#include "proto/sprite.h"
 #include "proto/tile.h"
 
 namespace jactorio::game
@@ -70,6 +71,7 @@ namespace jactorio::game
 
     protected:
         proto::ContainerEntity entity_;
+        proto::Sprite sprite_;
 
         proto::Tile waterTile_;
         proto::Tile landTile_;
@@ -78,6 +80,9 @@ namespace jactorio::game
 
         void SetUp() override {
             GenerateTestWorld(world_, &waterTile_, &landTile_);
+
+            entity_.sprite     = &sprite_;
+            sprite_.texCoordId = 1234;
         }
 
 
@@ -85,7 +90,8 @@ namespace jactorio::game
         void ValidatePlaced(const WorldCoord& coord,
                             const proto::Entity& entity,
                             const proto::FWorldObject::Dimension& dimension = {1, 1}) {
-            int entity_index = 0;
+            int entity_index     = 0;
+            int tex_coord_offset = 0;
             for (WorldCoordAxis y = coord.y; y < coord.y + dimension.y; ++y) {
                 for (WorldCoordAxis x = coord.x; x < coord.x + dimension.x; ++x) {
                     auto* tile = world_.GetTile({x, y}, TileLayer::entity);
@@ -93,6 +99,8 @@ namespace jactorio::game
                     ASSERT_NE(tile, nullptr);
                     EXPECT_EQ(tile->GetPrototype(), &entity);
                     EXPECT_EQ(tile->GetMultiTileIndex(), entity_index++);
+
+                    EXPECT_EQ(world_.GetTexCoordId({x, y}, TileLayer::entity), 1234 + tex_coord_offset++);
 
                     // Ensure tile width and height are properly set
                     EXPECT_EQ(tile->GetDimension().x, dimension.x);
@@ -110,6 +118,7 @@ namespace jactorio::game
                     ASSERT_NE(tile, nullptr);
                     EXPECT_EQ(tile->GetPrototype(), nullptr);
                     // Entity index is undefined since no entity exists now
+                    EXPECT_EQ(world_.GetTexCoordId({x, y}, TileLayer::entity), 0);
                 }
             }
         }

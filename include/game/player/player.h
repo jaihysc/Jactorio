@@ -234,7 +234,6 @@ namespace jactorio::game
                               const WorldCoord& coord,
                               ChunkTile* entity_tile,
                               const proto::Entity* entity);
-            static void PickupResource(ChunkTile* resource_tile);
 
             ChunkTile* activatedTile_ = nullptr;
 

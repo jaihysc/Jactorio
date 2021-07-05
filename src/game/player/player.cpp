@@ -322,7 +322,15 @@ void game::Player::Placement::TryPickup(game::World& world,
         pickupTickTarget_ = LossyCast<uint16_t>(SafeCast<const proto::ResourceEntity*>(chosen_ptr)->pickupTime *
                                                 kGameHertz); // Seconds to ticks
         if (pickupTickCounter_ >= pickupTickTarget_) {
-            PickupResource(resource_tile);
+            auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
+            assert(resource_data != nullptr); // Resource tiles should have valid data
+
+            // Delete resource tile if it is empty after extracting
+            if (--resource_data->resourceAmount == 0) {
+                resource_tile->Clear();
+                world.SetTexCoordId(coord, TileLayer::resource, 0);
+            }
+
             give_item();
         }
     }
@@ -360,17 +368,6 @@ void game::Player::Placement::PickupEntity(
         for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
             world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
         }
-    }
-}
-
-void game::Player::Placement::PickupResource(ChunkTile* resource_tile) {
-    auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
-
-    assert(resource_data != nullptr); // Resource tiles should have valid data
-
-    // Delete resource tile if it is empty after extracting
-    if (--resource_data->resourceAmount == 0) {
-        resource_tile->Clear();
     }
 }
 

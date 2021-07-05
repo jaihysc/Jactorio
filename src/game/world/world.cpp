@@ -161,6 +161,13 @@ std::pair<const SpriteTexCoordIndexT*, int> game::World::GetChunkTexCoordIds(con
     return {x_dvector[c_coord.x].data(), readable_amount};
 }
 
+SpriteTexCoordIndexT game::World::GetTexCoordId(const WorldCoord& coord, const TileLayer layer) const noexcept {
+    const auto c_coord  = WorldCToChunkC(coord);
+    const auto ct_coord = Chunk::WorldCToChunkTileC(coord);
+    return chunkTexCoordIds_[c_coord.y][c_coord.x][(ct_coord.y * Chunk::kChunkWidth + ct_coord.x) * kTileLayerCount +
+                                                   static_cast<int>(layer)];
+}
+
 void game::World::SetTexCoordId(const WorldCoord& coord,
                                 const TileLayer layer,
                                 const SpriteTexCoordIndexT id) noexcept {
@@ -212,6 +219,8 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
 
     // The top left is handled differently
     provided_tile->SetPrototype(orien, entity);
+    assert(entity.sprite != nullptr);
+    SetTexCoordId(coord, place_layer, entity.sprite->texCoordId);
 
     if (dimension.x != 1 || dimension.y != 1) {
         // Multi tile
@@ -221,11 +230,16 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
 
         for (int offset_y = 0; offset_y < dimension.y; ++offset_y) {
             for (; offset_x < dimension.x; ++offset_x) {
-                auto* tile = GetTile({coord.x + offset_x, coord.y + offset_y}, place_layer);
+                const auto current_coord = WorldCoord(coord.x + offset_x, coord.y + offset_y);
+
+                auto* tile = GetTile(current_coord, place_layer);
                 assert(tile != nullptr);
 
                 tile->SetPrototype(orien, entity);
                 tile->SetupMultiTile(entity_index++, *provided_tile);
+
+                // entity_index - 1 has the same effect as adding 1 each iteration, starting with adding 1
+                SetTexCoordId(current_coord, place_layer, entity.sprite->texCoordId + entity_index - 1);
             }
             offset_x = 0;
         }
@@ -250,10 +264,13 @@ bool game::World::Remove(const WorldCoord& coord, const Orientation orien) {
 
     for (int offset_y = 0; offset_y < t_entity->GetHeight(orien); ++offset_y) {
         for (int offset_x = 0; offset_x < t_entity->GetWidth(orien); ++offset_x) {
-            auto* tile = GetTile({tl_coord.x + offset_x, tl_coord.y + offset_y}, remove_layer);
+            const auto current_coord = WorldCoord(tl_coord.x + offset_x, tl_coord.y + offset_y);
+
+            auto* tile = GetTile(current_coord, remove_layer);
             assert(tile != nullptr);
 
             tile->Clear();
+            SetTexCoordId(current_coord, remove_layer, 0);
         }
     }
 
@@ -394,8 +411,6 @@ void GenerateChunk(game::World& world,
 /// Generates a chunk and adds it to the world when done
 /// Call this with a std::thread to to this in async
 void Generate(game::World& world, const data::PrototypeManager& proto, const int chunk_x, const int chunk_y) {
-    LOG_MESSAGE_F(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
-
     // Base
     GenerateChunk<proto::Tile>(
         world,

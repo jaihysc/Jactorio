@@ -155,6 +155,10 @@ namespace jactorio::game
         J_NODISCARD std::pair<const SpriteTexCoordIndexT*, int> GetChunkTexCoordIds(
             const ChunkCoord& c_coord) const noexcept;
 
+
+        /// \return tex coord id at given coord and layer
+        J_NODISCARD SpriteTexCoordIndexT GetTexCoordId(const WorldCoord& coord, TileLayer layer) const noexcept;
+
         /// Sets tex coord id for given world coord at layer
         void SetTexCoordId(const WorldCoord& coord, TileLayer layer, SpriteTexCoordIndexT id) noexcept;
 

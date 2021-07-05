@@ -184,7 +184,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(WorldTest, SetTexCoordId) {
+    TEST_F(WorldTest, GetSetTexCoordId) {
         world_.EmplaceChunk({3, 1});
 
         world_.SetTexCoordId({106, 60}, TileLayer::resource, 4321);
@@ -194,6 +194,8 @@ namespace jactorio::game
         EXPECT_EQ(
             ptr[(Chunk::kChunkWidth * (60 % Chunk::kChunkWidth) + (106 % Chunk::kChunkWidth)) * kTileLayerCount + 1],
             4321);
+
+        EXPECT_EQ(world_.GetTexCoordId({106, 60}, TileLayer::resource), 4321);
     }
 
     TEST_F(WorldTest, SerializeTexCoordIds) {
