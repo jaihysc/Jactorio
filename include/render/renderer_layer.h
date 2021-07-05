@@ -8,6 +8,7 @@
 
 #include "jactorio.h"
 
+#include "core/convert.h"
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
 #include "render/opengl/vertex_array.h"
@@ -226,7 +227,7 @@ namespace jactorio::render
     }
 
     inline uint32_t RendererLayer::Size() const noexcept {
-        return (writePtr_ - baseBuffer_) / kBaseValsPerElement;
+        return SafeCast<uint32_t>((writePtr_ - baseBuffer_) / kBaseValsPerElement);
     }
 } // namespace jactorio::render
 

@@ -244,9 +244,17 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         break;
     case SDL_MOUSEWHEEL:
         if (!gui::input_mouse_captured) {
-            constexpr auto mouse_zoom_sensitivity = 0.03f;
-            common.renderer->SetZoom(common.renderer->GetZoom() +
-                                     SafeCast<float>(sdl_event.wheel.y) * mouse_zoom_sensitivity);
+            constexpr auto near_zoom_sensitivity = 0.01f;
+            constexpr auto far_zoom_sensitivity  = 0.04f;
+            constexpr auto near_threshold        = 0.85f;
+
+            const auto current_zoom = common.renderer->GetZoom();
+            auto sensitivity        = far_zoom_sensitivity;
+            if (current_zoom >= near_threshold) {
+                sensitivity = near_zoom_sensitivity;
+            }
+
+            common.renderer->SetZoom(current_zoom + SafeCast<float>(sdl_event.wheel.y) * sensitivity);
         }
         break;
     case SDL_MOUSEBUTTONUP:

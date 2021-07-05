@@ -82,13 +82,13 @@ glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
         y_scale = SafeCast<float>(window_height) / SafeCast<float>(window_width);
     }
 
+    const auto left  = pixel_zoom * x_scale;
+    const auto right = SafeCast<float>(window_width) - pixel_zoom * x_scale;
+    assert(left < right); // Space was flipped horizontally
 
-    return glm::ortho(pixel_zoom * x_scale,
-                      SafeCast<float>(window_width) - pixel_zoom * x_scale,
+    const auto top    = pixel_zoom * y_scale;
+    const auto bottom = SafeCast<float>(window_height) - pixel_zoom * y_scale;
+    assert(top < bottom); // Space was flipped vertically
 
-                      SafeCast<float>(window_height) - pixel_zoom * y_scale,
-                      pixel_zoom * y_scale,
-
-                      -1.f,
-                      1.f);
+    return glm::ortho(left, right, bottom, top, -1.f, 1.f);
 }

@@ -427,7 +427,8 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
     }
 
     // Allocate for the maximum possible tile layers to render
-    const auto required_r_layer_capacity = chunk_span * game::Chunk::kChunkArea * game::kTileLayerCount;
+    const auto required_r_layer_capacity =
+        SafeCast<uint32_t>(chunk_span * game::Chunk::kChunkArea * game::kTileLayerCount);
     if (required_r_layer_capacity >= r_layer.Capacity()) {
         r_layer.Reserve(required_r_layer_capacity);
         return;
@@ -444,7 +445,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
         tiles_prepare_y = game::Chunk::kChunkWidth;
     }
 
-    for (int x = 0; x < readable_chunks; ++x) {
+    for (int x = 0; x < std::min(readable_chunks, chunk_span); ++x) {
         const auto chunk_render_tile_offset_x = x * game::Chunk::kChunkWidth + render_tile_offset.x;
 
         auto skip_tiles_left = -chunk_render_tile_offset_x / SafeCast<int>(tileWidth);
@@ -452,7 +453,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
             skip_tiles_left = 0;
         }
 
-        auto tiles_prepare_x = (windowWidth_ - render_tile_offset.y) / SafeCast<int>(tileWidth);
+        auto tiles_prepare_x = (windowWidth_ - render_tile_offset.x) / SafeCast<int>(tileWidth);
         if (tiles_prepare_x > game::Chunk::kChunkWidth) {
             tiles_prepare_x = game::Chunk::kChunkWidth;
         }
@@ -582,14 +583,19 @@ void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
 }
 
 void render::Renderer::GlUpdateTileProjectionMatrix(const float zoom) noexcept {
-    // TODO a better way of calculating max zoom than me just guessing numbers
-
     // Must subtract some because zooming to EXACTLY half leaves no pixels remaining, making everything invisible
-    // A zoom too close leads to black bards on the edges from the camera moving
-    const auto max_pixel_zoom = std::min(windowWidth_, windowHeight_) / 2 - 2 * tileWidth;
+    const auto max_pixel_zoom     = std::min(windowWidth_, windowHeight_) / 2.f - 1;
+    constexpr auto min_pixel_zoom = 1.f;
 
-    // Add some since pixel_zoom cannot be 0
-    const auto pixel_zoom = (zoom + 0.01f) * max_pixel_zoom + 1;
+    auto pixel_zoom = zoom * max_pixel_zoom;
+
+    if (pixel_zoom < min_pixel_zoom) {
+        pixel_zoom = min_pixel_zoom;
+    }
+    else if (pixel_zoom > max_pixel_zoom) {
+        pixel_zoom = max_pixel_zoom;
+    }
+
     assert(pixel_zoom > 0);
     mvpManager_.GlSetProjectionMatrix(MvpManager::ToProjMatrix(windowWidth_, windowHeight_, pixel_zoom));
 }

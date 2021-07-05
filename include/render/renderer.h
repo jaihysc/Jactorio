@@ -167,7 +167,7 @@ namespace jactorio::render
         static void GlPrepareEnd(RendererLayer& r_layer);
 
         /// Updates projection matrix and zoom level
-        /// \tparam zoom Between [0, 1]. 0 furthest, 1 closest
+        /// \tparam zoom Between [0, 1]. 0 furthest, 1 closest (auto clamps if out of range)
         void GlUpdateTileProjectionMatrix(float zoom) noexcept;
 
 
