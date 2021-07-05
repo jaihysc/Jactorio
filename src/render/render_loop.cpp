@@ -140,14 +140,15 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(), player_world);
 
             common.renderer->GlPrepareBegin();
-            game::MouseSelection::DrawCursorOverlay(*common.renderer,
-                                                    common.gameController.worlds,
-                                                    common.gameController.player,
-                                                    common.gameController.proto);
 
             common.gameController.player.world.SetMouseSelectedTile( //
                 common.renderer->ScreenPosToWorldCoord(common.gameController.player.world.GetPosition(),
                                                        game::MouseSelection::GetCursor()));
+
+            game::MouseSelection::DrawCursorOverlay(*common.renderer,
+                                                    common.gameController.worlds,
+                                                    common.gameController.player,
+                                                    common.gameController.proto);
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};

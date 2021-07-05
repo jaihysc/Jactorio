@@ -64,7 +64,7 @@ void render::Renderer::GlResizeWindow(const unsigned int window_x, const unsigne
     // Initialize fields
     windowWidth_  = window_x;
     windowHeight_ = window_y;
-    GlUpdateTileProjectionMatrix();
+    GlUpdateTileProjectionMatrix(zoom_);
 
     for (auto& render_layer : renderLayers_) {
         render_layer.ResizeDefault();
@@ -125,28 +125,57 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const g
     // 540 pixels form top
     // Right and bottom varies depending on tile size
 
+    // Negative moves window right and down
 
-    GlUpdateTileProjectionMatrix();
-    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
+    // Truncated player position
+    const auto i_player = Position2{LossyCast<int>(playerPosition_.x), LossyCast<int>(playerPosition_.y)};
+
+    GlUpdateTileProjectionMatrix(zoom_ - 0.01f);
+    CalculateViewMatrix(i_player);
     mvpManager_.CalculateMvpMatrix();
 
     // View matrix depends on mvp matrix to calculate correct camera offset
     // Thus we must calculate the mvp matrix twice
     // Once so we can properly calculate the view matrix, then a second time for final mvp
-    CalculateViewMatrix(playerPosition_.x, playerPosition_.y);
+    CalculateViewMatrix(i_player);
+
+    // Player has not moved an entire chunk's width yet, offset the tiles
+    // Modulus chunkWidth to make it snap back to 0 after offsetting the entirety of a chunk
+    // Inverted to move the tiles AWAY from the screen instead of following the screen
+    auto tile_offset = Position2{i_player.x % game::Chunk::kChunkWidth * -1, //
+                                 i_player.y % game::Chunk::kChunkWidth * -1};
+
+    auto chunk_start = Position2{i_player.x / game::Chunk::kChunkWidth, //
+                                 i_player.y / game::Chunk::kChunkWidth};
+
+    const auto tile_amount = GetTileDrawAmount();
+
+    // Center player position on screen
+    chunk_start.x -= tile_amount.x / 2 / game::Chunk::kChunkWidth;
+    chunk_start.y -= tile_amount.y / 2 / game::Chunk::kChunkWidth;
+
+    tile_offset.x += tile_amount.x / 2 % game::Chunk::kChunkWidth; // Remaining tile distance after div
+    tile_offset.y += tile_amount.y / 2 % game::Chunk::kChunkWidth;
+
+
+    // Render extra chunks since camera moves
+    tile_offset.x -= 2 * game::Chunk::kChunkWidth;
+    tile_offset.y -= 2 * game::Chunk::kChunkWidth;
+    chunk_start.x -= 2;
+    chunk_start.y -= 2;
+
+    auto chunk_amount = Position2{(tile_amount.x - tile_offset.x) / game::Chunk::kChunkWidth,
+                                  (tile_amount.y - tile_offset.y) / game::Chunk::kChunkWidth};
+    // Add 1 back since division may truncate decimals
+    chunk_amount.x += 1;
+    chunk_amount.y += 1;
+
+    // Zoom in more to hide the black edges from camera movement
+    GlUpdateTileProjectionMatrix(zoom_);
     mvpManager_.CalculateMvpMatrix();
     mvpManager_.UpdateShaderMvp();
 
-
-    // Player position with decimal removed
-    const auto position_x = LossyCast<int>(playerPosition_.x);
-    const auto position_y = LossyCast<int>(playerPosition_.y);
-
-
-    const auto tile_offset = GetTileDrawOffset(position_x, position_y);
-
-    const auto chunk_start  = GetChunkDrawStart(position_x, position_y);
-    const auto chunk_amount = GetChunkDrawAmount(position_x, position_y);
+    // ======================================================================
 
 
     std::mutex world_gen_mutex;
@@ -242,7 +271,7 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
     assert(dimension.x == 1);
     assert(dimension.y == 1);
 
-    r_layer.PushBack({{screen_pos.x, screen_pos.y, 5}, 0});
+    r_layer.PushBack({{screen_pos.x, screen_pos.y, 5}, sprite.texCoordId});
 }
 
 
@@ -350,87 +379,34 @@ void render::Renderer::GlDrawIndex(const uint64_t index_count) noexcept {
                                      nullptr)); // Pointer not needed as index buffer is already bound
 }
 
-void render::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
-    const auto position_x = LossyCast<int>(player_x);
-    const auto position_y = LossyCast<int>(player_y);
-
-    // Negative moves window right and down
-
+void render::Renderer::CalculateViewMatrix(const Position2<int> i_player) noexcept {
     // Decimal is used to shift the camera
     // Invert the movement to give the illusion of moving in the correct direction
-    const float camera_offset_x = (player_x - SafeCast<float>(position_x)) * SafeCast<float>(tileWidth) * -1;
-    const float camera_offset_y = (player_y - SafeCast<float>(position_y)) * SafeCast<float>(tileWidth) * -1;
+    const auto camera_offset =
+        Position2{(playerPosition_.x - SafeCast<float>(i_player.x)) * SafeCast<float>(tileWidth) * -1,
+                  (playerPosition_.y - SafeCast<float>(i_player.y)) * SafeCast<float>(tileWidth) * -1};
 
     // Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
     const auto tile_amount = GetTileDrawAmount();
 
     const auto& view_transform = mvpManager_.GetViewTransform();
 
-    // Divide by 2 first to truncate decimals
+    // Operations inside lossy cast centers of player position at the center of screen
+    // Use truncating division, such that for odd # of tiles (e.g 5), the top left of third tile is at center of screen
+    // instead of the center of the tile
     // A LossyCast is used as during startup, tile_amount is invalid since the mvp matrix is invalid
-    view_transform->x = LossyCast<float>(GetWindowWidth() / 2 - (tile_amount.x / 2 * tileWidth)) + camera_offset_x;
-
-    view_transform->y = LossyCast<float>(GetWindowHeight() / 2 - (tile_amount.y / 2 * tileWidth)) + camera_offset_y;
+    view_transform->x =
+        LossyCast<float>(windowWidth_) / 2 - LossyCast<float>(tile_amount.x / 2 * tileWidth) + camera_offset.x;
+    view_transform->y =
+        LossyCast<float>(windowHeight_) / 2 - LossyCast<float>(tile_amount.y / 2 * tileWidth) + camera_offset.y;
 
     mvpManager_.UpdateViewTransform();
 }
 
 Position2<int> render::Renderer::GetTileDrawAmount() const noexcept {
-    const auto matrix        = glm::vec4(1, -1, 1, 1) / mvpManager_.GetMvpMatrix();
-    const auto tile_amount_x = LossyCast<int>(matrix.x / LossyCast<double>(tileWidth) * 2) + 2;
-    const auto tile_amount_y = LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2;
-
-    return {tile_amount_x, tile_amount_y};
-}
-
-Position2<int> render::Renderer::GetTileDrawOffset(const int position_x, const int position_y) const noexcept {
-    // Player has not moved an entire chunk's width yet, offset the tiles
-    // Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
-    // Inverted to move the tiles AWAY from the screen instead of following the screen
-    auto tile_start_x = position_x % game::Chunk::kChunkWidth * -1;
-    auto tile_start_y = position_y % game::Chunk::kChunkWidth * -1;
-
-    const auto tile_amount = GetTileDrawAmount();
-
-    // Center player position on screen
-    tile_start_x += tile_amount.x / 2 % game::Chunk::kChunkWidth;
-    tile_start_y += tile_amount.y / 2 % game::Chunk::kChunkWidth;
-
-    // Extra chunk must be hid for the top and left sides to hide black background
-    tile_start_x -= (kPaddingChunks + 1) * game::Chunk::kChunkWidth;
-    tile_start_y -= (kPaddingChunks + 1) * game::Chunk::kChunkWidth;
-
-    return {tile_start_x, tile_start_y};
-}
-
-Position2<int> render::Renderer::GetChunkDrawStart(const int position_x, const int position_y) const noexcept {
-    auto chunk_start_x = position_x / game::Chunk::kChunkWidth;
-    auto chunk_start_y = position_y / game::Chunk::kChunkWidth;
-
-    const auto tile_amount = GetTileDrawAmount();
-
-    // Center player position on screen
-    chunk_start_x -= tile_amount.x / 2 / game::Chunk::kChunkWidth;
-    chunk_start_y -= tile_amount.y / 2 / game::Chunk::kChunkWidth;
-
-    // Match the tile offset with start offset
-    chunk_start_x -= kPaddingChunks + 1;
-    chunk_start_y -= kPaddingChunks + 1;
-
-    return {chunk_start_x, chunk_start_y};
-}
-
-Position2<int> render::Renderer::GetChunkDrawAmount(const int position_x, const int position_y) const noexcept {
-    const auto tile_offset = GetTileDrawOffset(position_x, position_y);
-    const auto tile_amount = GetTileDrawAmount();
-
-    int chunk_amount_x = (tile_amount.x - tile_offset.x) / game::Chunk::kChunkWidth;
-    int chunk_amount_y = (tile_amount.y - tile_offset.y) / game::Chunk::kChunkWidth;
-
-    chunk_amount_x += kPaddingChunks;
-    chunk_amount_y += kPaddingChunks;
-
-    return {chunk_amount_x, chunk_amount_y};
+    const auto matrix = glm::vec4(1, -1, 1, 1) / mvpManager_.GetMvpMatrix();
+    return Position2{LossyCast<int>(matrix.x / LossyCast<double>(tileWidth) * 2) + 2,
+                     LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2};
 }
 
 void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
@@ -605,15 +581,15 @@ void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
     GlDraw(r_layer.Size());
 }
 
-void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {
+void render::Renderer::GlUpdateTileProjectionMatrix(const float zoom) noexcept {
+    // TODO a better way of calculating max zoom than me just guessing numbers
+
     // Must subtract some because zooming to EXACTLY half leaves no pixels remaining, making everything invisible
+    // A zoom too close leads to black bards on the edges from the camera moving
     const auto max_pixel_zoom = std::min(windowWidth_, windowHeight_) / 2 - 2 * tileWidth;
 
-    // Discard pixels around x,y = 0 because the camera can move into negative x,y to give the illusion of motion,
-    // causing a black bar appear where as tiles cannot be rendered at x,y < 0
-    const auto top_left_offset = 3.f;
-
-    const auto pixel_zoom = zoom_ * max_pixel_zoom;
-    mvpManager_.GlSetProjectionMatrix(
-        MvpManager::ToProjMatrix(windowWidth_, windowHeight_, pixel_zoom, top_left_offset));
+    // Add some since pixel_zoom cannot be 0
+    const auto pixel_zoom = (zoom + 0.01f) * max_pixel_zoom + 1;
+    assert(pixel_zoom > 0);
+    mvpManager_.GlSetProjectionMatrix(MvpManager::ToProjMatrix(windowWidth_, windowHeight_, pixel_zoom));
 }

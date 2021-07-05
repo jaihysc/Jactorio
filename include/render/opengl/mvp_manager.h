@@ -47,11 +47,11 @@ namespace jactorio::render
         /// \param window_height Height of display area in pixels
         /// \param pixel_zoom Number of pixels to hide starting from the border,
         /// will zoom more if necessary on an axis to maintain aspect ratio
-        /// \param top_left_offset Pixels from top left to discard
-        static glm::mat4 ToProjMatrix(unsigned window_width,
-                                      unsigned window_height,
-                                      float pixel_zoom,
-                                      float top_left_offset);
+        /// Cannot be 0
+        ///
+        /// Cannot be 0 as a each pixel would then have width of < 1 (e.g 0.99), which is invalid
+        /// (OpenGL does not render)
+        static glm::mat4 ToProjMatrix(unsigned window_width, unsigned window_height, float pixel_zoom);
 
     private:
         int mvpUniformLocation_ = -1;

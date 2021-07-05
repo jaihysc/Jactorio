@@ -72,8 +72,7 @@ void render::MvpManager::UpdateViewTransform() {
 
 glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
                                            const unsigned window_height,
-                                           const float pixel_zoom,
-                                           const float top_left_offset) {
+                                           const float pixel_zoom) {
     auto x_scale = 1.f;
     auto y_scale = 1.f;
     if (window_width > window_height) {
@@ -83,16 +82,12 @@ glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
         y_scale = SafeCast<float>(window_height) / SafeCast<float>(window_width);
     }
 
-    // 1 unit = 1 pixel
-    // Since both values are inclusive [0, window x], must subtract 1 to map each pixel to a natural number
-    // Since floating point, subtract additional 0.5 to make up for inaccuracies
-    // Just cannot not be over, as a each pixel would then have width of (e.g 0.99), which is invalid. Must be >= 1
 
-    return glm::ortho(top_left_offset + pixel_zoom * x_scale,
-                      SafeCast<float>(window_width) - 1.5f - pixel_zoom * x_scale,
+    return glm::ortho(pixel_zoom * x_scale,
+                      SafeCast<float>(window_width) - pixel_zoom * x_scale,
 
-                      SafeCast<float>(window_height) - 1.5f - pixel_zoom * y_scale,
-                      top_left_offset + pixel_zoom * y_scale,
+                      SafeCast<float>(window_height) - pixel_zoom * y_scale,
+                      pixel_zoom * y_scale,
 
                       -1.f,
                       1.f);

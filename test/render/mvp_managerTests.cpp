@@ -29,12 +29,12 @@ namespace jactorio::render
             const int tiles_y = 10;
 
             // Zoom guarantees a minimum of offset
-            auto proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 0, 0);
+            auto proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 0);
 
             EXPECT_EQ(proj_matrix, glm::ortho(0.f, 20.f, 10.f, 0.f, -1.f, 1.f));
 
             // Zoom guarantees a minimum of offset
-            proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 2.5, 0);
+            proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 2.5);
 
             // Y is smaller axis
 
@@ -49,12 +49,12 @@ namespace jactorio::render
             const int tiles_y = 20;
 
             // Zoom guarantees a minimum of offset
-            auto proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 0, 0);
+            auto proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 0);
 
             EXPECT_EQ(proj_matrix, glm::ortho(0.f, 10.f, 20.f, 0.f, -1.f, 1.f));
 
             // Zoom guarantees a minimum of offset
-            proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 2.5, 0);
+            proj_matrix = MvpManager::ToProjMatrix(tiles_x, tiles_y, 2.5);
 
             // Scale factor of 2 for Y axis
             // L R B T

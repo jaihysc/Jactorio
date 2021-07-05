@@ -44,12 +44,6 @@ namespace jactorio::render
         // Every kChunkWidth tiles, shift 1 chunk
         // Offset remainder tiles
         // Offset decimal tile, using view matrix
-
-
-        /// Extra chunks drawn around the border
-        /// Hides the camera moving
-        static constexpr int kPaddingChunks = 1;
-
     public:
         static constexpr unsigned int tileWidth = 1;
 
@@ -128,20 +122,10 @@ namespace jactorio::render
         static void GlDrawIndex(uint64_t index_count) noexcept;
 
 
-        void CalculateViewMatrix(float player_x, float player_y) noexcept;
+        void CalculateViewMatrix(Position2<int> i_player) noexcept;
 
         /// Number of tiles to draw to fill window dimensions
         J_NODISCARD Position2<int> GetTileDrawAmount() const noexcept;
-
-        /// All tiles drawn will have its position added to tile offset
-        J_NODISCARD Position2<int> GetTileDrawOffset(int position_x, int position_y) const noexcept;
-
-        /// Top left chunk coordinates to begin drawing
-        J_NODISCARD Position2<int> GetChunkDrawStart(int position_x, int position_y) const noexcept;
-
-        /// Number of chunks to draw to fill window dimensions
-        J_NODISCARD Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
-
 
         /// \param row_start Chunk coordinate where the row of chunks starts
         /// \param chunk_span Number of chunks spanned
@@ -183,7 +167,8 @@ namespace jactorio::render
         static void GlPrepareEnd(RendererLayer& r_layer);
 
         /// Updates projection matrix and zoom level
-        void GlUpdateTileProjectionMatrix() noexcept;
+        /// \tparam zoom Between [0, 1]. 0 furthest, 1 closest
+        void GlUpdateTileProjectionMatrix(float zoom) noexcept;
 
 
         size_t drawThreads_ = 0;
