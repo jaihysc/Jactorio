@@ -19,7 +19,7 @@ void main() {
 
 	gl_Position = vec4(vec3(data_ES_in[0]), 1);
 	gl_Position.xy += gl_TessCoord.xy;
-	gl_Position.z *= 1/65535; // Transforms uint16 to [0, 1]
+	// gl_Position.z *= 1/65535; // Transforms uint16 to [0, 1] // Z is always 0
 	gl_Position = u_model_view_projection_matrix * gl_Position;
 }
 

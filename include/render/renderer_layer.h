@@ -28,6 +28,7 @@ namespace jactorio::render
         static constexpr double kResizeECapacityMultiplier = 1.25;
 
         // Vertex buffer
+        // It is actually 5ms faster when each tile is 4 components! Just put 0 for Z if depth testing not needed
         static constexpr int kBaseValsPerElement  = 4;
         static constexpr int kBaseBytesPerElement = kBaseValsPerElement * sizeof(VertexArray::ElementT);
 
