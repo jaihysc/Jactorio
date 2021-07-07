@@ -45,8 +45,7 @@ void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
             renderer.PrepareSprite(cursor_coord,
                                    *selected_entity->sprite,
                                    selected_entity->OnRGetSpriteSet(orientation, world, cursor_coord),
-                                   {SafeCast<float>(selected_entity->GetWidth(orientation)),
-                                    SafeCast<float>(selected_entity->GetHeight(orientation))});
+                                   selected_entity->GetDimension(orientation));
         }
     }
     else {

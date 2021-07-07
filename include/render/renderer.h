@@ -92,8 +92,8 @@ namespace jactorio::render
 
         void PrepareSprite(const WorldCoord& coord,
                            const proto::Sprite& sprite,
-                           SpriteSetT set                    = 0,
-                           const Position2<float>& dimension = {1, 1});
+                           SpriteSetT set             = 0,
+                           const Dimension& dimension = {1, 1});
 
 
         //

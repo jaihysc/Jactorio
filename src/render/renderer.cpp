@@ -264,16 +264,20 @@ void render::Renderer::GlPrepareEnd() {
 void render::Renderer::PrepareSprite(const WorldCoord& coord,
                                      const proto::Sprite& sprite,
                                      const SpriteSetT set,
-                                     const Position2<float>& dimension) {
+                                     const Dimension& dimension) {
     auto& r_layer = renderLayers_[0];
 
     const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
 
-    // Only capable of render 1 x 1 with current renderer
-    // assert(dimension.x == 1);
-    // assert(dimension.y == 1);
+    for (DimensionAxis y = 0; y < dimension.y; ++y) {
+        const auto id_offset_y = y * dimension.x;
+        for (DimensionAxis x = 0; x < dimension.x; ++x) {
+            const auto tex_coord_id = SafeCast<SpriteTexCoordIndexT>(sprite.texCoordId + id_offset_y + x);
 
-    r_layer.PushBack({{screen_pos.x, screen_pos.y, 0}, sprite.texCoordId});
+            r_layer.PushBack(
+                {{SafeCast<uint16_t>(screen_pos.x + x), SafeCast<uint16_t>(screen_pos.y + y), 0}, tex_coord_id});
+        }
+    }
 }
 
 

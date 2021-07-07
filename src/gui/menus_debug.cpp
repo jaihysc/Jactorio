@@ -272,7 +272,7 @@ static void ShowConveyorSegments(game::World& world, const data::PrototypeManage
             const auto position_y = i / game::Chunk::kChunkWidth;
 
             auto coord = tl_coord;
-            Position2<float> segment_len;
+            Dimension segment_len;
             const proto::Sprite* direction_sprite;
             switch (line_segment.direction) {
             case Orientation::up:
