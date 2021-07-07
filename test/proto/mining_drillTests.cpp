@@ -155,6 +155,10 @@ namespace jactorio::proto
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
 
+        // The moment the drill is created, it has an output
+        // thus, it immediately deducts a resource and registers the callback for outputting
+        world_.SetTexCoordId({1, 1}, game::TileLayer::resource, 1234);
+
         auto& drill_tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_, 1);
         auto& r_tile1    = *world_.GetTile({1, 1}, game::TileLayer::resource);
 
@@ -168,6 +172,7 @@ namespace jactorio::proto
         logic_.DeferralUpdate(world_, 60);
         EXPECT_EQ(r_tile1.GetPrototype(), nullptr);
         EXPECT_EQ(r_tile1.GetUniqueData(), nullptr);
+        EXPECT_EQ(world_.GetTexCoordId({1, 1}, game::TileLayer::resource), 0);
 
         // Found another resource (resource3)
         logic_.DeferralUpdate(world_, 120);

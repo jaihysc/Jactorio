@@ -185,7 +185,7 @@ namespace jactorio
         return *tile;
     }
 
-    /// Creates a drill in the world with orientation, calling OnBuild
+    /// Creates a drill AND resource in the world with orientation, calling OnBuild
     inline game::ChunkTile& TestSetupDrill(game::World& world,
                                            game::Logic& logic,
                                            const WorldCoord& coord,

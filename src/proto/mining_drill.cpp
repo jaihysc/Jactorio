@@ -254,24 +254,26 @@ bool proto::MiningDrill::DeductResource(game::World& world,
                                         const Orientation orien,
                                         MiningDrillData& drill_data,
                                         const ResourceEntityData::ResourceCount amount) const {
-
-    auto get_resource_layer = [&]() {
-        auto* tile = world.GetTile({drill_data.resourceCoord.x + drill_data.resourceOffset % GetMiningAreaX(orien),
-                                    drill_data.resourceCoord.y + drill_data.resourceOffset / GetMiningAreaX(orien)},
-                                   game::TileLayer::resource);
-
+    auto get_tile_coord = [&]() {
+        return WorldCoord{drill_data.resourceCoord.x + drill_data.resourceOffset % GetMiningAreaX(orien),
+                          drill_data.resourceCoord.y + drill_data.resourceOffset / GetMiningAreaX(orien)};
+    };
+    auto get_resource_layer = [&](const WorldCoord& coord) {
+        auto* tile = world.GetTile(coord, game::TileLayer::resource);
         assert(tile != nullptr);
         return std::make_tuple(tile, tile->GetUniqueData<ResourceEntityData>());
     };
 
 
-    auto [resource_layer, resource_data] = get_resource_layer();
+    auto tile_coord                      = get_tile_coord();
+    auto [resource_layer, resource_data] = get_resource_layer(tile_coord);
 
     if (resource_data == nullptr) {
         if (!SetupResourceDeduction(world, drill_data, orien))
             return false; // Drill has no resources left to mine
 
-        std::tie(resource_layer, resource_data) = get_resource_layer();
+        tile_coord                              = get_tile_coord();
+        std::tie(resource_layer, resource_data) = get_resource_layer(tile_coord);
     }
 
     assert(resource_data != nullptr);
@@ -282,6 +284,7 @@ bool proto::MiningDrill::DeductResource(game::World& world,
 
     if (resource_data->resourceAmount == 0) {
         resource_layer->Clear();
+        world.SetTexCoordId(tile_coord, game::TileLayer::resource, 0);
     }
 
     return true;
