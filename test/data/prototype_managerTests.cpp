@@ -7,6 +7,7 @@
 #include "data/prototype_manager.h"
 
 #include "data/globals.h"
+#include "proto/container_entity.h"
 #include "proto/label.h"
 #include "proto/sprite.h"
 
@@ -138,6 +139,9 @@ namespace jactorio::data
 
         EXPECT_EQ(proto->GetImage().width, 32);
         EXPECT_EQ(proto->GetImage().height, 32);
+
+        const auto* container = proto_.Get<proto::ContainerEntity>("__test__/test_container");
+        EXPECT_EQ(container->sprite->subdivide, Dimension(3, 2));
     }
 
     TEST_F(PrototypeManagerTest, LoadInvalidPath) {

@@ -174,7 +174,7 @@ namespace jactorio::game
 
         /// Determines if entity of given dimensions can be placed at specified coord
         /// \return true if a entity with the specified dimensions can be placed at coord
-        J_NODISCARD bool PlaceLocationValid(const WorldCoord& coord, proto::FWorldObject::Dimension dimensions) const;
+        J_NODISCARD bool PlaceLocationValid(const WorldCoord& coord, Dimension dimensions) const;
 
         /// Places entity at coord
         /// \return true if placed successfully

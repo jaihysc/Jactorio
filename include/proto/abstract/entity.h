@@ -37,11 +37,6 @@ namespace jactorio::proto
         Entity& operator=(Entity&& other) noexcept = default;
 
 
-        /// Sprite drawn when placed in the world
-        /// \remark For rotatable entities, this serves as the north sprite if multiple sprites are used
-        PYTHON_PROP_I(Sprite*, sprite, nullptr);
-
-
         /// Can be rotated by player?
         /// If false, also sets rotateDimensions to false
         PYTHON_PROP_REF_I(bool, rotatable, false);
@@ -143,6 +138,8 @@ namespace jactorio::proto
         void PostLoad() override;
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
+
+        void SetupSprite() override;
 
     private:
         /// Item when entity is picked up

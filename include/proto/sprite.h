@@ -57,7 +57,6 @@ namespace jactorio::proto
             none = 0,
             terrain,
             gui,
-            entity, // Excludes resources
             count_
         };
 
@@ -103,6 +102,10 @@ namespace jactorio::proto
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
         SpriteTexCoordIndexT texCoordId = 0;
+
+        /// Tells spritemap generator to divide one frame at a set into
+        /// subdivide.x frames horizontally. subdivide.y frames vertically
+        Dimension subdivide{1, 1};
 
     private:
         ImageContainer image_;

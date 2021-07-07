@@ -38,6 +38,9 @@ namespace jactorio
 
     using ResourceEntityResourceCount = uint32_t;
 
+    using DimensionAxis = uint8_t;
+    /// Dimension of objects (sprite subdivide, entities ...)
+    using Dimension = Position2<DimensionAxis>;
 
     // Game
 

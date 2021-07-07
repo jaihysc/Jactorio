@@ -305,6 +305,11 @@ void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
                                                 proto::Sprite& sprite) {
     // TODO sprite.invertSetFrame
 
+    assert(sprite.frames >= 1);
+    assert(sprite.sets >= 1);
+    assert(sprite.subdivide.x >= 1);
+    assert(sprite.subdivide.y >= 1);
+
     const auto& image = sprite.GetImage();
 
     const auto top_left = TexCoord::PositionT{SafeCast<float>(offset.x + kSpriteBorder), //
@@ -316,19 +321,26 @@ void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
     const auto h_span = bottom_right.x - top_left.x;
     const auto v_span = bottom_right.y - top_left.y;
 
-    const auto h_fraction = h_span / LossyCast<float>(sprite.frames);
-    const auto v_fraction = v_span / LossyCast<float>(sprite.sets);
+    const auto h_fraction = h_span / LossyCast<float>(sprite.frames) / LossyCast<float>(sprite.subdivide.x);
+    const auto v_fraction = v_span / LossyCast<float>(sprite.sets) / LossyCast<float>(sprite.subdivide.y);
 
-    assert(sprite.frames >= 1);
-    assert(sprite.sets >= 1);
-    for (int y = 0; y < sprite.sets; ++y) {
-        for (int x = 0; x < sprite.frames; ++x) {
-            context.texCoords.push_back({{top_left.x + LossyCast<float>(x) * h_fraction,     //
-                                          top_left.y + LossyCast<float>(y) * v_fraction},    //
-                                         {top_left.x + LossyCast<float>(x + 1) * h_fraction, //
-                                          top_left.y + LossyCast<float>(y + 1) * v_fraction}});
+    for (int set = 0; set < 1; ++set) { // Currently cannot handle animations
+        for (int frame = 0; frame < 1; ++frame) {
 
-            sprite.texCoordId = (*context.texCoordIdCounter)++;
+            for (DimensionAxis y = 0; y < sprite.subdivide.y; ++y) {
+                const auto y_offset = set * sprite.subdivide.y;
+                for (DimensionAxis x = 0; x < sprite.subdivide.x; ++x) {
+                    const auto x_offset = frame * sprite.subdivide.x;
+
+                    context.texCoords.push_back({{top_left.x + LossyCast<float>(x + x_offset) * h_fraction,     //
+                                                  top_left.y + LossyCast<float>(y + y_offset) * v_fraction},    //
+                                                 {top_left.x + LossyCast<float>(x + x_offset + 1) * h_fraction, //
+                                                  top_left.y + LossyCast<float>(y + y_offset + 1) * v_fraction}});
+                }
+            }
+
+            sprite.texCoordId = *context.texCoordIdCounter;
+            (*context.texCoordIdCounter) += sprite.subdivide.x * sprite.subdivide.y;
         }
     }
 }

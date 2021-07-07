@@ -223,8 +223,8 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
     entity->OnBuild(world, logic, coord, TileLayer::entity, orientation);
     UpdateNeighboringEntities(world, logic, coord, orientation, entity);
 
-    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
-        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+    for (DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
             world.UpdateDispatch({coord.x + x_offset, coord.y + y_offset}, proto::UpdateType::place);
         }
     }
@@ -364,8 +364,8 @@ void game::Player::Placement::PickupEntity(
 
     world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
 
-    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
-        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+    for (DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
             world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
         }
     }

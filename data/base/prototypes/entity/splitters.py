@@ -4,7 +4,7 @@ import jactorioData as j
 def addSprite(spritePath):
     return (j.Sprite()
             .load(spritePath)
-            .group(j.SpriteGroup.ENTITY)
+            .group(j.SpriteGroup.TERRAIN)
             .frames(8)
             .sets(4)
             )

@@ -270,8 +270,8 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
     const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
 
     // Only capable of render 1 x 1 with current renderer
-    assert(dimension.x == 1);
-    assert(dimension.y == 1);
+    // assert(dimension.x == 1);
+    // assert(dimension.y == 1);
 
     r_layer.PushBack({{screen_pos.x, screen_pos.y, 0}, sprite.texCoordId});
 }
@@ -502,10 +502,10 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
             }
 
             // 3
-            // if (tex_coord_ids[2] != 0) {
-            //     r_layer.UncheckedPushBack(
-            //         {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 2}, tex_coord_ids[2]});
-            // }
+            if (tex_coord_ids[2] != 0) {
+                r_layer.UncheckedPushBack(
+                    {{SafeCast<uint16_t>(pixel_x), SafeCast<uint16_t>(pixel_y), 0}, tex_coord_ids[2]});
+            }
 
             tex_coord_ids += 3;
         }

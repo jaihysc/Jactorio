@@ -14,7 +14,7 @@ def addInserter(name, itemSprite,
         .sprite(
             j.Sprite()
                 .load(worldSprite)
-                .group(j.SpriteGroup.ENTITY)
+                .group(j.SpriteGroup.TERRAIN)
                 .sets(4)
                 .frames(1)
                 .invertSetFrame(True)
@@ -22,12 +22,12 @@ def addInserter(name, itemSprite,
         .handSprite(
             j.Sprite()
                 .load(handSprite)
-                .group(j.SpriteGroup.ENTITY)
+                .group(j.SpriteGroup.TERRAIN)
         )
         .armSprite(
             j.Sprite()
                 .load(armSprite)
-                .group(j.SpriteGroup.ENTITY)
+                .group(j.SpriteGroup.TERRAIN)
         )
 
         .item(

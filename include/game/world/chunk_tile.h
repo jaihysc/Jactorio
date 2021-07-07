@@ -103,7 +103,7 @@ namespace jactorio::game
 
         /// Looks at prototype to determine dimensions, 1x1 if no prototype
         /// \return Dimensions of multi-tile, or 1x1 if single tile
-        J_NODISCARD proto::FWorldObject::Dimension GetDimension() const noexcept;
+        J_NODISCARD Dimension GetDimension() const noexcept;
 
 
         /// Turn or unturn ChunkTile to/from a multi tile

@@ -87,9 +87,7 @@ namespace jactorio::game
 
 
         /// Checks that entity with top left at coord with dimensions has been placed
-        void ValidatePlaced(const WorldCoord& coord,
-                            const proto::Entity& entity,
-                            const proto::FWorldObject::Dimension& dimension = {1, 1}) {
+        void ValidatePlaced(const WorldCoord& coord, const proto::Entity& entity, const Dimension& dimension = {1, 1}) {
             int entity_index     = 0;
             int tex_coord_offset = 0;
             for (WorldCoordAxis y = coord.y; y < coord.y + dimension.y; ++y) {
@@ -110,7 +108,7 @@ namespace jactorio::game
         }
 
         /// Checks that entity with top left at coord with dimensions has been deleted
-        void ValidateEmpty(const WorldCoord& coord, const proto::FWorldObject::Dimension& dimension = {1, 1}) {
+        void ValidateEmpty(const WorldCoord& coord, const Dimension& dimension = {1, 1}) {
             for (WorldCoordAxis y = coord.y; y < coord.y + dimension.y; ++y) {
                 for (WorldCoordAxis x = coord.x; x < coord.x + dimension.x; ++x) {
                     auto* tile = world_.GetTile({x, y}, TileLayer::entity);
@@ -155,7 +153,7 @@ namespace jactorio::game
     // Multi tile
 
     TEST_F(WorldPlacementTest, PlaceEntity3x3Valid) {
-        const proto::FWorldObject::Dimension dimension(3, 3);
+        const Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
         EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity_));
@@ -164,7 +162,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldPlacementTest, PlaceEntity2x3InvalidTopLeft) {
-        const proto::FWorldObject::Dimension dimension(2, 3);
+        const Dimension dimension(2, 3);
         entity_.SetDimension(dimension);
 
         // x = 4 is invalid tile
@@ -174,7 +172,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldPlacementTest, PlaceEntity3x3InvalidNonTopLeft) {
-        const proto::FWorldObject::Dimension dimension(3, 3);
+        const Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
         // y = 1 is invalid tile
@@ -185,7 +183,7 @@ namespace jactorio::game
 
     /// When the placed entity overlaps another entity, the placement is also invalid
     TEST_F(WorldPlacementTest, PlaceEntity3x3OverlapExisting) {
-        const proto::FWorldObject::Dimension dimension(3, 3);
+        const Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
         EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity_));
@@ -197,7 +195,7 @@ namespace jactorio::game
 
 
     TEST_F(WorldPlacementTest, RemoveEntity3x3Valid) {
-        const proto::FWorldObject::Dimension dimension(3, 3);
+        const Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
         EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity_));
@@ -208,7 +206,7 @@ namespace jactorio::game
 
     /// When removing an entity, specifying anywhere will remove the entire entity
     TEST_F(WorldPlacementTest, RemoveEntity3x3ValidSelectNonTopLeft) {
-        const proto::FWorldObject::Dimension dimension(3, 3);
+        const Dimension dimension(3, 3);
         entity_.SetDimension(dimension);
 
         EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity_));
@@ -221,7 +219,7 @@ namespace jactorio::game
     // 3 x 4
 
     TEST_F(WorldPlacementTest, PlaceEntity3x4Valid) {
-        const proto::FWorldObject::Dimension dimension(3, 4);
+        const Dimension dimension(3, 4);
         entity_.SetDimension(dimension);
 
         EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity_));
@@ -230,7 +228,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldPlacementTest, RemoveEntity3x4Valid) {
-        const proto::FWorldObject::Dimension dimension(3, 4);
+        const Dimension dimension(3, 4);
         entity_.SetDimension(dimension);
 
 

@@ -9,6 +9,7 @@
 #include "core/data_type.h"
 #include "core/orientation.h"
 #include "data/cereal/serialize.h"
+#include "proto/detail/python_prop.h"
 
 namespace jactorio::game
 {
@@ -66,6 +67,11 @@ namespace jactorio::proto
         IRenderable& operator=(IRenderable&& other) noexcept = default;
 
     public:
+        PYTHON_PROP_I(Sprite*, sprite, nullptr);
+        PYTHON_PROP_I(Sprite*, spriteE, nullptr);
+        PYTHON_PROP_I(Sprite*, spriteS, nullptr);
+        PYTHON_PROP_I(Sprite*, spriteW, nullptr);
+
         /// Gets a sprite corresponding to the provided set
         J_NODISCARD virtual Sprite* OnRGetSprite(SpriteSetT set) const = 0;
 

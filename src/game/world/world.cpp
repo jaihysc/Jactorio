@@ -186,7 +186,7 @@ void game::World::SetTexCoordId(const ChunkCoord& c_coord,
 // ======================================================================
 // Placement
 
-bool game::World::PlaceLocationValid(const WorldCoord& coord, const proto::FWorldObject::Dimension dimensions) const {
+bool game::World::PlaceLocationValid(const WorldCoord& coord, const Dimension dimensions) const {
     for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
         for (int offset_x = 0; offset_x < dimensions.x; ++offset_x) {
 

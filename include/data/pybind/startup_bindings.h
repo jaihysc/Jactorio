@@ -165,8 +165,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     py::enum_<Sprite::SpriteGroup>(m, "SpriteGroup")
         .value("TERRAIN", Sprite::SpriteGroup::terrain)
-        .value("GUI", Sprite::SpriteGroup::gui)
-        .value("ENTITY", Sprite::SpriteGroup::entity);
+        .value("GUI", Sprite::SpriteGroup::gui);
 
     PYBIND_DATA_CLASS(Item, Item, FrameworkBase)
     PYBIND_PROP(Item, sprite)
@@ -207,10 +206,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     // Entity
     PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, FrameworkBase)
-    PYBIND_PROP(Entity, sprite)
-    PYBIND_PROP(IRotatable, spriteE)
-    PYBIND_PROP(IRotatable, spriteS)
-    PYBIND_PROP(IRotatable, spriteW)
+    PYBIND_PROP(IRenderable, sprite)
+    PYBIND_PROP(IRenderable, spriteE)
+    PYBIND_PROP(IRenderable, spriteS)
+    PYBIND_PROP(IRenderable, spriteW)
     PYBIND_PROP(Entity, rotatable)
     PYBIND_PROP(Entity, placeable)
     PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)

@@ -51,7 +51,7 @@ namespace jactorio::proto
         data::PrototypeManager proto;
 
         Sprite sprite1;
-        sprite1.group = {Sprite::SpriteGroup::entity};
+        sprite1.group = Sprite::SpriteGroup::terrain;
         try {
             sprite1.PostLoadValidate(proto);
             SUCCEED();

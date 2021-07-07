@@ -241,7 +241,6 @@ static void Init(ThreadedLoopCommon& common) {
     auto renderer_sprites = RendererSprites();
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, false);
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
-    renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::entity, true);
 
 
     auto& terrain_tex_coords = renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions;

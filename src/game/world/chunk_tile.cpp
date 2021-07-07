@@ -87,7 +87,7 @@ bool game::ChunkTile::IsMultiTileTopLeft() const noexcept {
     return IsMultiTile() && IsTopLeft();
 }
 
-proto::FWorldObject::Dimension game::ChunkTile::GetDimension() const noexcept {
+Dimension game::ChunkTile::GetDimension() const noexcept {
     if (GetPrototype() == nullptr) {
         return {1, 1};
     }

@@ -14,7 +14,7 @@ def addContainer(name, invSize, health, worldSprite, itemSprite):
         .sprite(
             j.Sprite()
                 .load(worldSprite)
-                .group(j.SpriteGroup.ENTITY)
+                .group(j.SpriteGroup.TERRAIN)
         )
         .item(
             j.Item(name + "-item")

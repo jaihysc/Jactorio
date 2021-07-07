@@ -14,7 +14,7 @@ def addBelt(name, iconSpritePath, worldSpritePath):
         .sprite(
             j.Sprite()
                 .load(worldSpritePath)
-                .group(j.SpriteGroup.ENTITY)
+                .group(j.SpriteGroup.TERRAIN)
                 .frames(16)
                 .sets(20)
                 .trim(16)

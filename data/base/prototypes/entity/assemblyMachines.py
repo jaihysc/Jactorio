@@ -13,7 +13,7 @@ def addAssemblyMachine(name, iconSpritePath, worldSpritePath):
         .sprite(
             j.Sprite()
                 .load(worldSpritePath)
-                .group(j.SpriteGroup.ENTITY)
+                .group(j.SpriteGroup.TERRAIN)
                 .frames(8)
                 .sets(4)
                 .trim(2)

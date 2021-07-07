@@ -166,14 +166,19 @@ namespace jactorio::render
         EXPECT_EQ(spritemap.height, 0);
     }
 
-    TEST_F(SpritemapGeneratorTest, TexCoordsMultiTile) {
-        auto& sprite  = AddSprite("test/graphics/test/test_tile.png");
-        sprite.sets   = 2;
-        sprite.frames = 3;
+    TEST_F(SpritemapGeneratorTest, SpriteSubdivide) {
+        auto& sprite     = AddSprite("test/graphics/test/test_tile.png");
+        sprite.subdivide = {2, 3};
+
+        // Do not obey set, frame for subdivide
+        sprite.sets   = 5;
+        sprite.frames = 5;
 
         const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
 
         EXPECT_EQ(positions.size(), 7);
+
+        EXPECT_EQ(sprite.texCoordId, 1); // Top left id
 
         // Because of the sprite border, it is difficult to compute the tex coord values by hand
     }
