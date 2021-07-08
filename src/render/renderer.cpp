@@ -261,7 +261,9 @@ void render::Renderer::GlPrepareEnd() {
     GlPrepareEnd(renderLayers_[0]);
 }
 
-void render::Renderer::PrepareSprite(const WorldCoord& coord, const proto::Sprite& sprite, const Dimension& dimension) {
+void render::Renderer::PrepareSprite(const WorldCoord& coord,
+                                     const SpriteTexCoordIndexT tex_coord_id,
+                                     const Dimension& dimension) {
     auto& r_layer = renderLayers_[0];
 
     const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
@@ -269,10 +271,8 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord, const proto::Sprit
     for (DimensionAxis y = 0; y < dimension.y; ++y) {
         const auto id_offset_y = y * dimension.x;
         for (DimensionAxis x = 0; x < dimension.x; ++x) {
-            const auto tex_coord_id = SafeCast<SpriteTexCoordIndexT>(sprite.texCoordId + id_offset_y + x);
-
-            r_layer.PushBack(
-                {{SafeCast<uint16_t>(screen_pos.x + x), SafeCast<uint16_t>(screen_pos.y + y), 0}, tex_coord_id});
+            const auto id = SafeCast<SpriteTexCoordIndexT>(tex_coord_id + id_offset_y + x);
+            r_layer.PushBack({{SafeCast<uint16_t>(screen_pos.x + x), SafeCast<uint16_t>(screen_pos.y + y), 0}, id});
         }
     }
 }

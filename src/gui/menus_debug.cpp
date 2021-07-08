@@ -381,8 +381,8 @@ static void ShowConveyorSegments(game::World& world, const data::PrototypeManage
             else
                 outline_sprite = sprite_stop; // None moving
 
-            renderer.PrepareSprite(coord, *direction_sprite, segment_len);
-            renderer.PrepareSprite(coord, *outline_sprite, segment_len);
+            renderer.PrepareSprite(coord, direction_sprite->texCoordId, segment_len);
+            renderer.PrepareSprite(coord, outline_sprite->texCoordId, segment_len);
         }
     }
 }

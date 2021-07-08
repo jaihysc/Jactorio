@@ -4,6 +4,8 @@
 
 #include "game/world/world.h"
 
+#include "jactorioTests.h"
+
 #include "proto/container_entity.h"
 #include "proto/sprite.h"
 #include "proto/tile.h"
@@ -236,5 +238,29 @@ namespace jactorio::game
         EXPECT_TRUE(world_.Remove({9, 13}, Orientation::up));
 
         ValidateEmpty({9, 10}, dimension);
+    }
+
+    TEST_F(WorldPlacementTest, CallGetTexCoordId) {
+        class Mock : public TestMockEntity
+        {
+        public:
+            mutable int timesCalled = 0;
+            SpriteTexCoordIndexT OnGetTexCoordId(const World& /*world*/,
+                                                 const WorldCoord& coord,
+                                                 const Orientation orientation) const override {
+                EXPECT_EQ(coord, WorldCoord(9, 10));
+                EXPECT_EQ(orientation, Orientation::right);
+                timesCalled++;
+                return 1234;
+            }
+        };
+
+        Mock mock;
+        mock.SetDimension({2, 4});
+        world_.Place({9, 10}, Direction::right, mock);
+
+        ValidatePlaced({9, 10}, mock, {4, 2}); // Flipped since facing right
+
+        EXPECT_EQ(mock.timesCalled, 1);
     }
 } // namespace jactorio::game

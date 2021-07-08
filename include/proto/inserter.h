@@ -80,12 +80,9 @@ namespace jactorio::proto
         RotationDegreeT rotationSpeed;
 
 
-        void PostLoad() override {
-            rotationSpeed = RotationDegreeT(rotationSpeedFloat);
-        }
-
-
-        // ======================================================================
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
 
         void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteTexCoords& uv_coords,
@@ -113,6 +110,10 @@ namespace jactorio::proto
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
+
+        void PostLoad() override {
+            rotationSpeed = RotationDegreeT(rotationSpeedFloat);
+        }
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
 

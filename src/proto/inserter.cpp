@@ -8,6 +8,12 @@
 
 using namespace jactorio;
 
+SpriteTexCoordIndexT proto::Inserter::OnGetTexCoordId(const game::World& /*world*/,
+                                                      const WorldCoord& /*coord*/,
+                                                      const Orientation orientation) const {
+    return sprite->texCoordId + static_cast<int>(orientation);
+}
+
 void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteTexCoords& uv_coords,
                                         const Position2<float>& pixel_offset,

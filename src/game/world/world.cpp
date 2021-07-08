@@ -219,8 +219,9 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
 
     // The top left is handled differently
     provided_tile->SetPrototype(orien, entity);
-    assert(entity.sprite != nullptr);
-    SetTexCoordId(coord, place_layer, entity.sprite->texCoordId);
+
+    const auto base_tex_coord_id = entity.OnGetTexCoordId(*this, coord, orien);
+    SetTexCoordId(coord, place_layer, base_tex_coord_id);
 
     if (dimension.x != 1 || dimension.y != 1) {
         // Multi tile
@@ -239,7 +240,7 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
                 tile->SetupMultiTile(entity_index++, *provided_tile);
 
                 // entity_index - 1 has the same effect as adding 1 each iteration, starting with adding 1
-                SetTexCoordId(current_coord, place_layer, entity.sprite->texCoordId + entity_index - 1);
+                SetTexCoordId(current_coord, place_layer, base_tex_coord_id + entity_index - 1);
             }
             offset_x = 0;
         }
