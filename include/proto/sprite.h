@@ -86,10 +86,6 @@ namespace jactorio::proto
          *    ----------------
          */
 
-        /// If true : X = Set, Y = Frame,
-        ///			  false: Y = Set, X = Frame
-        PYTHON_PROP_REF_I(bool, invertSetFrame, false);
-
         /// Animation frames, X axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteFrameT, frames, 1);
         /// Y axis, indexed by 0 based index, 1 if single

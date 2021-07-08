@@ -159,8 +159,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
     PYBIND_PROP(Sprite, group)
     PYBIND_PROP(Sprite, frames)
-    PYBIND_PROP(Sprite, sets)
-    PYBIND_PROP(Sprite, invertSetFrame) //
+    PYBIND_PROP(Sprite, sets) //
         .def("load", &Sprite::Load)
         .def("trim", &Sprite::Trim);
 

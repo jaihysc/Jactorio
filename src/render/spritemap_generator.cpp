@@ -303,8 +303,6 @@ void render::RendererSprites::SetImageBorder(GeneratorContext& context,
 void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
                                                 const Position2<SpritemapDimensionT> offset,
                                                 proto::Sprite& sprite) {
-    // TODO sprite.invertSetFrame
-
     assert(sprite.frames >= 1);
     assert(sprite.sets >= 1);
     assert(sprite.subdivide.x >= 1);

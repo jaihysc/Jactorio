@@ -17,7 +17,6 @@ def addInserter(name, itemSprite,
                 .group(j.SpriteGroup.TERRAIN)
                 .sets(4)
                 .frames(1)
-                .invertSetFrame(True)
         )
         .handSprite(
             j.Sprite()
