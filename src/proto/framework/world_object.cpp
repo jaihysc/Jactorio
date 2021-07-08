@@ -1,9 +1,5 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_CPP
-#define JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_CPP
-#pragma once
-
 #include "proto/framework/world_object.h"
 
 #include "proto/sprite.h"
@@ -49,5 +45,3 @@ void proto::FWorldObject::PostLoadValidate(const data::PrototypeManager& /*proto
         J_PROTO_ASSERT(spriteW != nullptr, "spriteW was not specified");
     }
 }
-
-#endif // JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_CPP
