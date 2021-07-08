@@ -52,6 +52,8 @@ namespace jactorio::proto
                       game::TileLayer /*tlayer*/) const override {}
 
         bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
+
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
     };
 } // namespace jactorio::proto
 

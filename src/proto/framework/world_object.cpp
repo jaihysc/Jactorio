@@ -40,4 +40,14 @@ SpriteTexCoordIndexT proto::FWorldObject::OnGetTexCoordId(const game::World& /*w
     }
 }
 
+void proto::FWorldObject::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
+    J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
+
+    if (spriteE != nullptr || spriteS != nullptr || spriteW != nullptr) {
+        J_PROTO_ASSERT(spriteE != nullptr, "spriteE was not specified");
+        J_PROTO_ASSERT(spriteS != nullptr, "spriteS was not specified");
+        J_PROTO_ASSERT(spriteW != nullptr, "spriteW was not specified");
+    }
+}
+
 #endif // JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_CPP

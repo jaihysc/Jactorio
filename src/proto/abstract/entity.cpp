@@ -35,8 +35,8 @@ void proto::Entity::PostLoad() {
         rotateDimensions = false;
 }
 
-void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
-    J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
+void proto::Entity::PostLoadValidate(const data::PrototypeManager& proto) const {
+    FWorldObject::PostLoadValidate(proto);
 }
 
 void proto::Entity::SetupSprite() {

@@ -86,7 +86,9 @@ namespace jactorio::proto
                       const WorldCoord& coord,
                       game::TileLayer tlayer) const override;
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& proto) const override {
+            HealthEntity::PostLoadValidate(proto);
+
             J_PROTO_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };

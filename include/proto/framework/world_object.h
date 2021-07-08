@@ -60,6 +60,8 @@ namespace jactorio::proto
                                                          const WorldCoord& coord,
                                                          Orientation orientation) const override;
 
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
+
     private:
         /// Number of tiles which object occupies
         Dimension dimension_{1, 1};

@@ -89,7 +89,9 @@ void proto::Inserter::OnDeserialize(game::World& world, const WorldCoord& coord,
     InitPickupDropoff(world, coord, inserter_data->orientation);
 }
 
-void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
+void proto::Inserter::PostLoadValidate(const data::PrototypeManager& proto) const {
+    HealthEntity::PostLoadValidate(proto);
+
     J_PROTO_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
     J_PROTO_ASSERT(armSprite != nullptr, "Arm sprite not provided");
     J_PROTO_ASSERT(handSprite != nullptr, "Hand sprite not provided");

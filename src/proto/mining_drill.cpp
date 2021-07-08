@@ -150,11 +150,8 @@ void proto::MiningDrill::OnDeserialize(game::World& world, const WorldCoord& coo
     InitializeOutput(world, GetOutputCoord(coord, drill_data->output.GetOrientation()), drill_data);
 }
 
-void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
-    J_PROTO_ASSERT(sprite != nullptr, "North sprite not provided");
-    J_PROTO_ASSERT(spriteE != nullptr, "East sprite not provided");
-    J_PROTO_ASSERT(spriteS != nullptr, "South sprite not provided");
-    J_PROTO_ASSERT(spriteW != nullptr, "West sprite not provided");
+void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& proto) const {
+    HealthEntity::PostLoadValidate(proto);
 }
 
 // ======================================================================

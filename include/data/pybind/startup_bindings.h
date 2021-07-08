@@ -179,7 +179,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     PYBIND_DATA_CLASS(Tile, Tile, FrameworkBase)
     PYBIND_PROP(Tile, isWater)
-    PYBIND_PROP(Tile, sprite);
+    PYBIND_PROP(IRenderable, sprite);
 
     PYBIND_DATA_CLASS(NoiseLayer<Tile>, NoiseLayerTile, FrameworkBase)
     // Perlin noise properties
