@@ -27,16 +27,16 @@
 
 using namespace jactorio;
 
-bool show_timings_window      = false;
-bool show_demo_window         = false;
-bool show_item_spawner_window = false;
+static bool show_timings_window          = false;
+static bool show_demo_window             = false;
+static bool show_item_spawner_window     = false;
+static bool show_tex_coord_editor_window = false;
 
 // Game
-bool show_tile_info     = false;
-bool show_conveyor_info = false;
-bool show_inserter_info = false;
-
-bool show_world_info = false;
+static bool show_tile_info     = false;
+static bool show_conveyor_info = false;
+static bool show_inserter_info = false;
+static bool show_world_info    = false;
 
 void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::Logic& logic,
@@ -60,6 +60,9 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
 
     if (show_item_spawner_window)
         DebugItemSpawner(player, proto);
+
+    if (show_tex_coord_editor_window)
+        DebugTexCoordEditor(worlds, player);
 
     if (show_world_info) {
         DebugWorldInfo(worlds, player);
@@ -94,6 +97,8 @@ void gui::DebugMenu(const Context& context,
         // ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
         ImGui::Text("Layer count | Tile: %d", game::kTileLayerCount);
+
+        ImGui::Checkbox("Tex coord editor", &show_tex_coord_editor_window);
     }
 
     if (ImGui::CollapsingHeader("Data")) {
@@ -160,10 +165,10 @@ void gui::DebugTimings() {
     }
 }
 
-int give_amount  = 100;
-int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
-
 void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
+    static int give_amount  = 100;
+    static int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
+
     ImGuard guard;
     guard.Begin("Item spawner");
 
@@ -201,6 +206,57 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
     }
 }
 
+void gui::DebugTexCoordEditor(GameWorlds& worlds, game::Player& player) {
+    static game::TileLayer tile_layer;
+    static int tex_coord_id = 0;
+
+    static bool clear_surrounding = false;
+    static bool offset_write      = true;
+
+    static bool write_mode = false;
+    static int write_x     = 1; // Dimensions to write, increments id while doing so
+    static int write_y     = 1;
+
+    ImGuard guard;
+    guard.Begin("Tex coord editor");
+
+    ImGui::SliderInt("Tile layer", reinterpret_cast<int*>(&tile_layer), 0, game::kTileLayerCount - 1);
+    ImGui::InputInt("Tex coord id", &tex_coord_id);
+
+    ImGui::Checkbox("Clear surrounding", &clear_surrounding);
+    ImGui::Checkbox("Offset write", &offset_write);
+
+    ImGui::Checkbox("Write", &write_mode);
+    ImGui::InputInt("Write x", &write_x);
+    ImGui::InputInt("Write y", &write_y);
+
+    auto& world = worlds[player.world.GetId()];
+    if (!write_mode) {
+        tex_coord_id = static_cast<int>(world.GetTexCoordId(player.world.GetMouseTileCoords(), tile_layer));
+    }
+    else {
+        auto coord = player.world.GetMouseTileCoords();
+        if (offset_write) {
+            coord.x += 30; // Bit right of mouse coord so it is not hidden when clicking the menu buttons
+        }
+
+        if (clear_surrounding) {
+            for (int y = -10; y < write_y + 10; ++y) {
+                for (int x = -10; x < write_x + 10; ++x) {
+                    world.SetTexCoordId({coord.x + x, coord.y + y}, tile_layer, 0);
+                }
+            }
+        }
+
+        for (int y = 0; y < write_y; ++y) {
+            for (int x = 0; x < write_x; ++x) {
+                const auto id = tex_coord_id + x + y * write_x;
+                world.SetTexCoordId({coord.x + x, coord.y + y}, tile_layer, id);
+            }
+        }
+    }
+}
+
 void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
@@ -232,10 +288,6 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
         ImGui::Text("Unique data: %s", MemoryAddressToStr(tile->GetUniqueData()).c_str());
     }
 }
-
-WorldCoord last_valid_line_segment{};
-bool use_last_valid_line_segment = true;
-bool show_conveyor_structs       = false;
 
 static void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto, render::Renderer& renderer) {
     const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
@@ -339,6 +391,10 @@ void gui::DebugConveyorInfo(GameWorlds& worlds,
                             game::Player& player,
                             const data::PrototypeManager& proto,
                             render::Renderer& renderer) {
+    static WorldCoord last_valid_line_segment;
+    static bool use_last_valid_line_segment = true;
+    static bool show_conveyor_structs       = false;
+
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard;
