@@ -95,9 +95,9 @@ namespace jactorio::proto
         /// Y axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteSetT, sets, 1);
 
-        /// Pixels to remove from the border
-        PYTHON_PROP_REF_I(SpriteTrimT, trim, 0);
-
+        /// Pixels to remove from the border per frame at set
+        /// \exception ProtoError Trim too large
+        Sprite* Trim(SpriteTrimT pixels);
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
