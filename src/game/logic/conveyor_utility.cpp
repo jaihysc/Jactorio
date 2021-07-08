@@ -551,7 +551,7 @@ void game::ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord
 
         // Multi-tile neighbors may not have structures while processing removes for all its tiles
         if (con_data != nullptr && con_data->structure != nullptr) {
-            con_data->SetOrientation(ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction));
+            con_data->lOrien = ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction);
         }
     };
 

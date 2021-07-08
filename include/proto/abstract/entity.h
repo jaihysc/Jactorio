@@ -59,29 +59,12 @@ namespace jactorio::proto
         void SetLocalizedDescription(const std::string& localized_description) override;
 
 
-        // ======================================================================
         // Renderer events
-
-        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-            return sprite;
-        }
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const override {
-            return 0;
-        }
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
-            return 0;
-        }
 
         bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
-        // ======================================================================
         // Game events
 
         /// Entity was build in the world

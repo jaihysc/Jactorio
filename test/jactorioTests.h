@@ -38,21 +38,6 @@ namespace jactorio
 
         void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
 
-        J_NODISCARD proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-            return nullptr;
-        }
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const override {
-            return 0;
-        }
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const proto::UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
-            return 0;
-        }
-
         bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }

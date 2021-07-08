@@ -41,9 +41,7 @@ Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orient
     return Orientation::up;
 }
 
-// ======================================================================
 // Game events
-
 
 void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteTexCoords& uv_coords,
@@ -63,19 +61,6 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
     DrawConveyorSegmentItems(layer, uv_coords, pixel_offset, *line_data.structure);
 }
 
-SpriteSetT proto::Conveyor::OnRGetSpriteSet(const Orientation orientation,
-                                            game::World& world,
-                                            const WorldCoord& coord) const {
-    return static_cast<uint16_t>(ConveyorCalcLineOrien(world, coord, orientation));
-}
-
-SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                const GameTickT game_tick) const {
-    return AllOfSet(*sprite, game_tick);
-}
-
-
-// ======================================================================
 // Build / Remove / Neighbor update
 
 void proto::Conveyor::OnBuild(game::World& world,
@@ -86,8 +71,6 @@ void proto::Conveyor::OnBuild(game::World& world,
 
     auto& con_data = world.GetTile(coord, tlayer)->MakeUniqueData<ConveyorData>();
     BuildConveyor(world, coord, con_data, orientation, kConveyorLogicGroup);
-
-    con_data.set = static_cast<uint16_t>(con_data.lOrien);
 }
 
 void proto::Conveyor::OnNeighborUpdate(game::World& world,

@@ -92,10 +92,6 @@ namespace jactorio::proto
                                const Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::World& world,
-                                               const WorldCoord& coord) const override;
-
         /// \param orientation Points towards dropoff
         void OnBuild(game::World& world,
                      game::Logic& logic,

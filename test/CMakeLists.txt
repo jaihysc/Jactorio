@@ -118,7 +118,6 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp
 	${JACTORIO_TEST_DIR}/proto/abstract/entityTests.cpp
-	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/render/mvp_managerTests.cpp

@@ -18,50 +18,6 @@ bool proto::MiningDrill::OnRShowGui(const gui::Context& context, game::ChunkTile
     return true;
 }
 
-proto::Sprite* proto::MiningDrill::OnRGetSprite(const SpriteSetT set) const {
-    if (set <= 7)
-        return sprite;
-
-    if (set <= 15)
-        return spriteE;
-
-    if (set <= 23)
-        return spriteS;
-
-    return spriteW;
-}
-
-SpriteSetT proto::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const {
-    switch (orientation) {
-    case Orientation::up:
-        return 0;
-    case Orientation::right:
-        return 8;
-    case Orientation::down:
-        return 16;
-    case Orientation::left:
-        return 24;
-
-    default:
-        assert(false); // Missing switch case
-        return 0;
-    }
-}
-
-SpriteFrameT proto::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& drill_data = SafeCast<const MiningDrillData&>(unique_data);
-
-    // Drill is inactive
-    if (!drill_data.deferralEntry.Valid())
-        game_tick = 0;
-
-    return AllOfSpriteReversing(*sprite, game_tick);
-}
-
-// ======================================================================
-
 proto::Item* proto::MiningDrill::FindOutputItem(const game::World& world,
                                                 WorldCoord coord,
                                                 const Orientation orien) const {
@@ -142,7 +98,6 @@ void proto::MiningDrill::OnBuild(game::World& world,
 
     const auto output_coords = GetOutputCoord(coord, orientation);
 
-    drill_data.set        = OnRGetSpriteSet(orientation, world, coord);
     drill_data.outputTile = output_coords;
 
     OnNeighborUpdate(world, logic, output_coords, coord, orientation);

@@ -8,7 +8,6 @@
 
 #include "core/data_type.h"
 #include "core/orientation.h"
-#include "data/cereal/serialize.h"
 #include "proto/detail/python_prop.h"
 
 namespace jactorio::game
@@ -36,24 +35,6 @@ namespace jactorio::render
 
 namespace jactorio::proto
 {
-    /// Inherit to allow drawing portions of a sprite
-    struct IRenderableData
-    {
-    protected:
-        IRenderableData()          = default;
-        virtual ~IRenderableData() = default;
-
-        explicit IRenderableData(const SpriteSetT set) : set(set) {}
-
-    public:
-        SpriteSetT set = 0;
-
-
-        CEREAL_SERIALIZE(archive) {
-            archive(set);
-        }
-    };
-
     /// For inheriting by IPrototypeRenderable, thus enabling usage by render
     class IRenderable
     {
@@ -72,17 +53,10 @@ namespace jactorio::proto
         PYTHON_PROP_I(Sprite*, spriteS, nullptr);
         PYTHON_PROP_I(Sprite*, spriteW, nullptr);
 
-        /// Gets a sprite corresponding to the provided set
-        J_NODISCARD virtual Sprite* OnRGetSprite(SpriteSetT set) const = 0;
-
-        /// Maps a orientation to a <set, frame>
-        J_NODISCARD virtual SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                                       game::World& world,
-                                                       const WorldCoord& coord) const = 0;
-
-        /// Gets frame for sprite corresponding to provided game tick
-        J_NODISCARD virtual SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                           GameTickT game_tick) const = 0;
+        /// Gets the top left tex coord id at coord with orientation
+        J_NODISCARD virtual SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                                 const WorldCoord& coord,
+                                                                 Orientation orientation) const = 0;
 
         /// Displays the menu associated with itself with the provided data
         virtual bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const = 0;
@@ -92,21 +66,6 @@ namespace jactorio::proto
                                        const SpriteTexCoords& uv_coords,
                                        const Position2<float>& pixel_offset,
                                        const UniqueDataBase* unique_data) const {}
-
-    protected:
-        // ======================================================================
-        // Methods for OnRGetSpriteFrame
-
-        using AnimationSpeed = double;
-
-        /// Every set / frame of a sprite is part of the same animation
-        static SpriteFrameT AllOfSprite(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
-
-        /// Every set / frame of a sprite is part of the same animation, plays forwards then backwards
-        static SpriteFrameT AllOfSpriteReversing(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
-
-        /// Every frame of a set
-        static SpriteFrameT AllOfSet(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
     };
 } // namespace jactorio::proto
 

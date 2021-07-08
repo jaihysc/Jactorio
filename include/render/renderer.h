@@ -90,10 +90,7 @@ namespace jactorio::render
         /// Renders, disallows use of Prepare methods after this call
         void GlPrepareEnd();
 
-        void PrepareSprite(const WorldCoord& coord,
-                           const proto::Sprite& sprite,
-                           SpriteSetT set             = 0,
-                           const Dimension& dimension = {1, 1});
+        void PrepareSprite(const WorldCoord& coord, const proto::Sprite& sprite, const Dimension& dimension = {1, 1});
 
 
         //

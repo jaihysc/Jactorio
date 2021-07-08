@@ -78,7 +78,7 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/proto/abstract/conveyor.cpp
         ${JACTORIO_DIR}/proto/abstract/entity.cpp
 
-        ${JACTORIO_DIR}/proto/interface/renderable.cpp
+        ${JACTORIO_DIR}/proto/framework/world_object.cpp
 
 
         ${JACTORIO_DIR}/render/opengl/error.cpp

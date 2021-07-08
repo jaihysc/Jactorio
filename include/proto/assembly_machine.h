@@ -63,11 +63,6 @@ namespace jactorio::proto
         /// Original crafting time / assemblySpeed = new crafting time
         PYTHON_PROP_REF_I(ProtoFloatT, assemblySpeed, 1.);
 
-        // ======================================================================
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                   GameTickT game_tick) const override;
-
 
         bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
 

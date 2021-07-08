@@ -261,10 +261,7 @@ void render::Renderer::GlPrepareEnd() {
     GlPrepareEnd(renderLayers_[0]);
 }
 
-void render::Renderer::PrepareSprite(const WorldCoord& coord,
-                                     const proto::Sprite& sprite,
-                                     const SpriteSetT set,
-                                     const Dimension& dimension) {
+void render::Renderer::PrepareSprite(const WorldCoord& coord, const proto::Sprite& sprite, const Dimension& dimension) {
     auto& r_layer = renderLayers_[0];
 
     const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);

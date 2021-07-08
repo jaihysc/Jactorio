@@ -21,12 +21,6 @@ namespace jactorio::proto
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : structure(std::move(line_segment)) {}
 
-        /// Updates orientation and member set for rendering
-        void SetOrientation(LineOrientation orientation) {
-            this->lOrien = orientation;
-            this->set    = static_cast<uint16_t>(orientation);
-        }
-
         static Orientation ToOrientation(LineOrientation line_orientation);
 
 
@@ -75,14 +69,6 @@ namespace jactorio::proto
                                const SpriteTexCoords& uv_coords,
                                const Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::World& world,
-                                               const WorldCoord& coord) const override;
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                   GameTickT game_tick) const override;
-
 
         void OnBuild(game::World& world,
                      game::Logic& logic,

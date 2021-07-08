@@ -11,10 +11,10 @@
 
 namespace jactorio::proto
 {
-    struct FWorldObjectData : UniqueDataBase, IRenderableData
+    struct FWorldObjectData : UniqueDataBase
     {
         CEREAL_SERIALIZE(archive) {
-            archive(cereal::base_class<UniqueDataBase>(this), cereal::base_class<IRenderableData>(this));
+            archive(cereal::base_class<UniqueDataBase>(this));
         }
     };
 
@@ -55,6 +55,10 @@ namespace jactorio::proto
             SetHeight(dimension.y);
             return this;
         }
+
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
 
     private:
         /// Number of tiles which object occupies

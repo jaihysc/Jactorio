@@ -9,7 +9,6 @@ namespace jactorio::proto
     TEST(ContainerEntity, Serialize) {
         ContainerEntityData container(5);
         container.health = 43;
-        container.set    = 16;
 
         container.inventory[2].count = 89;
 
@@ -28,8 +27,6 @@ namespace jactorio::proto
         const auto result = TestSerializeDeserialize(container);
 
         EXPECT_EQ(result.health, 43);
-        EXPECT_EQ(result.set, 16);
-        EXPECT_EQ(result.set, 16);
 
         EXPECT_EQ(result.inventory[2].count, 89);
 

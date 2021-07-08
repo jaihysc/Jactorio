@@ -362,24 +362,6 @@ namespace jactorio::proto
         EXPECT_EQ(segment.length, 1);
     }
 
-    TEST_F(ConveyorTest, SetOrientation) {
-        // When the orientation is set, the member "set" should also be updated
-
-        // Arbitrary segment is fine since no logic updates are performed
-        const auto segment = std::make_shared<game::ConveyorStruct>(
-            Orientation::left, game::ConveyorStruct::TerminationType::straight, 1);
-
-        ConveyorData line_data{segment};
-        line_data.structIndex = 1; // Prevents it from attempting to delete line segment
-
-        line_data.SetOrientation(LineOrientation::down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(LineOrientation::down));
-
-        line_data.SetOrientation(LineOrientation::left_down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(LineOrientation::left_down));
-    }
-
-
     // ======================================================================
     // Side only
 

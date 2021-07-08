@@ -79,15 +79,6 @@ void proto::AssemblyMachineData::CraftAddProduct() {
 
 // ======================================================================
 
-SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& machine_data = SafeCast<const AssemblyMachineData&>(unique_data);
-
-    if (!machine_data.deferralEntry.Valid())
-        game_tick = 0;
-
-    return AllOfSprite(*sprite, game_tick, 1. / 6);
-}
-
 bool proto::AssemblyMachine::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
     gui::AssemblyMachine(context, this, tile->GetUniqueData());
     return true;

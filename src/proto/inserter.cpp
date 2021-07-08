@@ -15,36 +15,12 @@ void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
     DrawInserterArm(layer, uv_coords, pixel_offset, *this, *SafeCast<const InserterData*>(unique_data));
 }
 
-SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
-                                            game::World& /*world*/,
-                                            const WorldCoord& /*coord*/) const {
-    switch (orientation) {
-
-    case Orientation::up:
-        return 0;
-    case Orientation::right:
-        return 1;
-    case Orientation::down:
-        return 2;
-    case Orientation::left:
-        return 3;
-
-    default:;
-        assert(false);
-        break;
-    }
-
-    return 0;
-}
-
 void proto::Inserter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               const game::TileLayer tlayer,
                               Orientation orientation) const {
-    auto& inserter_data = world.GetTile(coord, tlayer)->MakeUniqueData<InserterData>(orientation);
-    inserter_data.set   = OnRGetSpriteSet(orientation, world, coord);
-
+    world.GetTile(coord, tlayer)->MakeUniqueData<InserterData>(orientation);
     InitPickupDropoff(world, coord, orientation);
 }
 

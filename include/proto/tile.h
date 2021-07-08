@@ -38,29 +38,12 @@ namespace jactorio::proto
         PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 
-        // ======================================================================
         // Renderer
-
-        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-            return sprite;
-        }
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
-            return 0;
-        }
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const override {
-            return 0;
-        }
 
         bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
-        // ======================================================================
         // Data
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}

@@ -81,23 +81,13 @@ namespace jactorio::proto
         PYTHON_PROP(Tile4Way, resourceOutput);
 
 
-        // ======================================================================
         // Rendering
 
         bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
 
 
-        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::World& world,
-                                               const WorldCoord& coord) const override;
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                   GameTickT game_tick) const override;
-
-        // ======================================================================
         // Logic
+
         /// Finds the FIRST output item of the mining drill, beginning from top left
         /// \param orien Orientation of drill
         J_NODISCARD Item* FindOutputItem(const game::World& world, WorldCoord coord, Orientation orien) const;
