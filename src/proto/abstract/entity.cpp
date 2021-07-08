@@ -40,6 +40,16 @@ void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*proto*/) co
 }
 
 void proto::Entity::SetupSprite() {
+    assert(sprite != nullptr);
     sprite->subdivide = GetDimension(Direction::up);
-    // TODO does not handle rotations
+
+    if (spriteE != nullptr) {
+        spriteE->subdivide = GetDimension(Direction::right);
+    }
+    if (spriteS != nullptr) {
+        spriteS->subdivide = GetDimension(Direction::down);
+    }
+    if (spriteW != nullptr) {
+        spriteW->subdivide = GetDimension(Direction::left);
+    }
 }

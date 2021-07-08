@@ -60,6 +60,15 @@ namespace jactorio::proto
             count_
         };
 
+        /// Frames of sprite that should be included for 1 animation tick of the game
+        /// e.g: Rotations
+        enum class FrameGenStrategy
+        {
+            top_left_frame = 0,
+            top_set,
+            first_frames
+        };
+
         Sprite() = default;
         explicit Sprite(const std::string& sprite_path);
         Sprite(const std::string& sprite_path, SpriteGroup group);
@@ -74,6 +83,8 @@ namespace jactorio::proto
 
         /// Determines which spritemap this sprite is placed on
         PYTHON_PROP_REF_I(SpriteGroup, group, SpriteGroup::none);
+
+        PYTHON_PROP_REF_I(FrameGenStrategy, strategy, FrameGenStrategy::top_left_frame);
 
         /*
          *     F0 F1 F2 F3 F4

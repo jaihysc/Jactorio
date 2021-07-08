@@ -300,6 +300,21 @@ void render::RendererSprites::SetImageBorder(GeneratorContext& context,
     // Including the corners does not reduce black line artifacts
 }
 
+std::pair<SpriteFrameT, SpriteSetT> render::RendererSprites::GetGameTickFrameSet(const proto::Sprite& sprite) noexcept {
+    switch (sprite.strategy) {
+    case proto::Sprite::FrameGenStrategy::top_left_frame:
+        return {1, 1};
+    case proto::Sprite::FrameGenStrategy::top_set:
+        return {sprite.frames, 1};
+    case proto::Sprite::FrameGenStrategy::first_frames:
+        return {1, sprite.sets};
+
+    default:
+        assert(false);
+        return {1, 1};
+    }
+}
+
 void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
                                                 const Position2<SpritemapDimensionT> offset,
                                                 proto::Sprite& sprite) {
@@ -322,8 +337,12 @@ void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
     const auto h_fraction = h_span / LossyCast<float>(sprite.frames) / LossyCast<float>(sprite.subdivide.x);
     const auto v_fraction = v_span / LossyCast<float>(sprite.sets) / LossyCast<float>(sprite.subdivide.y);
 
-    for (int set = 0; set < 1; ++set) { // Currently cannot handle animations
-        for (int frame = 0; frame < 1; ++frame) {
+
+    auto [gt_frames, gt_sets] = GetGameTickFrameSet(sprite);
+    sprite.texCoordId         = *context.texCoordIdCounter;
+
+    for (int set = 0; set < gt_sets; ++set) {
+        for (int frame = 0; frame < gt_frames; ++frame) {
 
             for (DimensionAxis y = 0; y < sprite.subdivide.y; ++y) {
                 const auto y_offset = set * sprite.subdivide.y;
@@ -337,7 +356,6 @@ void render::RendererSprites::GenerateTexCoords(GeneratorContext& context,
                 }
             }
 
-            sprite.texCoordId = *context.texCoordIdCounter;
             (*context.texCoordIdCounter) += sprite.subdivide.x * sprite.subdivide.y;
         }
     }

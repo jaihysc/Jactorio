@@ -15,8 +15,9 @@ def addInserter(name, itemSprite,
             j.Sprite()
                 .load(worldSprite)
                 .group(j.SpriteGroup.TERRAIN)
-                .sets(4)
-                .frames(1)
+                .sets(1)
+                .frames(4)
+                .strategy(j.FrameGenStrategy.TOP_SET)
         )
         .handSprite(
             j.Sprite()

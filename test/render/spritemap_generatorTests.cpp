@@ -182,4 +182,30 @@ namespace jactorio::render
 
         // Because of the sprite border, it is difficult to compute the tex coord values by hand
     }
+
+    TEST_F(SpritemapGeneratorTest, FrameGenStrategyTopSet) {
+        auto& sprite    = AddSprite("test/graphics/test/test_tile.png");
+        sprite.strategy = proto::Sprite::FrameGenStrategy::top_set;
+
+        sprite.frames = 10;
+        sprite.sets   = 4;
+
+        const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
+        EXPECT_EQ(positions.size(), 11);
+
+        EXPECT_EQ(sprite.texCoordId, 1);
+    }
+
+    TEST_F(SpritemapGeneratorTest, FrameGenStrategyFirstFrames) {
+        auto& sprite    = AddSprite("test/graphics/test/test_tile.png");
+        sprite.strategy = proto::Sprite::FrameGenStrategy::first_frames;
+
+        sprite.frames = 10;
+        sprite.sets   = 4;
+
+        const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
+        EXPECT_EQ(positions.size(), 5);
+
+        EXPECT_EQ(sprite.texCoordId, 1);
+    }
 } // namespace jactorio::render

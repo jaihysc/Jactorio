@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "core/coordinate_tuple.h"
@@ -149,6 +150,9 @@ namespace jactorio::render
         static void SetImageBorder(GeneratorContext& context,
                                    const proto::ImageContainer& image,
                                    Position2<SpritemapDimensionT> offset);
+
+        /// \return Number of frames/sets which should have tex coords generated, for 1 animation tick of the game
+        static std::pair<SpriteFrameT, SpriteSetT> GetGameTickFrameSet(const proto::Sprite& sprite) noexcept;
 
         static void GenerateTexCoords(GeneratorContext& context,
                                       Position2<SpritemapDimensionT> offset,

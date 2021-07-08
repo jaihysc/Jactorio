@@ -18,6 +18,7 @@ def addBelt(name, iconSpritePath, worldSpritePath):
                 .frames(16)
                 .sets(20)
                 .trim(16)
+                .strategy(j.FrameGenStrategy.FIRST_FRAMES)
         )
         .speed(0.05)
         .rotatable(True)
