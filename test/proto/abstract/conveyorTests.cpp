@@ -22,12 +22,14 @@ namespace jactorio::proto
         game::Logic logic_;
 
         TransportBelt lineProto_;
+        Sprite sprite_;
 
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
-        }
 
-        // ======================================================================
+            lineProto_.sprite  = &sprite_;
+            sprite_.texCoordId = 1234;
+        }
 
         static game::ConveyorStruct& GetSegment(game::ChunkTile* tile) {
             return *tile->GetUniqueData<ConveyorData>()->structure;
@@ -248,14 +250,11 @@ namespace jactorio::proto
         tile->SetPrototype(Orientation::up, &proto);
 
 
-        // Should update line above, turn right to a up-right
+        // Should update line above, right to a up-right
         TlBuildEvents({1, 1}, Orientation::up);
 
-        {
-            auto* result_tile = world_.GetTile({1, 0}, game::TileLayer::entity);
-
-            EXPECT_EQ(result_tile->GetUniqueData<ConveyorData>()->lOrien, LineOrientation::up_right);
-        }
+        EXPECT_EQ(world_.GetTexCoordId({1, 0}, game::TileLayer::entity),
+                  1234 + static_cast<int>(proto::LineOrientation::up_right));
     }
 
     TEST_F(ConveyorTest, OnRemoveUpdateNeighboringLines) {
@@ -278,11 +277,8 @@ namespace jactorio::proto
         // Removing the bottom line makes the center one bend down-right
         TlRemoveEvents({1, 2});
 
-        {
-            auto* result_tile = world_.GetTile({1, 1}, game::TileLayer::entity);
-
-            EXPECT_EQ(result_tile->GetUniqueData<ConveyorData>()->lOrien, LineOrientation::down_right);
-        }
+        EXPECT_EQ(world_.GetTexCoordId({1, 1}, game::TileLayer::entity),
+                  1234 + static_cast<int>(proto::LineOrientation::down_right));
     }
 
     // ======================================================================

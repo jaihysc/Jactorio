@@ -16,11 +16,18 @@ namespace jactorio::proto
     protected:
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
+
+            transBelt_.sprite  = &sprite_;
+            splitter_.sprite   = &sprite_;
+            sprite_.texCoordId = 1234;
         }
 
         game::World world_;
         game::Logic logic_;
+
         TransportBelt transBelt_;
+        Splitter splitter_;
+        Sprite sprite_;
     };
 
     /// Splitter creates conveyor at its 2 tiles, then connects to neighboring conveyors
@@ -34,12 +41,11 @@ namespace jactorio::proto
         auto& con_data_bl = TestSetupConveyor(world_, {0, 2}, Orientation::left, transBelt_);
         auto& con_data_br = TestSetupConveyor(world_, {1, 2}, Orientation::right, transBelt_);
 
-        Splitter splitter;
-        splitter.SetWidth(2);
+        splitter_.SetWidth(2);
 
-        TestSetupMultiTile(world_, {0, 1}, game::TileLayer::entity, Orientation::down, splitter);
+        TestSetupMultiTile(world_, {0, 1}, game::TileLayer::entity, Orientation::down, splitter_);
 
-        splitter.OnBuild(world_, logic_, {0, 1}, game::TileLayer::entity, Orientation::down);
+        splitter_.OnBuild(world_, logic_, {0, 1}, game::TileLayer::entity, Orientation::down);
 
         auto* splitter_data = world_.GetTile({0, 1}, game::TileLayer::entity)->GetUniqueData<SplitterData>();
         ASSERT_NE(splitter_data, nullptr);
@@ -63,9 +69,8 @@ namespace jactorio::proto
         auto& con_data_rt = TestSetupConveyor(world_, {2, 0}, Orientation::left, transBelt_);
         auto& con_data_rb = TestSetupConveyor(world_, {2, 1}, Orientation::left, transBelt_);
 
-        Splitter splitter;
-        splitter.SetWidth(2);
-        auto& splitter_data = TestSetupSplitter(world_, {1, 0}, Orientation::left, splitter);
+        splitter_.SetWidth(2);
+        auto& splitter_data = TestSetupSplitter(world_, {1, 0}, Orientation::left, splitter_);
 
 
         splitter_data.left.structure->target  = con_data_lb.structure.get();
@@ -75,7 +80,7 @@ namespace jactorio::proto
         con_data_rt.structure->target = splitter_data.right.structure.get();
 
 
-        splitter.OnRemove(world_, logic_, {1, 0}, game::TileLayer::entity);
+        splitter_.OnRemove(world_, logic_, {1, 0}, game::TileLayer::entity);
 
 
         EXPECT_EQ(splitter_data.left.structure.get(), nullptr);

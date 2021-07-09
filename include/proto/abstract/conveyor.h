@@ -21,8 +21,6 @@ namespace jactorio::proto
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : structure(std::move(line_segment)) {}
 
-        static Orientation ToOrientation(LineOrientation line_orientation);
-
 
         std::shared_ptr<game::ConveyorStruct> structure = nullptr;
 
@@ -30,11 +28,9 @@ namespace jactorio::proto
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
         uint8_t structIndex = 0;
 
-        LineOrientation lOrien = LineOrientation::up;
-
 
         CEREAL_SERIALIZE(archive) {
-            archive(structure, structIndex, lOrien, cereal::base_class<HealthEntityData>(this));
+            archive(structure, structIndex, cereal::base_class<HealthEntityData>(this));
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
@@ -42,7 +38,7 @@ namespace jactorio::proto
             archive(line_segment);
             construct(line_segment);
 
-            archive(construct->structIndex, construct->lOrien, cereal::base_class<HealthEntityData>(construct.ptr()));
+            archive(construct->structIndex, cereal::base_class<HealthEntityData>(construct.ptr()));
         }
     };
 
@@ -61,9 +57,9 @@ namespace jactorio::proto
         /// Number of tiles traveled by each item on the belt per tick
         LineDistT speed;
 
-
-        // ======================================================================
-        // Game events
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
 
         void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteTexCoords& uv_coords,

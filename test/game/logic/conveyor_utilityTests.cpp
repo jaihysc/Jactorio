@@ -22,9 +22,13 @@ namespace jactorio::game
 
         World world_;
         proto::TransportBelt transBelt_;
+        proto::Sprite sprite_;
 
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
+
+            transBelt_.sprite  = &sprite_;
+            sprite_.texCoordId = 1234;
         }
     };
 
@@ -883,6 +887,9 @@ namespace jactorio::game
 
         ConveyorUpdateNeighborLineOrien(world_, {0, 0});
 
-        EXPECT_EQ(con_data_r_end.lOrien, proto::LineOrientation::up_right);
+        // int value of line orientation is offset applied to Sprite tex coord id to get the right
+        // line orientation rendered
+        EXPECT_EQ(world_.GetTexCoordId({1, 0}, TileLayer::entity),
+                  1234 + static_cast<int>(proto::LineOrientation::up_right));
     }
 } // namespace jactorio::game

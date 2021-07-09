@@ -14,34 +14,11 @@ using namespace jactorio;
 
 static constexpr game::LogicGroup kConveyorLogicGroup = game::LogicGroup::conveyor;
 
-Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orientation) {
-    switch (line_orientation) {
-    case LineOrientation::up:
-    case LineOrientation::right_up:
-    case LineOrientation::left_up:
-        return Orientation::up;
-
-    case LineOrientation::right:
-    case LineOrientation::up_right:
-    case LineOrientation::down_right:
-        return Orientation::right;
-
-    case LineOrientation::down:
-    case LineOrientation::right_down:
-    case LineOrientation::left_down:
-        return Orientation::down;
-
-    case LineOrientation::left:
-    case LineOrientation::up_left:
-    case LineOrientation::down_left:
-        return Orientation::left;
-    }
-
-    assert(false); // Missing switch case
-    return Orientation::up;
+SpriteTexCoordIndexT proto::Conveyor::OnGetTexCoordId(const game::World& world,
+                                                      const WorldCoord& coord,
+                                                      const Orientation orientation) const {
+    return sprite->texCoordId + static_cast<int>(ConveyorCalcLineOrien(world, coord, orientation));
 }
-
-// Game events
 
 void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteTexCoords& uv_coords,

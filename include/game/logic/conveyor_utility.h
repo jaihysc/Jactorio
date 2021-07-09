@@ -140,9 +140,8 @@ namespace jactorio::game
     /// \param con_struct_p Structure to change to
     void ConveyorChangeStructure(World& world, WorldCoord coord, const std::shared_ptr<ConveyorStruct>& con_struct_p);
 
-    /// Calculates line orientation for conveyor data at coord with provided direction
-    /// Direction is provided separately to allow use when there is no conveyor data at coord
-    /// A tile is deemed to not have a conveyor if its structure is nullptr
+    /// Calculates line orientation a conveyor should have a at coord by looking at 4 neighbors
+    /// A neighboring tile is deemed to not have a conveyor if its structure is nullptr
     J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const World& world,
                                                              const WorldCoord& coord,
                                                              Orientation direction);

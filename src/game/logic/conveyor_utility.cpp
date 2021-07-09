@@ -6,6 +6,7 @@
 #include "game/world/world.h"
 #include "proto/abstract/conveyor.h"
 #include "proto/splitter.h"
+#include "proto/sprite.h"
 
 using namespace jactorio;
 
@@ -16,7 +17,6 @@ void game::BuildConveyor(World& world,
                          const LogicGroup logic_group) {
 
     ConveyorCreate(world, coord, conveyor, direction, logic_group);
-    conveyor.lOrien = ConveyorCalcLineOrien(world, coord, direction);
 
     ConveyorNeighborConnect(world, coord);
     ConveyorUpdateNeighborTermination(world, coord);
@@ -547,11 +547,21 @@ proto::LineOrientation game::ConveyorCalcLineOrien(const World& world,
 void game::ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord) {
 
     auto calculate_neighbor = [&world](const WorldCoord& neighbor_coord) {
-        auto* con_data = GetConData(world, neighbor_coord);
+        auto* tile = world.GetTile(neighbor_coord, TileLayer::entity);
+        if (tile == nullptr) {
+            return;
+        }
+
+        auto* con_data = GetConData(*tile);
 
         // Multi-tile neighbors may not have structures while processing removes for all its tiles
         if (con_data != nullptr && con_data->structure != nullptr) {
-            con_data->lOrien = ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction);
+            auto* conveyor = tile->GetPrototype<proto::Conveyor>();
+            assert(conveyor->sprite != nullptr);
+
+            auto line_orien = ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction);
+            world.SetTexCoordId(
+                neighbor_coord, TileLayer::entity, conveyor->sprite->texCoordId + static_cast<int>(line_orien));
         }
     };
 
