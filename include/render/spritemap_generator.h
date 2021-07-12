@@ -21,11 +21,13 @@ namespace jactorio::render
         /// Index into tex coords vector for first tex coord of this animation
         std::size_t texCoordIndex = 0;
 
-        /// Total number of frames
-        int frames       = 0;
-        int currentFrame = 0;
+        /// Total number of ANIMATION frames
+        int frames = 0;
         /// Tex coords per frame
         int span = 0;
+
+        /// Current animation frame
+        mutable int currentFrame = 0; // Allows generating tex coords for frames in const
     };
 
     class Spritemap
@@ -42,10 +44,12 @@ namespace jactorio::render
         }
 
         /// Generates tex coords for current frame of animation
+        /// Returned pointer valid until next Gen...() call
         /// \return Pointer to tex coords, amount of tex coords
         J_NODISCARD std::pair<const TexCoord*, int> GenCurrentFrame() const;
 
         /// Generates tex coords for next frame of animation
+        /// Returned pointer valid until next Gen...() call
         /// \return Pointer to tex coords, amount of tex coords
         J_NODISCARD std::pair<const TexCoord*, int> GenNextFrame() const;
 
@@ -113,7 +117,7 @@ namespace jactorio::render
                                                      bool invert_sprites);
 
         /// Retrieves spritemap at specified group
-        const Spritemap& GetSpritemap(proto::Sprite::SpriteGroup group);
+        J_NODISCARD const Spritemap& GetSpritemap(proto::Sprite::SpriteGroup group) const;
         const Texture* GetTexture(proto::Sprite::SpriteGroup group);
 
         /// Generates spritemap

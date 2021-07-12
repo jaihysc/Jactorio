@@ -52,6 +52,9 @@ namespace jactorio::render
         /// \exception std::runtime_error Too many tex coords for shader
         void InitShader(Renderer& renderer);
 
+        /// Sends the tex coords for next animation frame to GPU
+        void UpdateAnimationTexCoords() const noexcept;
+
         bool setupGui_ = false;
     };
 } // namespace jactorio::render

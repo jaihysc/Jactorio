@@ -26,8 +26,15 @@ std::pair<const TexCoord*, int> render::Spritemap::GenCurrentFrame() const {
 }
 
 std::pair<const TexCoord*, int> render::Spritemap::GenNextFrame() const {
-    // TODO
-    return {nullptr, 0};
+    for (auto& animation : animations_) {
+        assert(animation.frames > 0);
+
+        animation.currentFrame++;
+        if (animation.currentFrame >= animation.frames) {
+            animation.currentFrame = 0;
+        }
+    }
+    return GenCurrentFrame();
 }
 
 void render::RendererSprites::Clear() {
@@ -64,7 +71,7 @@ render::Spritemap render::RendererSprites::CreateSpritemap(const data::Prototype
 }
 
 
-const render::Spritemap& render::RendererSprites::GetSpritemap(proto::Sprite::SpriteGroup group) {
+const render::Spritemap& render::RendererSprites::GetSpritemap(proto::Sprite::SpriteGroup group) const {
     const auto it = spritemaps_.find(static_cast<int>(group));
     return it->second;
 }
@@ -341,10 +348,12 @@ void render::RendererSprites::GenerateAnimationTexCoords(GeneratorContext& conte
     Animation animation;
     animation.texCoordIndex = context.texCoords.size(); // Tex coords will be added below
 
-    animation.frames = SafeCast<int>(sprite.frames) * sprite.sets * sprite.subdivide.x * sprite.subdivide.y;
-
     auto [gt_frames, gt_sets] = GetGameTickFrameSet(sprite);
     animation.span            = SafeCast<int>(gt_frames) * gt_sets * sprite.subdivide.x * sprite.subdivide.y;
+
+    // animation.frames is ANIMATION frame; sprite.frame is an image which is part of a larger X, Y matrix image.
+    // There can be many frames in an animation frame
+    animation.frames = SafeCast<int>(sprite.frames) * sprite.sets / (gt_frames * gt_sets);
 
     context.animations.push_back(animation);
 

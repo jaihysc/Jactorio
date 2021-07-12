@@ -45,6 +45,8 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
     auto& player       = common.gameController.player;
     auto& player_world = common.gameController.worlds[player.world.GetId()];
 
+    UpdateAnimationTexCoords();
+
     std::lock_guard guard{common.worldDataMutex};
 
     renderer.SetPlayerPosition(player.world.GetPosition());
@@ -137,9 +139,13 @@ void render::RenderController::InitShader(Renderer& renderer) {
 
     // Texture will be bound to slot 0 above, tell this to shader
     DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
+}
+
+void render::RenderController::UpdateAnimationTexCoords() const noexcept {
+    auto [tex_coords, size] = rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).GenNextFrame();
 
     static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
-    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"),
-                                   terrain_tex_coord_size,
-                                   reinterpret_cast<const GLfloat*>(terrain_tex_coords)));
+    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"), //
+                                   size,
+                                   reinterpret_cast<const GLfloat*>(tex_coords)));
 }
