@@ -50,6 +50,12 @@ void render::DisplayWindow::SetFullscreen(const bool desired_fullscreen) {
 }
 
 
+render::DisplayWindow::~DisplayWindow() {
+    if (glContextActive_) {
+        Terminate();
+    }
+}
+
 int render::DisplayWindow::Init(const int width, const int height) {
     LOG_MESSAGE(info, "Using SDL2 for window creation");
 
@@ -208,7 +214,7 @@ void HandleWindowEvent(render::Renderer& renderer, game::EventData& event, const
 void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL_Event& sdl_event) const {
     switch (sdl_event.type) {
     case SDL_WINDOWEVENT:
-        HandleWindowEvent(*common.renderer, common.gameController.event, sdl_event);
+        HandleWindowEvent(common.renderController->renderer, common.gameController.event, sdl_event);
         break;
 
     case SDL_QUIT:
@@ -248,13 +254,13 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
             constexpr auto far_zoom_sensitivity  = 0.04f;
             constexpr auto near_threshold        = 0.85f;
 
-            const auto current_zoom = common.renderer->GetZoom();
+            const auto current_zoom = common.renderController->renderer.GetZoom();
             auto sensitivity        = far_zoom_sensitivity;
             if (current_zoom >= near_threshold) {
                 sensitivity = near_zoom_sensitivity;
             }
 
-            common.renderer->SetZoom(current_zoom + SafeCast<float>(sdl_event.wheel.y) * sensitivity);
+            common.renderController->renderer.SetZoom(current_zoom + SafeCast<float>(sdl_event.wheel.y) * sensitivity);
         }
         break;
     case SDL_MOUSEBUTTONUP:

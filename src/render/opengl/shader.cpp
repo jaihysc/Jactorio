@@ -11,8 +11,7 @@
 
 using namespace jactorio;
 
-render::Shader::Shader(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols)
-    : id_(0) {
+void render::Shader::Init(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols) {
     DEBUG_OPENGL_CALL(id_ = glCreateProgram());
 
     std::vector<unsigned int> shader_ids;

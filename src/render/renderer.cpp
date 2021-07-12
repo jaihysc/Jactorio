@@ -20,7 +20,7 @@ using namespace jactorio;
 unsigned int render::Renderer::windowWidth_  = 0;
 unsigned int render::Renderer::windowHeight_ = 0;
 
-render::Renderer::Renderer() {
+void render::Renderer::Init() {
     // This does not need to change as everything is already prepared in world space
     const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
     mvpManager_.GlSetModelMatrix(model_matrix);
@@ -30,9 +30,8 @@ render::Renderer::Renderer() {
     glGetIntegerv(GL_VIEWPORT, m_viewport);
 
     GlResizeWindow(m_viewport[2], m_viewport[3]);
-}
 
-void render::Renderer::GlSetup() {
+
     // Enables transparency in textures
     DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
     DEBUG_OPENGL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));

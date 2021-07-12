@@ -30,16 +30,18 @@ namespace jactorio::render
     class Shader
     {
     public:
-        /// \param symbols Defines symbol for shader compilation, the symbol in shader programs will be replaced with
-        /// value
-        /// \exception RendererException Shader program is invalid for use
-        explicit Shader(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols = {});
+        Shader() = default;
         ~Shader();
 
         Shader(const Shader& other)     = delete;
         Shader(Shader&& other) noexcept = delete;
         Shader& operator=(const Shader& other) = delete;
         Shader& operator=(Shader&& other) noexcept = delete;
+
+        /// \param symbols Defines symbol for shader compilation, the symbol in shader programs will be replaced with
+        /// value
+        /// \exception RendererException Shader program is invalid for use
+        void Init(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols = {});
 
         void Bind() const noexcept;
         static void Unbind() noexcept;
@@ -59,7 +61,7 @@ namespace jactorio::render
         /// Retrieves log from opengl, null terminator included
         static std::vector<char> GetProgramInfoLog(GLuint program);
 
-        unsigned int id_;
+        unsigned int id_ = 0;
     };
 } // namespace jactorio::render
 

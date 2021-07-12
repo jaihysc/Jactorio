@@ -11,18 +11,7 @@
 
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
-#include "core/resource_guard.h"
 #include "game/event/game_events.h"
-#include "gui/imgui_manager.h"
-#include "gui/main_menu.h"
-#include "gui/menus.h"
-#include "gui/menus_debug.h"
-#include "proto/localization.h"
-#include "proto/sprite.h"
-#include "render/opengl/error.h"
-#include "render/opengl/shader.h"
-#include "render/renderer.h"
-#include "render/spritemap_generator.h"
 
 using namespace jactorio;
 
@@ -51,7 +40,7 @@ void render::ChangeWindowSize(Renderer& renderer,
 }
 
 /// Waits until next frame time, draws frame
-void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_clock::time_point& next_frame) {
+static void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_clock::time_point& next_frame) {
     // Sleep until the next fixed update interval
     const auto time_end = std::chrono::steady_clock::now();
     while (time_end > next_frame) {
@@ -65,7 +54,7 @@ void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_c
 }
 
 /// Retrieves and handles sdl events
-void PollEvents(ThreadedLoopCommon& common, render::DisplayWindow& display_window, SDL_Event& e) {
+static void PollEvents(ThreadedLoopCommon& common, render::DisplayWindow& display_window, SDL_Event& e) {
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL2_ProcessEvent(&e);
         display_window.HandleSdlEvent(common, e);
@@ -73,7 +62,7 @@ void PollEvents(ThreadedLoopCommon& common, render::DisplayWindow& display_windo
 }
 
 
-void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
+static void RenderMainMenuLoop(ThreadedLoopCommon& common) {
     constexpr auto main_menu_game_state = ThreadedLoopCommon::GameState::main_menu;
 
     if (common.gameState != main_menu_game_state)
@@ -83,28 +72,19 @@ void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& displ
     LOG_MESSAGE(info, "2 - Main menu");
 
     auto next_frame = std::chrono::steady_clock::now();
-
     SDL_Event e;
-
     while (common.gameState == main_menu_game_state && common.gameState != ThreadedLoopCommon::GameState::quit) {
         common.gameController.event.Raise<game::RendererTickEvent>(
-            game::EventType::renderer_tick, game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
+            game::EventType::renderer_tick,
+            game::RendererTickEvent::DisplayWindowContainerT{std::ref(common.renderController->displayWindow)});
 
-        gui::ImguiBeginFrame(display_window);
-
-        gui::StartMenu(common);
-
-        gui::ImguiRenderFrame();
-
-        // ======================================================================
-        // ======================================================================
-
-        TimedDrawFrame(display_window, next_frame);
-        PollEvents(common, display_window, e);
+        common.renderController->RenderMainMenu(common);
+        TimedDrawFrame(common.renderController->displayWindow, next_frame);
+        PollEvents(common, common.renderController->displayWindow, e);
     }
 }
 
-void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
+static void RenderWorldLoop(ThreadedLoopCommon& common) {
     constexpr auto world_render_game_state = ThreadedLoopCommon::GameState::in_world;
 
     if (common.gameState != world_render_game_state)
@@ -114,102 +94,31 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
     LOG_MESSAGE(info, "3 - Runtime stage");
 
     auto next_frame = std::chrono::steady_clock::now(); // For zeroing the time
-
     SDL_Event e;
-
     while (common.gameState == world_render_game_state && common.gameState != ThreadedLoopCommon::GameState::quit) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-        auto& player       = common.gameController.player;
-        auto& player_world = common.gameController.worlds[player.world.GetId()];
-
-        // ======================================================================
-        // RENDER LOOP ======================================================================
         {
             EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
             common.gameController.event.Raise<game::RendererTickEvent>(
                 game::EventType::renderer_tick,
-                game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
+                game::RendererTickEvent::DisplayWindowContainerT{std::ref(common.renderController->displayWindow)});
 
-            std::lock_guard<std::mutex> guard{common.worldDataMutex};
-
-            common.renderer->SetPlayerPosition(player.world.GetPosition());
-
-            // MVP Matrices updated in here
-            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(), player_world);
-
-            common.renderer->GlPrepareBegin();
-
-            common.gameController.player.world.SetMouseSelectedTile( //
-                common.renderer->ScreenPosToWorldCoord(common.gameController.player.world.GetPosition(),
-                                                       game::MouseSelection::GetCursor()));
-
-            game::MouseSelection::DrawCursorOverlay(*common.renderer,
-                                                    common.gameController.worlds,
-                                                    common.gameController.player,
-                                                    common.gameController.proto);
-
-
-            std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
-            gui::ImguiBeginFrame(display_window);
-
-            if (IsVisible(gui::Menu::MainMenu)) {
-                gui::MainMenu(common);
-            }
-
-            gui::ImguiDraw(display_window,
-                           common.gameController.worlds,
-                           common.gameController.logic,
-                           player,
-                           common.gameController.proto,
-                           common.gameController.event);
-
-            gui::DebugMenuLogic(common.gameController.worlds,
-                                common.gameController.logic,
-                                player,
-                                common.gameController.proto,
-                                *common.renderer);
-
-            //
-            common.renderer->GlPrepareEnd();
-            gui::ImguiRenderFrame();
+            common.renderController->RenderWorld(common);
         }
-        // ======================================================================
-        // ======================================================================
 
-        TimedDrawFrame(display_window, next_frame);
-        PollEvents(common, display_window, e);
-    }
-}
-
-void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
-    while (common.gameState != ThreadedLoopCommon::GameState::quit) {
-        RenderMainMenuLoop(common, display_window);
-        RenderWorldLoop(common, display_window);
+        TimedDrawFrame(common.renderController->displayWindow, next_frame);
+        PollEvents(common, common.renderController->displayWindow, e);
     }
 }
 
 static void Init(ThreadedLoopCommon& common) {
-    using namespace render;
+    const auto render_controller = std::make_unique<render::RenderController>();
+    common.renderController      = render_controller.get();
 
-    // Init window
-    DisplayWindow display_window;
-    if (display_window.Init(840, 490) != 0) {
-        throw std::runtime_error("Failed to initialize display window");
-    }
+    common.renderController->Init();
 
-
-    ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
-    gui::Setup(display_window);
-
-    // From my testing, allocating it on the heap is faster than using the stack
-    auto renderer   = std::make_unique<Renderer>();
-    common.renderer = renderer.get();
-
-
-    // ======================================================================
-    // Accessing game data
 
     // Since game data will be now accessed, wait until prototype loading is complete
     LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
@@ -222,67 +131,14 @@ static void Init(ThreadedLoopCommon& common) {
     LOG_MESSAGE(debug, "Continuing render initialization");
 
 
-    // Load gui font
-    bool loaded_local  = false;
-    auto localizations = common.gameController.proto.GetAll<proto::Localization>();
-    for (const auto& local : localizations) {
-        assert(local != nullptr);
-        if (local->identifier == common.gameController.localIdentifier) {
-            gui::LoadFont(*local);
-            loaded_local = true;
-            break;
-        }
+    common.renderController->LoadedInit(common);
+
+
+    // Runtime
+    while (common.gameState != ThreadedLoopCommon::GameState::quit) {
+        RenderMainMenuLoop(common);
+        RenderWorldLoop(common);
     }
-    if (!loaded_local) {
-        LOG_MESSAGE(warning, "No font was loaded, using default font");
-    }
-
-    // Loading textures
-    auto renderer_sprites = RendererSprites();
-    renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, false);
-    renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
-
-
-    auto [terrain_tex_coords, terrain_tex_coord_size] =
-        renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).GenCurrentFrame();
-    LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
-
-    // Shader
-    GLint max_uniform_component;
-    DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS, &max_uniform_component));
-    if (terrain_tex_coord_size > max_uniform_component / 4) {
-        throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_uniform_component / 4));
-    }
-
-    const Shader shader({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-                         {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
-                         {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
-                        {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size)}});
-    shader.Bind();
-    renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
-
-    // Texture will be bound to slot 0 above, tell this to shader
-    DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
-
-    static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
-    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"),
-                                   terrain_tex_coord_size,
-                                   reinterpret_cast<const GLfloat*>(terrain_tex_coords)));
-
-
-    Renderer::GlSetup();
-    renderer->GlSetDrawThreads(8);
-
-    // Terrain
-    renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
-
-    // Gui
-    gui::SetupCharacterData(renderer_sprites);
-
-
-    // ======================================================================
-
-    RenderingLoop(common, display_window);
 }
 
 void render::RenderInit(ThreadedLoopCommon& common) {

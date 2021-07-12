@@ -47,14 +47,14 @@ namespace jactorio::render
     public:
         static constexpr unsigned int tileWidth = 1;
 
-        Renderer();
+        Renderer() = default;
 
         Renderer(const Renderer& other)     = delete;
         Renderer(Renderer&& other) noexcept = delete;
 
-        /// Sets up OpenGl settings, only need to call once on program start
+        /// Sets up renderer + OpenGl settings, only need to call once on program start
         /// \exception RendererException Failed to setup
-        static void GlSetup();
+        void Init();
         static void GlClear() noexcept;
 
 
