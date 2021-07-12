@@ -54,9 +54,7 @@ namespace jactorio::render
         RendererSprites rendererSprites_;
 
         /// \return true if pixel contains specified color
-        static void ValidatePixel(const RendererSprites::SpritemapData& spritemap,
-                                  const ImgPos& xy,
-                                  const RgbaPair& rgba) {
+        static void ValidatePixel(const Spritemap& spritemap, const ImgPos& xy, const RgbaPair& rgba) {
             const unsigned int offset = (spritemap.width * std::get<1>(xy) + std::get<0>(xy)) * 4;
 
             const auto* img_ptr = spritemap.spriteBuffer.get();
@@ -174,10 +172,10 @@ namespace jactorio::render
         sprite.sets   = 5;
         sprite.frames = 5;
 
-        const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
+        const auto spritemap = RendererSprites::GenSpritemap(prototypes_, false);
+        auto [ptr, size]     = spritemap.GenCurrentFrame();
 
-        EXPECT_EQ(positions.size(), 7);
-
+        EXPECT_EQ(size, 7);
         EXPECT_EQ(sprite.texCoordId, 1); // Top left id
 
         // Because of the sprite border, it is difficult to compute the tex coord values by hand
@@ -190,9 +188,10 @@ namespace jactorio::render
         sprite.frames = 10;
         sprite.sets   = 4;
 
-        const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
-        EXPECT_EQ(positions.size(), 11);
+        const auto spritemap = RendererSprites::GenSpritemap(prototypes_, false);
+        auto [ptr, size]     = spritemap.GenCurrentFrame();
 
+        EXPECT_EQ(size, 11);
         EXPECT_EQ(sprite.texCoordId, 1);
     }
 
@@ -203,9 +202,10 @@ namespace jactorio::render
         sprite.frames = 10;
         sprite.sets   = 4;
 
-        const auto positions = RendererSprites::GenSpritemap(prototypes_, false).spritePositions;
-        EXPECT_EQ(positions.size(), 5);
+        const auto spritemap = RendererSprites::GenSpritemap(prototypes_, false);
+        auto [ptr, size]     = spritemap.GenCurrentFrame();
 
+        EXPECT_EQ(size, 5);
         EXPECT_EQ(sprite.texCoordId, 1);
     }
 } // namespace jactorio::render

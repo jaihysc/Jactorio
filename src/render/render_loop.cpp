@@ -243,20 +243,21 @@ static void Init(ThreadedLoopCommon& common) {
     renderer_sprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
-    auto& terrain_tex_coords = renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions;
-    LOG_MESSAGE_F(info, "%zu tex coords for tesselation renderer", terrain_tex_coords.size());
+    auto [terrain_tex_coords, terrain_tex_coord_size] =
+        renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).GenCurrentFrame();
+    LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
 
     // Shader
     GLint max_uniform_component;
     DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS, &max_uniform_component));
-    if (terrain_tex_coords.size() > max_uniform_component / 4) {
+    if (terrain_tex_coord_size > max_uniform_component / 4) {
         throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_uniform_component / 4));
     }
 
     const Shader shader({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
                          {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
                          {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
-                        {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coords.size())}});
+                        {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size)}});
     shader.Bind();
     renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
 
@@ -265,8 +266,8 @@ static void Init(ThreadedLoopCommon& common) {
 
     static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
     DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"),
-                                   terrain_tex_coords.size(),
-                                   reinterpret_cast<const GLfloat*>(terrain_tex_coords.data())));
+                                   terrain_tex_coord_size,
+                                   reinterpret_cast<const GLfloat*>(terrain_tex_coords)));
 
 
     Renderer::GlSetup();

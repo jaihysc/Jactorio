@@ -16,39 +16,68 @@
 
 namespace jactorio::render
 {
+    struct Animation
+    {
+        /// Index into tex coords vector for first tex coord of this animation
+        std::size_t texCoordIndex = 0;
+
+        /// Total number of frames
+        int frames       = 0;
+        int currentFrame = 0;
+        /// Tex coords per frame
+        int span = 0;
+    };
+
+    class Spritemap
+    {
+    public:
+        using DimensionT = uint64_t;
+
+        explicit Spritemap(SpriteTexCoords tex_coords, std::vector<Animation> animation)
+            : texCoords_(std::move(tex_coords)), animations_(std::move(animation)) {}
+
+
+        J_NODISCARD const SpriteTexCoords& GetTexCoords() const noexcept {
+            return texCoords_;
+        }
+
+        /// Generates tex coords for current frame of animation
+        /// \return Pointer to tex coords, amount of tex coords
+        J_NODISCARD std::pair<const TexCoord*, int> GenCurrentFrame() const;
+
+        /// Generates tex coords for next frame of animation
+        /// \return Pointer to tex coords, amount of tex coords
+        J_NODISCARD std::pair<const TexCoord*, int> GenNextFrame() const;
+
+        std::shared_ptr<Texture::SpriteBufferT> spriteBuffer;
+
+        DimensionT width  = 0;
+        DimensionT height = 0;
+
+    private:
+        /// 0 - 1 positions of the sprite within the spritemap
+        /// Upper left is 0, 0 - bottom right is 1, 1
+        SpriteTexCoords texCoords_;
+        /// Animation information for each sprite
+        std::vector<Animation> animations_;
+
+        /// Generated tex coords is saved here first prior to copying to GPU
+        mutable std::vector<TexCoord> buffer_;
+    };
+
     /// Generates spritemaps on initialization with tile sprites
     /// - Concatenate sprite into spritemap
     /// - Location of a sprite within spritemap
     /// \remark Gl methods requires OpenGL context
     class RendererSprites
     {
+        using SpritemapDimensionT = Spritemap::DimensionT;
+
         /// Additional border to each sprite, use to avoid black lines
-        static constexpr auto kSpriteBorder = 1;
-
-    public:
-        using SpritemapDimensionT = uint64_t;
-
-    private:
+        static constexpr auto kSpriteBorder                     = 1;
         static constexpr SpritemapDimensionT kMaxSpritemapWidth = 99999;
 
     public:
-        struct SpritemapData
-        {
-            // For the loaded sprite
-            std::shared_ptr<Texture::SpriteBufferT> spriteBuffer;
-
-            SpritemapDimensionT width  = 0;
-            SpritemapDimensionT height = 0;
-
-            // Image positions retrieved via the path originally given to create the spritemap
-            // 0 - 1 positions of the sprite within the spritemap
-            // Upper left is 0, 0 - bottom right is 1, 1
-            // std::string is internal name of prototype
-            SpriteTexCoords spritePositions;
-        };
-
-        // ======================================================================
-
         RendererSprites() = default;
 
         ~RendererSprites() {
@@ -66,7 +95,7 @@ namespace jactorio::render
         friend void swap(RendererSprites& lhs, RendererSprites& rhs) noexcept {
             using std::swap;
             swap(lhs.textures_, rhs.textures_);
-            swap(lhs.spritemapDatas_, rhs.spritemapDatas_);
+            swap(lhs.spritemaps_, rhs.spritemaps_);
         }
 
         /// Frees all spritemap memory
@@ -79,12 +108,12 @@ namespace jactorio::render
 
         /// Creates a spritemap using sprites in PrototypeManager proto of SpriteGroup group
         /// \param invert_sprites If true, flips each sprite across its X axis
-        J_NODISCARD static SpritemapData CreateSpritemap(const data::PrototypeManager& proto,
-                                                         proto::Sprite::SpriteGroup group,
-                                                         bool invert_sprites);
+        J_NODISCARD static Spritemap CreateSpritemap(const data::PrototypeManager& proto,
+                                                     proto::Sprite::SpriteGroup group,
+                                                     bool invert_sprites);
 
         /// Retrieves spritemap at specified group
-        const SpritemapData& GetSpritemap(proto::Sprite::SpriteGroup group);
+        const Spritemap& GetSpritemap(proto::Sprite::SpriteGroup group);
         const Texture* GetTexture(proto::Sprite::SpriteGroup group);
 
         /// Generates spritemap
@@ -92,7 +121,7 @@ namespace jactorio::render
         /// \remark Color in non specified areas of the spritemap are undefined
         /// \param sprites Collection of pointers towards sprite prototypes
         /// \param invert_sprites If true, flips each sprite across its X axis
-        J_NODISCARD static SpritemapData GenSpritemap(std::vector<proto::Sprite*> sprites, bool invert_sprites);
+        J_NODISCARD static Spritemap GenSpritemap(std::vector<proto::Sprite*> sprites, bool invert_sprites);
 
     private:
         /// Holds a sprite and its neighbors on the spritemap
@@ -112,7 +141,9 @@ namespace jactorio::render
             SpritemapDimensionT spritemapWidth;
             SpriteTexCoords& texCoords;
             bool invertSprites;
-            SpriteTexCoordIndexT* texCoordIdCounter;
+
+            SpriteTexCoordIndexT texCoordIdCounter = 1;
+            std::vector<Animation> animations;
         };
 
 
@@ -154,9 +185,12 @@ namespace jactorio::render
         /// \return Number of frames/sets which should have tex coords generated, for 1 animation tick of the game
         static std::pair<SpriteFrameT, SpriteSetT> GetGameTickFrameSet(const proto::Sprite& sprite) noexcept;
 
-        static void GenerateTexCoords(GeneratorContext& context,
-                                      Position2<SpritemapDimensionT> offset,
-                                      proto::Sprite& sprite);
+        /// Generates animation + ALL the tex coords for the sprite (all frames + sets)
+        /// - Assigns tex coords id to sprite
+        /// \param sprite Sprite having its animations generated
+        static void GenerateAnimationTexCoords(GeneratorContext& context,
+                                               Position2<SpritemapDimensionT> offset,
+                                               proto::Sprite& sprite);
 
         /// Recursively processes GeneratorNodes
         /// - outputs sprites into into provided sprite buffer
@@ -168,7 +202,7 @@ namespace jactorio::render
                                             Position2<SpritemapDimensionT> offset);
 
         std::map<unsigned int, Texture*> textures_;
-        std::map<unsigned int, SpritemapData> spritemapDatas_;
+        std::map<unsigned int, Spritemap> spritemaps_;
     };
 } // namespace jactorio::render
 

@@ -26,6 +26,8 @@ namespace jactorio::proto
     public:
         PROTOTYPE_CATEGORY(splitter);
 
+        // BUG because this inherits Conveyor, Conveyor overrides OnGetTexCoord, making this appear wrong
+        // In addition, the conveyor utility logic on build messes with the tex coord to make this wrong again
 
         void OnBuild(game::World& world,
                      game::Logic& logic,

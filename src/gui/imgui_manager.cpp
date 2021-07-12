@@ -30,7 +30,7 @@ const SpriteTexCoords* sprite_positions = nullptr;
 unsigned int tex_id                     = 0; // Assigned by openGL
 
 void gui::SetupCharacterData(render::RendererSprites& renderer_sprites) {
-    sprite_positions = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).spritePositions;
+    sprite_positions = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).GetTexCoords();
     tex_id           = renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::gui)->GetId();
 }
 
