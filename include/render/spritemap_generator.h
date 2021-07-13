@@ -192,6 +192,7 @@ namespace jactorio::render
         /// Generates animation + ALL the tex coords for the sprite (all frames + sets)
         /// - Assigns tex coords id to sprite
         /// \param sprite Sprite having its animations generated
+        /// \exception runtime_error Could not generate reversed sprite animation
         static void GenerateAnimationTexCoords(GeneratorContext& context,
                                                Position2<SpritemapDimensionT> offset,
                                                proto::Sprite& sprite);

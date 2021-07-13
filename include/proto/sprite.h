@@ -69,6 +69,14 @@ namespace jactorio::proto
             first_frames
         };
 
+        /// How the animation should be played
+        enum class AnimationStyle
+        {
+            start_to_end = 0,
+            /// Start to end, then end to start, repeat
+            reversing,
+        };
+
         Sprite() = default;
         explicit Sprite(const std::string& sprite_path);
         Sprite(const std::string& sprite_path, SpriteGroup group);
@@ -83,8 +91,8 @@ namespace jactorio::proto
 
         /// Determines which spritemap this sprite is placed on
         PYTHON_PROP_REF_I(SpriteGroup, group, SpriteGroup::none);
-
         PYTHON_PROP_REF_I(FrameGenStrategy, strategy, FrameGenStrategy::top_left_frame);
+        PYTHON_PROP_REF_I(AnimationStyle, animation, AnimationStyle::start_to_end);
 
         /*
          *     F0 F1 F2 F3 F4

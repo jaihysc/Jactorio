@@ -208,4 +208,27 @@ namespace jactorio::render
         EXPECT_EQ(size, 5);
         EXPECT_EQ(sprite.texCoordId, 1);
     }
+
+    TEST_F(SpritemapGeneratorTest, AnimationStyleReversing) {
+        auto& sprite     = AddSprite("test/graphics/test/test_tile.png");
+        sprite.animation = proto::Sprite::AnimationStyle::reversing;
+
+        sprite.subdivide.x = 10;
+        sprite.subdivide.y = 3;
+
+        sprite.frames = 3;
+
+        const auto spritemap = RendererSprites::GenSpritemap(prototypes_, false);
+
+        const auto c1 = spritemap.GenCurrentFrame().first[1]; // Start
+        const auto c2 = spritemap.GenNextFrame().first[1];
+        const auto c3 = spritemap.GenNextFrame().first[1]; // End
+        const auto c4 = spritemap.GenNextFrame().first[1];
+
+        EXPECT_NE(c1, c4);
+        EXPECT_NE(c3, c4);
+        EXPECT_EQ(c2, c4);
+
+        EXPECT_EQ(sprite.texCoordId, 1);
+    }
 } // namespace jactorio::render

@@ -5,6 +5,7 @@ def addSprite(spritePath):
     return (j.Sprite()
                 .load(spritePath)
                 .group(j.SpriteGroup.TERRAIN)
+                .animation(j.AnimationStyle.REVERSING)
                 .frames(8)
                 .sets(8)
             )

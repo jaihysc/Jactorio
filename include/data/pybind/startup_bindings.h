@@ -159,6 +159,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
     PYBIND_PROP(Sprite, group)
     PYBIND_PROP(Sprite, strategy)
+    PYBIND_PROP(Sprite, animation)
     PYBIND_PROP(Sprite, frames)
     PYBIND_PROP(Sprite, sets) //
         .def("load", &Sprite::Load)
@@ -172,6 +173,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
         .value("TOP_LEFT_FRAME", Sprite::FrameGenStrategy::top_left_frame)
         .value("TOP_SET", Sprite::FrameGenStrategy::top_set)
         .value("FIRST_FRAMES", Sprite::FrameGenStrategy::first_frames);
+
+    py::enum_<Sprite::AnimationStyle>(m, "AnimationStyle")
+        .value("START_TO_END", Sprite::AnimationStyle::start_to_end)
+        .value("REVERSING", Sprite::AnimationStyle::reversing);
 
     PYBIND_DATA_CLASS(Item, Item, FrameworkBase)
     PYBIND_PROP(Item, sprite)

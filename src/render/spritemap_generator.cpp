@@ -355,12 +355,6 @@ void render::RendererSprites::GenerateAnimationTexCoords(GeneratorContext& conte
     // There can be many frames in an animation frame
     animation.frames = SafeCast<int>(sprite.frames) * sprite.sets / (gt_frames * gt_sets);
 
-    context.animations.push_back(animation);
-
-    //
-    sprite.texCoordId = context.texCoordIdCounter;
-    context.texCoordIdCounter += animation.span;
-
     // ======================================================================
 
     const auto& image = sprite.GetImage();
@@ -403,6 +397,29 @@ void render::RendererSprites::GenerateAnimationTexCoords(GeneratorContext& conte
             }
         }
     }
+
+    // Add what was just generated in reverse, excluding first, last frame
+    if (sprite.animation == proto::Sprite::AnimationStyle::reversing) {
+        if (animation.frames < 3) {
+            throw std::runtime_error("Not enough animation frames to reverse, >= 3 required");
+        }
+
+        auto index = context.texCoords.size() - animation.span * 2;
+        for (int j = 0; j < animation.frames - 2; ++j) {
+            for (int i = 0; i < animation.span; ++i) {
+                context.texCoords.push_back(context.texCoords[index + i]);
+            }
+            index -= animation.span;
+        }
+
+        animation.frames = animation.frames * 2 - 2;
+    }
+
+    context.animations.push_back(animation);
+
+    //
+    sprite.texCoordId = context.texCoordIdCounter;
+    context.texCoordIdCounter += animation.span;
 }
 
 void render::RendererSprites::GenerateSpritemapOutput(GeneratorContext& context,
