@@ -119,9 +119,9 @@ void gui::ImGuiManager::Init(const render::DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void gui::ImGuiManager::InitCharacterData(render::RendererSprites& renderer_sprites) {
-    spritePositions_ = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).GetTexCoords();
-    texId_           = renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::gui)->GetId();
+void gui::ImGuiManager::InitCharacterData(const render::Spritemap& spritemap, const render::Texture& texture) {
+    spritePositions_ = &spritemap.GetTexCoords();
+    texId_           = texture.GetId();
 }
 
 void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const {

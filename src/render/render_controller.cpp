@@ -2,6 +2,8 @@
 
 #include "render/render_controller.h"
 
+#include <GL/glew.h>
+
 #include "core/loop_common.h"
 #include "gui/imgui_manager.h"
 #include "gui/main_menu.h"
@@ -19,6 +21,7 @@ void render::RenderController::Init() {
         throw std::runtime_error("Failed to initialize display window");
     }
 
+    InitRendererCommon();
     imManager.Init(displayWindow);
     renderer.Init();
     renderer.GlSetDrawThreads(8);
@@ -27,7 +30,7 @@ void render::RenderController::Init() {
 void render::RenderController::LoadedInit(ThreadedLoopCommon& common) {
     InitGuiFont(common);
     InitTextures(common);
-    InitShader(renderer);
+    renderer.InitShader();
 }
 
 void render::RenderController::RenderMainMenu(ThreadedLoopCommon& common) const {
@@ -40,22 +43,18 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
     auto& player       = common.gameController.player;
     auto& player_world = common.gameController.worlds[player.world.GetId()];
 
-    UpdateAnimationTexCoords();
-
     std::lock_guard guard{common.worldDataMutex};
 
     renderer.SetPlayerPosition(player.world.GetPosition());
+    renderer.GlBind();
+    renderer.GlRender(player_world); // Updates MVP Matrices
 
-    // MVP Matrices updated in here
-    renderer.GlRenderPlayerPosition(common.gameController.logic.GameTick(), player_world);
-
-
-    renderer.GlPrepareBegin();
 
     common.gameController.player.world.SetMouseSelectedTile( //
         renderer.ScreenPosToWorldCoord(common.gameController.player.world.GetPosition(),
                                        game::MouseSelection::GetCursor()));
 
+    renderer.GlPrepareBegin();
     game::MouseSelection::DrawCursorOverlay(
         renderer, common.gameController.worlds, common.gameController.player, common.gameController.proto);
 
@@ -81,6 +80,19 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
     imManager.RenderFrame();
 }
 
+void render::RenderController::InitRendererCommon() const noexcept {
+    // Enables transparency in textures
+    DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
+    DEBUG_OPENGL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    // Depth buffer
+    // ImGui does not use depth buffer
+    /*
+    DEBUG_OPENGL_CALL(glEnable(GL_DEPTH_TEST));
+    DEBUG_OPENGL_CALL(glDepthFunc(GL_LEQUAL));
+    */
+}
+
 void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) {
     bool loaded_local  = false;
     auto localizations = common.gameController.proto.GetAll<proto::Localization>();
@@ -103,40 +115,8 @@ void render::RenderController::InitTextures(ThreadedLoopCommon& common) {
     rendererSprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, false);
     rendererSprites.GlInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
 
-    // Terrain
-    rendererSprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
-
-    // Gui
-    imManager.InitCharacterData(rendererSprites);
-}
-
-void render::RenderController::InitShader(Renderer& renderer) {
-    auto [terrain_tex_coords, terrain_tex_coord_size] =
-        rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).GenCurrentFrame();
-    LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
-
-    GLint max_uniform_component;
-    DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS, &max_uniform_component));
-    if (terrain_tex_coord_size > max_uniform_component / 4) {
-        throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_uniform_component / 4));
-    }
-
-    shader.Init({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-                 {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
-                 {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
-                {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size)}});
-    shader.Bind();
-    renderer.GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
-
-    // Texture will be bound to slot 0 above, tell this to shader
-    DEBUG_OPENGL_CALL(glUniform1i(shader.GetUniformLocation("u_texture"), 0));
-}
-
-void render::RenderController::UpdateAnimationTexCoords() const noexcept {
-    auto [tex_coords, size] = rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).GenNextFrame();
-
-    static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
-    DEBUG_OPENGL_CALL(glUniform4fv(shader.GetUniformLocation("u_tex_coords"), //
-                                   size,
-                                   reinterpret_cast<const GLfloat*>(tex_coords)));
+    renderer.InitTexture(rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain),
+                         rendererSprites.GetTexture(proto::Sprite::SpriteGroup::terrain));
+    imManager.InitCharacterData(rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::gui),
+                                rendererSprites.GetTexture(proto::Sprite::SpriteGroup::gui));
 }

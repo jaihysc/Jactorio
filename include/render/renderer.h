@@ -10,6 +10,7 @@
 #include "core/data_type.h"
 #include "core/orientation.h"
 #include "render/opengl/mvp_manager.h"
+#include "render/opengl/shader.h"
 #include "render/renderer_layer.h"
 
 namespace jactorio::proto
@@ -26,6 +27,9 @@ namespace jactorio::game
 
 namespace jactorio::render
 {
+    class Spritemap;
+    class Texture;
+
     class Renderer
     {
         // Rendering specifications
@@ -44,6 +48,10 @@ namespace jactorio::render
         // Every kChunkWidth tiles, shift 1 chunk
         // Offset remainder tiles
         // Offset decimal tile, using view matrix
+
+        /// GLSL slot which texture will be bound to
+        static constexpr auto kTextureSlot = 0;
+
     public:
         static constexpr unsigned int tileWidth = 1;
 
@@ -55,8 +63,15 @@ namespace jactorio::render
         /// Sets up renderer + OpenGl settings, only need to call once on program start
         /// \exception RendererException Failed to setup
         void Init();
-        static void GlClear() noexcept;
+        /// \remark spritemap and texture must be kept alive for lifetime of Renderer
+        void InitTexture(const Spritemap& spritemap, const Texture& texture) noexcept;
+        /// \exception std::runtime_error Too many tex coords for shader
+        void InitShader();
 
+
+        static void GlClear() noexcept;
+        /// Sets up required resources + states for rendering
+        void GlBind() const noexcept;
 
         // Window
 
@@ -81,8 +96,9 @@ namespace jactorio::render
         /// Used for rendering methods, set prior to drawing
         void SetPlayerPosition(const Position2<float>& player_position) noexcept;
 
+        /// Renders player position
         /// \param world World to render
-        void GlRenderPlayerPosition(GameTickT game_tick, const game::World& world);
+        void GlRender(const game::World& world);
 
 
         /// Allows use of Prepare methods
@@ -93,13 +109,6 @@ namespace jactorio::render
         void PrepareSprite(const WorldCoord& coord,
                            SpriteTexCoordIndexT tex_coord_id,
                            const Dimension& dimension = {1, 1});
-
-
-        //
-
-        J_NODISCARD const MvpManager& GetMvpManager() const;
-        J_NODISCARD MvpManager& GetMvpManager();
-
 
         // Utility
 
@@ -151,13 +160,8 @@ namespace jactorio::render
                                   Position2<int> render_tile_offset) const;
 
 
-        /// Adjusts uv region to a sub region provided by uv_sub
-        /// ----    ****
-        /// ---- -> **--
-        /// ----    **--
-        static void ApplySpriteUvAdjustment(TexCoord& uv, const TexCoord& uv_sub) noexcept;
-
-        static void ApplyMultiTileUvAdjustment(TexCoord& uv, const game::ChunkTile& tile) noexcept;
+        /// Sends the tex coords for next animation frame to GPU
+        void UpdateAnimationTexCoords() const noexcept;
 
 
         /// Allows layer to be drawn on
@@ -169,6 +173,9 @@ namespace jactorio::render
         /// \tparam zoom Between [0, 1]. 0 furthest, 1 closest (auto clamps if out of range)
         void GlUpdateTileProjectionMatrix(float zoom) noexcept;
 
+        Shader shader_;
+        const Spritemap* spritemap_ = nullptr;
+        const Texture* texture_     = nullptr;
 
         size_t drawThreads_ = 0;
         std::vector<std::future<void>> chunkDrawThreads_;
@@ -177,7 +184,6 @@ namespace jactorio::render
         std::vector<RendererLayer> renderLayers_;
 
         MvpManager mvpManager_;
-
         float zoom_ = 0.5f;
 
         /// Cached player's position, for convenience to avoid having to pass player around everywhere

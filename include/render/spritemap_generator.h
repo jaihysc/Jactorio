@@ -118,7 +118,7 @@ namespace jactorio::render
 
         /// Retrieves spritemap at specified group
         J_NODISCARD const Spritemap& GetSpritemap(proto::Sprite::SpriteGroup group) const;
-        const Texture* GetTexture(proto::Sprite::SpriteGroup group);
+        const Texture& GetTexture(proto::Sprite::SpriteGroup group);
 
         /// Generates spritemap
         /// Assigns texCoordId to sprites

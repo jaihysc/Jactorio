@@ -14,6 +14,7 @@
 #include "proto/sprite.h"
 #include "render/opengl/error.h"
 #include "render/renderer_exception.h"
+#include "render/spritemap_generator.h"
 
 using namespace jactorio;
 
@@ -31,22 +32,43 @@ void render::Renderer::Init() {
 
     GlResizeWindow(m_viewport[2], m_viewport[3]);
 
-
-    // Enables transparency in textures
-    DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
-    DEBUG_OPENGL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-    // Depth buffer
-    /*
-    DEBUG_OPENGL_CALL(glEnable(GL_DEPTH_TEST));
-    DEBUG_OPENGL_CALL(glDepthFunc(GL_LEQUAL));
-    */
-
     GlSetupTessellation();
+}
+
+void render::Renderer::InitTexture(const Spritemap& spritemap, const Texture& texture) noexcept {
+    spritemap_ = &spritemap;
+    texture_   = &texture;
+}
+
+void render::Renderer::InitShader() {
+    assert(spritemap_ != nullptr);
+    auto [terrain_tex_coords, terrain_tex_coord_size] = spritemap_->GenCurrentFrame();
+    LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
+
+    GLint max_uniform_component;
+    DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS, &max_uniform_component));
+    if (terrain_tex_coord_size > max_uniform_component / 4) {
+        throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_uniform_component / 4));
+    }
+
+    shader_.Init({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
+                  {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
+                  {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
+                 {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size)}});
+    shader_.Bind();
+    mvpManager_.SetMvpUniformLocation(shader_.GetUniformLocation("u_model_view_projection_matrix"));
+
+    // Texture will be bound to specified slot, tell this to shader
+    DEBUG_OPENGL_CALL(glUniform1i(shader_.GetUniformLocation("u_texture"), kTextureSlot));
 }
 
 void render::Renderer::GlClear() noexcept {
     DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+}
+
+void render::Renderer::GlBind() const noexcept {
+    texture_->Bind(kTextureSlot);
+    shader_.Bind();
 }
 
 
@@ -109,11 +131,13 @@ void render::Renderer::SetPlayerPosition(const Position2<float>& player_position
     playerPosition_ = player_position;
 }
 
-void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick, const game::World& world) {
+void render::Renderer::GlRender(const game::World& world) {
     assert(drawThreads_ > 0);
     assert(renderLayers_.size() == drawThreads_);
 
     EXECUTION_PROFILE_SCOPE(profiler, "World draw");
+
+    UpdateAnimationTexCoords();
 
     // Player movement is in tiles
     // Every chunk_width tiles, shift 1 chunk
@@ -275,16 +299,6 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
         }
     }
 }
-
-
-const render::MvpManager& render::Renderer::GetMvpManager() const {
-    return mvpManager_;
-}
-
-render::MvpManager& render::Renderer::GetMvpManager() {
-    return mvpManager_;
-}
-
 
 WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& player_pos,
                                                    const Position2<int32_t>& screen_pos) const {
@@ -536,40 +550,13 @@ FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
     }
 }
 
-void render::Renderer::ApplySpriteUvAdjustment(TexCoord& uv, const TexCoord& uv_sub) noexcept {
-    const auto diff_x = uv.bottomRight.x - uv.topLeft.x;
-    const auto diff_y = uv.bottomRight.y - uv.topLeft.y;
+void render::Renderer::UpdateAnimationTexCoords() const noexcept {
+    auto [tex_coords, size] = spritemap_->GenNextFrame();
 
-    assert(diff_x >= 0);
-    assert(diff_y >= 0);
-
-    // Calculate bottom first since it needs the unmodified top_left
-    uv.bottomRight.x = uv.topLeft.x + diff_x * uv_sub.bottomRight.x;
-    uv.bottomRight.y = uv.topLeft.y + diff_y * uv_sub.bottomRight.y;
-
-    uv.topLeft.x += diff_x * uv_sub.topLeft.x;
-    uv.topLeft.y += diff_y * uv_sub.topLeft.y;
-}
-
-void render::Renderer::ApplyMultiTileUvAdjustment(TexCoord& uv, const game::ChunkTile& tile) noexcept {
-    const auto& mt_data = tile.GetDimension();
-
-    // Calculate the correct UV coordinates for multi-tile entities
-    // Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
-
-    // Total length of the sprite, to be split among the different tiles
-    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / SafeCast<float>(mt_data.x);
-    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / SafeCast<float>(mt_data.y);
-
-    const double x_multiplier = tile.GetOffsetX();
-    const double y_multiplier = tile.GetOffsetY();
-
-    // Opengl flips vertically, thus the y multiplier is inverted
-    uv.bottomRight.x = uv.topLeft.x + LossyCast<TexCoord::PositionT::ValueT>(len_x * (x_multiplier + 1));
-    uv.bottomRight.y = uv.bottomRight.y - LossyCast<TexCoord::PositionT::ValueT>(len_y * y_multiplier);
-
-    uv.topLeft.x = uv.bottomRight.x - len_x;
-    uv.topLeft.y = uv.bottomRight.y - len_y;
+    static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
+    DEBUG_OPENGL_CALL(glUniform4fv(shader_.GetUniformLocation("u_tex_coords"), //
+                                   size,
+                                   reinterpret_cast<const GLfloat*>(tex_coords)));
 }
 
 void render::Renderer::GlPrepareBegin(RendererLayer& r_layer) {

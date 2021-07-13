@@ -17,7 +17,6 @@
 
 using namespace jactorio;
 
-// Functions
 void render::ImGuiRenderer::Init() {
     // Setup back-end capabilities flags
     ImGuiIO& io            = ImGui::GetIO();
@@ -32,10 +31,6 @@ void render::ImGuiRenderer::Terminate() {
     DestroyFontsTexture();
 }
 
-// OpenGL3 Render function.
-// (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from
-// your main loop) Note that this implementation is little overcomplicated because we are saving/setting up/restoring
-// every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
 void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer
     // coordinates)
@@ -43,47 +38,6 @@ void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
     int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0)
         return;
-
-    // Backup GL state
-    GLenum last_active_texture;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&last_active_texture);
-    glActiveTexture(GL_TEXTURE0);
-    GLuint last_program;
-    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&last_program);
-    GLuint last_texture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture);
-#ifdef GL_SAMPLER_BINDING
-    GLuint last_sampler;
-    glGetIntegerv(GL_SAMPLER_BINDING, (GLint*)&last_sampler);
-#endif
-    GLuint last_array_buffer;
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint*)&last_array_buffer);
-    GLuint last_vertex_array_object;
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&last_vertex_array_object);
-#ifdef GL_POLYGON_MODE
-    GLint last_polygon_mode[2];
-    glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
-#endif
-    GLint last_viewport[4];
-    glGetIntegerv(GL_VIEWPORT, last_viewport);
-    GLint last_scissor_box[4];
-    glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
-    GLenum last_blend_src_rgb;
-    glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb);
-    GLenum last_blend_dst_rgb;
-    glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)&last_blend_dst_rgb);
-    GLenum last_blend_src_alpha;
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&last_blend_src_alpha);
-    GLenum last_blend_dst_alpha;
-    glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&last_blend_dst_alpha);
-    GLenum last_blend_equation_rgb;
-    glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb);
-    GLenum last_blend_equation_alpha;
-    glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha);
-    GLboolean last_enable_blend        = glIsEnabled(GL_BLEND);
-    GLboolean last_enable_cull_face    = glIsEnabled(GL_CULL_FACE);
-    GLboolean last_enable_depth_test   = glIsEnabled(GL_DEPTH_TEST);
-    GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
 
     // Setup desired GL state
     // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared
@@ -152,40 +106,8 @@ void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
     // Destroy the temporary VAO
     glDeleteVertexArrays(1, &vertex_array_object);
 
-    // Restore modified GL state
-    glUseProgram(last_program);
-    glBindTexture(GL_TEXTURE_2D, last_texture);
-#ifdef GL_SAMPLER_BINDING
-    glBindSampler(0, last_sampler);
-#endif
-    glActiveTexture(last_active_texture);
-#ifndef IMGUI_IMPL_OPENGL_ES2
-    glBindVertexArray(last_vertex_array_object);
-#endif
-    glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-    glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-    glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
-    if (last_enable_blend)
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-    if (last_enable_cull_face)
-        glEnable(GL_CULL_FACE);
-    else
-        glDisable(GL_CULL_FACE);
-    if (last_enable_depth_test)
-        glEnable(GL_DEPTH_TEST);
-    else
-        glDisable(GL_DEPTH_TEST);
-    if (last_enable_scissor_test)
-        glEnable(GL_SCISSOR_TEST);
-    else
-        glDisable(GL_SCISSOR_TEST);
-#ifdef GL_POLYGON_MODE
-    glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
-#endif
-    glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
-    glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+    // Scissor must be disabled PRIOR to gl clear or it does not clear the entire screen
+    glDisable(GL_SCISSOR_TEST);
 }
 
 bool render::ImGuiRenderer::InitFontsTexture() {
@@ -200,8 +122,6 @@ bool render::ImGuiRenderer::InitFontsTexture() {
                                    // calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
     // Upload texture to graphics system
-    GLint last_texture;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
     glGenTextures(1, &fontTexture_);
     glBindTexture(GL_TEXTURE_2D, fontTexture_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -213,9 +133,6 @@ bool render::ImGuiRenderer::InitFontsTexture() {
 
     // Store our identifier
     io.Fonts->TexID = (ImTextureID)(intptr_t)fontTexture_;
-
-    // Restore state
-    glBindTexture(GL_TEXTURE_2D, last_texture);
 
     return true;
 }
@@ -263,14 +180,6 @@ static bool CheckProgram(GLuint handle, const char* desc) {
 }
 
 bool render::ImGuiRenderer::InitDeviceObjects() {
-    // Backup GL state
-    GLint last_texture, last_array_buffer;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
-
-    GLint last_vertex_array;
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
-
     const GLchar* vertex_shader_glsl_410_core = "#version 410 core\n"
                                                 "layout (location = 0) in vec2 Position;\n"
                                                 "layout (location = 1) in vec2 UV;\n"
@@ -321,12 +230,6 @@ bool render::ImGuiRenderer::InitDeviceObjects() {
     // Create buffers
     glGenBuffers(1, &vboHandle_);
     glGenBuffers(1, &elementsHandle_);
-
-    // Restore modified GL state
-    glBindTexture(GL_TEXTURE_2D, last_texture);
-    glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-    glBindVertexArray(last_vertex_array);
-
     return true;
 }
 
@@ -364,15 +267,7 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
                                              int fb_height,
                                              GLuint vertex_array_object) const {
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
-#ifdef GL_POLYGON_MODE
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#endif
 
     // Support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
     bool clip_origin_lower_left = true;
@@ -386,7 +281,6 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
     // Setup viewport, orthographic projection matrix
     // Our visible imgui space lies from draw_data->DisplayPos (top left) to
     // draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
-    glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
     float L = draw_data->DisplayPos.x;
     float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
     float T = draw_data->DisplayPos.y;

@@ -76,8 +76,10 @@ const render::Spritemap& render::RendererSprites::GetSpritemap(proto::Sprite::Sp
     return it->second;
 }
 
-const render::Texture* render::RendererSprites::GetTexture(proto::Sprite::SpriteGroup group) {
-    return textures_[static_cast<int>(group)];
+const render::Texture& render::RendererSprites::GetTexture(proto::Sprite::SpriteGroup group) {
+    auto* texture = textures_[static_cast<int>(group)];
+    assert(texture != nullptr);
+    return *texture;
 }
 
 

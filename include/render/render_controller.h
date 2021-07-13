@@ -6,7 +6,6 @@
 
 #include "gui/imgui_manager.h"
 #include "render/display_window.h"
-#include "render/opengl/shader.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
 
@@ -43,16 +42,12 @@ namespace jactorio::render
         gui::ImGuiManager imManager;
         Renderer renderer;
         RendererSprites rendererSprites;
-        Shader shader;
 
     private:
+        /// Sets up properties shared by both the tile and imgui renderer
+        void InitRendererCommon() const noexcept;
         void InitGuiFont(ThreadedLoopCommon& common);
         void InitTextures(ThreadedLoopCommon& common);
-        /// \exception std::runtime_error Too many tex coords for shader
-        void InitShader(Renderer& renderer);
-
-        /// Sends the tex coords for next animation frame to GPU
-        void UpdateAnimationTexCoords() const noexcept;
 
         bool setupGui_ = false;
     };

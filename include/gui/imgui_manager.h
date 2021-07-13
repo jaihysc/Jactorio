@@ -28,7 +28,8 @@ namespace jactorio::render
 {
     class DisplayWindow;
     class RendererSprites;
-    class ImGuiRenderer;
+    class Spritemap;
+    class Texture;
 } // namespace jactorio::render
 
 
@@ -53,7 +54,7 @@ namespace jactorio::gui
 
         /// Initializes the spritemap for rendering the character menus
         /// \remark Requires Sprite::sprite_group::gui to be initialized
-        void InitCharacterData(render::RendererSprites& renderer_sprites);
+        void InitCharacterData(const render::Spritemap& spritemap, const render::Texture& texture);
 
         /// Loads glyphs from provided localization's font
         /// \exception std::runtime_error if load failed
