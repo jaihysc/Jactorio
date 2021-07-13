@@ -2,7 +2,6 @@
 
 #include "gui/imgui_manager.h"
 
-#include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_sdl.h>
 #include <imgui.h>
 
@@ -15,10 +14,10 @@
 #include "gui/context.h"
 #include "gui/menu_data.h"
 #include "gui/menus.h"
-#include "gui/menus_debug.h"
 #include "proto/abstract/entity.h"
 #include "proto/localization.h"
 #include "render/display_window.h"
+#include "render/imgui_renderer.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
 
@@ -46,7 +45,7 @@ void gui::Setup(const render::DisplayWindow& display_window) {
     io.ConfigWindowsMoveFromTitleBarOnly = true;    //
 
     // Setup Platform/Renderer bindings
-    ImGui_ImplOpenGL3_Init();
+    render::ImGui_ImplOpenGL3_Init();
     ImGui_ImplSDL2_InitForOpenGL(display_window.GetWindow(), display_window.GetContext());
 
     // Factorio inspired Imgui style
@@ -132,14 +131,13 @@ void gui::LoadFont(const proto::Localization& localization) {
 }
 
 void gui::ImguiBeginFrame(const render::DisplayWindow& display_window) {
-    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
     ImGui::NewFrame();
 }
 
 void gui::ImguiRenderFrame() {
     ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    render::ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void DrawMenu(gui::Menu menu, const gui::Context& context, proto::UniqueDataBase* unique_data = nullptr) {
@@ -199,7 +197,7 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
 }
 
 void gui::ImguiTerminate() {
-    ImGui_ImplOpenGL3_Shutdown();
+    render::ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 

@@ -8,6 +8,7 @@
 #include "gui/menus.h"
 #include "gui/menus_debug.h"
 #include "proto/localization.h"
+#include "render/imgui_renderer.h"
 #include "render/opengl/error.h"
 #include "render/renderer.h"
 
@@ -106,6 +107,8 @@ void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) const {
     if (!loaded_local) {
         LOG_MESSAGE(warning, "No font was loaded, using default font");
     }
+
+    ImGui_ImplOpenGL3_CreateFontsTexture(); // Must be called after loading gui font
 }
 
 void render::RenderController::InitTextures(ThreadedLoopCommon& common) {
