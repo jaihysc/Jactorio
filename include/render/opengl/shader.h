@@ -46,7 +46,8 @@ namespace jactorio::render
         void Bind() const noexcept;
         static void Unbind() noexcept;
 
-        J_NODISCARD int GetUniformLocation(const std::string& name) const noexcept;
+        J_NODISCARD int GetUniformLocation(const char* name) const noexcept;
+        J_NODISCARD int GetAttribLocation(const char* name) const noexcept;
 
     private:
         static GLuint CompileShader(const std::string& filepath,

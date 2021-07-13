@@ -4,6 +4,8 @@
 #define JACTORIO_INCLUDE_RENDER_IMGUI_RENDERER_H
 #pragma once
 
+#include "render/opengl/shader.h"
+
 struct ImDrawData;
 
 namespace jactorio::render
@@ -33,8 +35,9 @@ namespace jactorio::render
 
         void SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height, GLuint vertex_array_object) const;
 
-        GLuint fontTexture_  = 0;
-        GLuint shaderHandle_ = 0, vertHandle_ = 0, fragHandle_ = 0;
+        Shader shader_;
+
+        GLuint fontTexture_ = 0;
         // Uniforms location
         GLint attribLocationTex_ = 0, attribLocationProjMtx_ = 0;
         // Vertex attributes location

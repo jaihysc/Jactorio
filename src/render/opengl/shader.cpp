@@ -45,13 +45,22 @@ void render::Shader::Unbind() noexcept {
 }
 
 
-int render::Shader::GetUniformLocation(const std::string& name) const noexcept {
-    DEBUG_OPENGL_CALL(const int location = glGetUniformLocation(id_, name.c_str()));
+int render::Shader::GetUniformLocation(const char* name) const noexcept {
+    DEBUG_OPENGL_CALL(const int location = glGetUniformLocation(id_, name));
 
     if (location == -1) {
-        LOG_MESSAGE_F(error, "Attempted to get location of uniform \"%s\" which does not exist", name.c_str());
+        LOG_MESSAGE_F(error, "Attempted to get location of uniform \"%s\" which does not exist", name);
     }
 
+    return location;
+}
+
+int render::Shader::GetAttribLocation(const char* name) const noexcept {
+    DEBUG_OPENGL_CALL(const int location = glGetAttribLocation(id_, name));
+
+    if (location == -1) {
+        LOG_MESSAGE_F(error, "Attempted to get location of attrib \"%s\" which does not exist", name);
+    }
 
     return location;
 }

@@ -146,86 +146,15 @@ void render::ImGuiRenderer::DestroyFontsTexture() {
     }
 }
 
-// If you get an error please report on github. You may try different GL context version or GLSL version. See GL<>GLSL
-// version table at the top of this file.
-static bool CheckShader(GLuint handle, const char* desc) {
-    GLint status = 0, log_length = 0;
-    glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
-    glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
-    if ((GLboolean)status == GL_FALSE)
-        fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile %s!\n", desc);
-    if (log_length > 1) {
-        ImVector<char> buf;
-        buf.resize((int)(log_length + 1));
-        glGetShaderInfoLog(handle, log_length, nullptr, (GLchar*)buf.begin());
-        fprintf(stderr, "%s\n", buf.begin());
-    }
-    return (GLboolean)status == GL_TRUE;
-}
-
-// If you get an error please report on GitHub. You may try different GL context version or GLSL version.
-static bool CheckProgram(GLuint handle, const char* desc) {
-    GLint status = 0, log_length = 0;
-    glGetProgramiv(handle, GL_LINK_STATUS, &status);
-    glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &log_length);
-    if ((GLboolean)status == GL_FALSE)
-        fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to link %s!\n", desc);
-    if (log_length > 1) {
-        ImVector<char> buf;
-        buf.resize((int)(log_length + 1));
-        glGetProgramInfoLog(handle, log_length, nullptr, (GLchar*)buf.begin());
-        fprintf(stderr, "%s\n", buf.begin());
-    }
-    return (GLboolean)status == GL_TRUE;
-}
-
 bool render::ImGuiRenderer::InitDeviceObjects() {
-    const GLchar* vertex_shader_glsl_410_core = "#version 410 core\n"
-                                                "layout (location = 0) in vec2 Position;\n"
-                                                "layout (location = 1) in vec2 UV;\n"
-                                                "layout (location = 2) in vec4 Color;\n"
-                                                "uniform mat4 ProjMtx;\n"
-                                                "out vec2 Frag_UV;\n"
-                                                "out vec4 Frag_Color;\n"
-                                                "void main()\n"
-                                                "{\n"
-                                                "    Frag_UV = UV;\n"
-                                                "    Frag_Color = Color;\n"
-                                                "    gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
-                                                "}\n";
+    shader_.Init({{"data/core/shaders/im_vs.vert", GL_VERTEX_SHADER}, //
+                  {"data/core/shaders/im_fs.frag", GL_FRAGMENT_SHADER}});
 
-    const GLchar* fragment_shader_glsl_410_core = "#version 410 core\n"
-                                                  "in vec2 Frag_UV;\n"
-                                                  "in vec4 Frag_Color;\n"
-                                                  "uniform sampler2D Texture;\n"
-                                                  "layout (location = 0) out vec4 Out_Color;\n"
-                                                  "void main()\n"
-                                                  "{\n"
-                                                  "    Out_Color = Frag_Color * texture(Texture, Frag_UV.st);\n"
-                                                  "}\n";
-
-    // Create shaders
-    vertHandle_ = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertHandle_, 1, &vertex_shader_glsl_410_core, nullptr);
-    glCompileShader(vertHandle_);
-    CheckShader(vertHandle_, "vertex shader");
-
-    fragHandle_ = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragHandle_, 1, &fragment_shader_glsl_410_core, nullptr);
-    glCompileShader(fragHandle_);
-    CheckShader(fragHandle_, "fragment shader");
-
-    shaderHandle_ = glCreateProgram();
-    glAttachShader(shaderHandle_, vertHandle_);
-    glAttachShader(shaderHandle_, fragHandle_);
-    glLinkProgram(shaderHandle_);
-    CheckProgram(shaderHandle_, "shader program");
-
-    attribLocationTex_      = glGetUniformLocation(shaderHandle_, "Texture");
-    attribLocationProjMtx_  = glGetUniformLocation(shaderHandle_, "ProjMtx");
-    attribLocationVtxPos_   = (GLuint)glGetAttribLocation(shaderHandle_, "Position");
-    attribLocationVtxUV_    = (GLuint)glGetAttribLocation(shaderHandle_, "UV");
-    attribLocationVtxColor_ = (GLuint)glGetAttribLocation(shaderHandle_, "Color");
+    attribLocationTex_      = shader_.GetUniformLocation("u_texture");
+    attribLocationProjMtx_  = shader_.GetUniformLocation("u_proj_mtx");
+    attribLocationVtxPos_   = (GLuint)shader_.GetAttribLocation("Position");
+    attribLocationVtxUV_    = (GLuint)shader_.GetAttribLocation("UV");
+    attribLocationVtxColor_ = (GLuint)shader_.GetAttribLocation("Color");
 
     // Create buffers
     glGenBuffers(1, &vboHandle_);
@@ -242,24 +171,6 @@ void render::ImGuiRenderer::DestroyDeviceObjects() {
         glDeleteBuffers(1, &elementsHandle_);
         elementsHandle_ = 0;
     }
-    if (shaderHandle_ && vertHandle_) {
-        glDetachShader(shaderHandle_, vertHandle_);
-    }
-    if (shaderHandle_ && fragHandle_) {
-        glDetachShader(shaderHandle_, fragHandle_);
-    }
-    if (vertHandle_) {
-        glDeleteShader(vertHandle_);
-        vertHandle_ = 0;
-    }
-    if (fragHandle_) {
-        glDeleteShader(fragHandle_);
-        fragHandle_ = 0;
-    }
-    if (shaderHandle_) {
-        glDeleteProgram(shaderHandle_);
-        shaderHandle_ = 0;
-    }
 }
 
 void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
@@ -268,6 +179,7 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
                                              GLuint vertex_array_object) const {
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     glEnable(GL_SCISSOR_TEST);
+    shader_.Bind();
 
     // Support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
     bool clip_origin_lower_left = true;
@@ -296,7 +208,6 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
         {0.0f, 0.0f, -1.0f, 0.0f},
         {(R + L) / (L - R), (T + B) / (B - T), 0.0f, 1.0f},
     };
-    glUseProgram(shaderHandle_);
     glUniform1i(attribLocationTex_, 0);
     glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &ortho_projection[0][0]);
 #ifdef GL_SAMPLER_BINDING
