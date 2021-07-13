@@ -21,21 +21,24 @@
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"
 
-// Inventory
-
 using namespace jactorio;
 
-const SpriteTexCoords* sprite_positions = nullptr;
-unsigned int tex_id                     = 0; // Assigned by openGL
-
-void gui::SetupCharacterData(render::RendererSprites& renderer_sprites) {
-    sprite_positions = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).GetTexCoords();
-    tex_id           = renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::gui)->GetId();
+gui::ImGuiManager::~ImGuiManager() {
+    if (hasInitRenderer_) {
+        imRenderer.Terminate();
+    }
+    if (hasImGuiContext_) {
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
+        LOG_MESSAGE(info, "Imgui terminated");
+    }
 }
 
-void gui::Setup(const render::DisplayWindow& display_window) {
+void gui::ImGuiManager::Init(const render::DisplayWindow& display_window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    hasImGuiContext_ = true;
+
     ImGuiIO& io = ImGui::GetIO();
     // (void)io;
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -45,7 +48,8 @@ void gui::Setup(const render::DisplayWindow& display_window) {
     io.ConfigWindowsMoveFromTitleBarOnly = true;    //
 
     // Setup Platform/Renderer bindings
-    render::ImGui_ImplOpenGL3_Init();
+    imRenderer.Init();
+    hasInitRenderer_ = true;
     ImGui_ImplSDL2_InitForOpenGL(display_window.GetWindow(), display_window.GetContext());
 
     // Factorio inspired Imgui style
@@ -115,7 +119,12 @@ void gui::Setup(const render::DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void gui::LoadFont(const proto::Localization& localization) {
+void gui::ImGuiManager::InitCharacterData(render::RendererSprites& renderer_sprites) {
+    spritePositions_ = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).GetTexCoords();
+    texId_           = renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::gui)->GetId();
+}
+
+void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const {
     auto& io = ImGui::GetIO();
 
     const auto font_path = std::string(data::PrototypeManager::kDataFolder) + "/" + localization.fontPath;
@@ -130,30 +139,11 @@ void gui::LoadFont(const proto::Localization& localization) {
     io.Fonts->Build();
 }
 
-void gui::ImguiBeginFrame(const render::DisplayWindow& display_window) {
-    ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
-    ImGui::NewFrame();
-}
-
-void gui::ImguiRenderFrame() {
-    ImGui::Render();
-    render::ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
-void DrawMenu(gui::Menu menu, const gui::Context& context, proto::UniqueDataBase* unique_data = nullptr) {
-    auto& gui_menu = gui::menus[static_cast<int>(menu)];
-
-    if (gui_menu.visible) {
-        gui_menu.drawPtr(context, nullptr, unique_data);
-    }
-}
-
-void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
-                    GameWorlds& worlds,
-                    game::Logic& logic,
-                    game::Player& player,
-                    const data::PrototypeManager& proto,
-                    game::EventData& /*event*/) {
+void gui::ImGuiManager::Draw(GameWorlds& worlds,
+                             game::Logic& logic,
+                             game::Player& player,
+                             const data::PrototypeManager& proto,
+                             game::EventData& event) const {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
     // Has imgui handled a mouse or keyboard event?
@@ -167,12 +157,13 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
     // ImPushFont(font);
     // ImPopFont();
 
-    MenuData menu_data = {*sprite_positions, tex_id};
+    MenuData menu_data = {*spritePositions_, texId_};
     const Context context{worlds, logic, player, proto, menu_data};
 
 
     bool drew_gui = false;
 
+    // Entity gui
     auto* tile = player.placement.GetActivatedTile();
     if (tile != nullptr) {
         drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(context, tile);
@@ -184,22 +175,32 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
         }
     }
 
+    // Menus
+    auto draw_menu = [](Menu menu, const Context& context, proto::UniqueDataBase* unique_data = nullptr) {
+        auto& gui_menu = menus[static_cast<int>(menu)];
+
+        if (gui_menu.visible) {
+            gui_menu.drawPtr(context, nullptr, unique_data);
+        }
+    };
+
     if (!drew_gui) {
-        DrawMenu(Menu::CharacterMenu, context);
+        draw_menu(Menu::CharacterMenu, context);
     }
 
     // Player gui
-    DrawMenu(Menu::DebugMenu, context);
+    draw_menu(Menu::DebugMenu, context);
 
     CursorWindow(context, nullptr, nullptr);
     CraftingQueue(context, nullptr, nullptr);
     PickupProgressbar(context, nullptr, nullptr);
 }
 
-void gui::ImguiTerminate() {
-    render::ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-
-    LOG_MESSAGE(info, "Imgui terminated");
+void gui::ImGuiManager::BeginFrame(const render::DisplayWindow& display_window) const {
+    ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
+    ImGui::NewFrame();
+}
+void gui::ImGuiManager::RenderFrame() const {
+    ImGui::Render();
+    imRenderer.Render(ImGui::GetDrawData());
 }

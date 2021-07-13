@@ -4,6 +4,7 @@
 #define JACTORIO_INCLUDE_RENDER_RENDER_CONTROLLER_H
 #pragma once
 
+#include "gui/imgui_manager.h"
 #include "render/display_window.h"
 #include "render/opengl/shader.h"
 #include "render/renderer.h"
@@ -22,9 +23,6 @@ namespace jactorio::render
     class RenderController
     {
     public:
-        RenderController() = default;
-        ~RenderController();
-
         /// Initializes components for rendering which does NOT require game data
         /// \exception If error
         void Init();
@@ -40,14 +38,15 @@ namespace jactorio::render
         /// Prepares a frame in world, does NOT draw to screen
         void RenderWorld(ThreadedLoopCommon& common);
 
-        DisplayWindow displayWindow;
+        // The ordering of members is deliberate to control destruction order
+        DisplayWindow displayWindow; // Holds gl context(all members below require)
+        gui::ImGuiManager imManager;
         Renderer renderer;
         RendererSprites rendererSprites;
         Shader shader;
 
     private:
-        void InitGui();
-        void InitGuiFont(ThreadedLoopCommon& common) const;
+        void InitGuiFont(ThreadedLoopCommon& common);
         void InitTextures(ThreadedLoopCommon& common);
         /// \exception std::runtime_error Too many tex coords for shader
         void InitShader(Renderer& renderer);

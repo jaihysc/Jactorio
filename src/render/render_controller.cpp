@@ -14,18 +14,12 @@
 
 using namespace jactorio;
 
-render::RenderController::~RenderController() {
-    if (setupGui_) {
-        gui::ImguiTerminate();
-    }
-}
-
 void render::RenderController::Init() {
     if (displayWindow.Init(840, 490) != 0) {
         throw std::runtime_error("Failed to initialize display window");
     }
 
-    InitGui();
+    imManager.Init(displayWindow);
     renderer.Init();
     renderer.GlSetDrawThreads(8);
 }
@@ -37,9 +31,9 @@ void render::RenderController::LoadedInit(ThreadedLoopCommon& common) {
 }
 
 void render::RenderController::RenderMainMenu(ThreadedLoopCommon& common) const {
-    gui::ImguiBeginFrame(displayWindow);
+    imManager.BeginFrame(displayWindow);
     gui::StartMenu(common);
-    gui::ImguiRenderFrame();
+    imManager.RenderFrame();
 }
 
 void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
@@ -67,14 +61,13 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
 
 
     std::lock_guard gui_guard{common.playerDataMutex};
-    gui::ImguiBeginFrame(displayWindow);
+    imManager.BeginFrame(displayWindow);
 
     if (IsVisible(gui::Menu::MainMenu)) {
         gui::MainMenu(common);
     }
 
-    gui::ImguiDraw(displayWindow,
-                   common.gameController.worlds,
+    imManager.Draw(common.gameController.worlds,
                    common.gameController.logic,
                    player,
                    common.gameController.proto,
@@ -83,23 +76,18 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
     gui::DebugMenuLogic(
         common.gameController.worlds, common.gameController.logic, player, common.gameController.proto, renderer);
 
-    //
     renderer.GlPrepareEnd();
-    gui::ImguiRenderFrame();
+
+    imManager.RenderFrame();
 }
 
-void render::RenderController::InitGui() {
-    gui::Setup(displayWindow);
-    setupGui_ = true;
-}
-
-void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) const {
+void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) {
     bool loaded_local  = false;
     auto localizations = common.gameController.proto.GetAll<proto::Localization>();
     for (const auto& local : localizations) {
         assert(local != nullptr);
         if (local->identifier == common.gameController.localIdentifier) {
-            gui::LoadFont(*local);
+            imManager.LoadFont(*local);
             loaded_local = true;
             break;
         }
@@ -108,7 +96,7 @@ void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) const {
         LOG_MESSAGE(warning, "No font was loaded, using default font");
     }
 
-    ImGui_ImplOpenGL3_CreateFontsTexture(); // Must be called after loading gui font
+    imManager.imRenderer.InitFontsTexture(); // Must be called after loading gui font
 }
 
 void render::RenderController::InitTextures(ThreadedLoopCommon& common) {
@@ -119,7 +107,7 @@ void render::RenderController::InitTextures(ThreadedLoopCommon& common) {
     rendererSprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
 
     // Gui
-    gui::SetupCharacterData(rendererSprites);
+    imManager.InitCharacterData(rendererSprites);
 }
 
 void render::RenderController::InitShader(Renderer& renderer) {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/data_type.h"
+#include "render/imgui_renderer.h"
 
 namespace jactorio::data
 {
@@ -27,6 +28,7 @@ namespace jactorio::render
 {
     class DisplayWindow;
     class RendererSprites;
+    class ImGuiRenderer;
 } // namespace jactorio::render
 
 
@@ -39,28 +41,45 @@ namespace jactorio::gui
     inline bool input_mouse_captured    = false;
     inline bool input_keyboard_captured = false;
 
+    /// Manages imgui context
+    class ImGuiManager
+    {
+    public:
+        ImGuiManager() = default;
+        ~ImGuiManager();
 
-    /// Initializes the spritemap for rendering the character menus
-    /// \remark Requires Sprite::sprite_group::gui to be initialized
-    void SetupCharacterData(render::RendererSprites& renderer_sprites);
+        /// Sets up ImGui context
+        void Init(const render::DisplayWindow& display_window);
 
-    void Setup(const render::DisplayWindow& display_window);
+        /// Initializes the spritemap for rendering the character menus
+        /// \remark Requires Sprite::sprite_group::gui to be initialized
+        void InitCharacterData(render::RendererSprites& renderer_sprites);
 
-    /// Loads glyphs from provided localization's font
-    /// \exception std::runtime_error if load failed
-    void LoadFont(const proto::Localization& localization);
+        /// Loads glyphs from provided localization's font
+        /// \exception std::runtime_error if load failed
+        void LoadFont(const proto::Localization& localization) const;
 
-    void ImguiBeginFrame(const render::DisplayWindow& display_window);
-    void ImguiRenderFrame();
+        // TODO move this elsewhere
+        /// Draws all the menus when in world
+        void Draw(GameWorlds& worlds,
+                  game::Logic& logic,
+                  game::Player& player,
+                  const data::PrototypeManager& proto,
+                  game::EventData& event) const;
 
-    void ImguiDraw(const render::DisplayWindow& display_window,
-                   GameWorlds& worlds,
-                   game::Logic& logic,
-                   game::Player& player,
-                   const data::PrototypeManager& proto,
-                   game::EventData& event);
+        void BeginFrame(const render::DisplayWindow& display_window) const;
+        void RenderFrame() const;
 
-    void ImguiTerminate();
+        render::ImGuiRenderer imRenderer;
+
+    private:
+        bool hasImGuiContext_ = false;
+        bool hasInitRenderer_ = false;
+
+        const SpriteTexCoords* spritePositions_ = nullptr;
+        unsigned int texId_                     = 0; // Assigned by openGL
+    };
+
 } // namespace jactorio::gui
 
 #endif // JACTORIO_INCLUDE_GUI_IMGUI_MANAGER_H
