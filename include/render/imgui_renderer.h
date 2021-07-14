@@ -4,7 +4,10 @@
 #define JACTORIO_INCLUDE_RENDER_IMGUI_RENDERER_H
 #pragma once
 
+#include "render/opengl/index_buffer.h"
 #include "render/opengl/shader.h"
+#include "render/opengl/vertex_array.h"
+#include "render/opengl/vertex_buffer.h"
 
 struct ImDrawData;
 
@@ -30,20 +33,19 @@ namespace jactorio::render
     private:
         void DestroyFontsTexture();
 
-        bool InitDeviceObjects();
-        void DestroyDeviceObjects();
-
-        void SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height, GLuint vertex_array_object) const;
+        void SetupRenderState(ImDrawData* draw_data) const;
 
         Shader shader_;
+
+        VertexBuffer vbo_;
+        IndexBuffer index_;
+        VertexArray vertexArray_;
 
         GLuint fontTexture_ = 0;
         // Uniforms location
         GLint attribLocationTex_ = 0, attribLocationProjMtx_ = 0;
         // Vertex attributes location
         GLuint attribLocationVtxPos_ = 0, attribLocationVtxUV_ = 0, attribLocationVtxColor_ = 0;
-
-        unsigned int vboHandle_ = 0, elementsHandle_ = 0;
     };
 } // namespace jactorio::render
 

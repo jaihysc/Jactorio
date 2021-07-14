@@ -6,7 +6,9 @@
 
 using namespace jactorio;
 
-render::RendererLayer::RendererLayer() : baseVb_(baseBuffer_, eCapacity_ * kBaseBytesPerElement, false) {
+render::RendererLayer::RendererLayer() {
+    baseVb_.Init();
+    vertexArray_.Init();
     vertexArray_.AddBuffer(&baseVb_, kBaseValsPerElement, 0);
 
     Reserve(kInitialSize);

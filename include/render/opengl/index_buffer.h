@@ -8,11 +8,11 @@
 
 namespace jactorio::render
 {
+    /// \remark Lifetime of object must be in opengl context
     class IndexBuffer
     {
     public:
-        /// \param count Number of indices
-        IndexBuffer(const unsigned int* data, unsigned int count);
+        IndexBuffer() = default;
         ~IndexBuffer();
 
         IndexBuffer(const IndexBuffer& other)     = delete;
@@ -20,13 +20,16 @@ namespace jactorio::render
         IndexBuffer& operator=(const IndexBuffer& other) = delete;
         IndexBuffer& operator=(IndexBuffer&& other) noexcept = default;
 
+        /// Generates buffer
+        void Init() noexcept;
+
         /// Creates a new buffer of provided specifications
-        void Reserve(const void* data, uint32_t index_count);
+        void Reserve(const void* data, uint32_t index_count) noexcept;
 
-        void Bind() const;
-        static void Unbind();
+        void Bind() const noexcept;
+        static void Unbind() noexcept;
 
-        J_NODISCARD unsigned int Count() const;
+        J_NODISCARD unsigned int Count() const noexcept;
 
     private:
         unsigned int id_    = 0;

@@ -10,10 +10,11 @@
 
 namespace jactorio::render
 {
+    /// \remark Lifetime of object must be in opengl context
     class VertexBuffer
     {
     public:
-        VertexBuffer(const void* data, uint32_t byte_size, bool static_buffer);
+        VertexBuffer() = default;
         ~VertexBuffer();
 
         VertexBuffer(const VertexBuffer& other)     = delete;
@@ -21,19 +22,22 @@ namespace jactorio::render
         VertexBuffer& operator=(const VertexBuffer& other) = delete;
         VertexBuffer& operator=(VertexBuffer&& other) noexcept = default;
 
+        /// Generates buffer
+        void Init() noexcept;
+
         /// Gets pointer to begin modifying buffer data
-        J_NODISCARD void* Map() const;
+        J_NODISCARD void* Map() const noexcept;
 
         /// Call to finish modifying buffer data, provided pointer from Map now invalid
-        void UnMap() const;
+        void UnMap() const noexcept;
 
         // void UpdateData(const void* data, uint32_t offset, uint32_t size) const;
 
         /// Creates a new buffer of provided specifications
-        void Reserve(const void* data, uint32_t byte_size, bool static_buffer) const;
+        void Reserve(const void* data, uint32_t byte_size, bool static_buffer) const noexcept;
 
-        void Bind() const;
-        static void Unbind();
+        void Bind() const noexcept;
+        static void Unbind() noexcept;
 
     private:
         unsigned int id_ = 0;

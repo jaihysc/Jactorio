@@ -8,14 +8,13 @@ namespace jactorio::render
 {
     class VertexBuffer;
 
+    /// \remark Lifetime of object must be in opengl context
     class VertexArray
     {
-        unsigned int id_ = 0;
-
     public:
         using ElementT = unsigned short;
 
-        VertexArray();
+        VertexArray() = default;
         ~VertexArray();
 
         VertexArray(const VertexArray& other)     = delete;
@@ -23,16 +22,22 @@ namespace jactorio::render
         VertexArray& operator=(const VertexArray& other) = delete;
         VertexArray& operator=(VertexArray&& other) noexcept = default;
 
+        /// Generates buffer
+        void Init() noexcept;
+
         /// Adds specified buffer to the vertex array
-        /// \remark Vertex_buffer must be deleted manually, it is not managed by the vertex array
+        /// \remark vb must be deleted manually, it is not managed by the vertex array
         /// \param vb Vertex buffer to add to vertex array
         /// \param span Number of floats for one set of coordinates (2 for X and Y)
         /// \param location Slot in vertex array in which vertex buffer is placed
         /// This must be managed manually to avoid conflicts
-        void AddBuffer(const VertexBuffer* vb, unsigned span, unsigned location) const;
+        void AddBuffer(const VertexBuffer* vb, unsigned span, unsigned location) const noexcept;
 
-        void Bind() const;
-        static void Unbind();
+        void Bind() const noexcept;
+        static void Unbind() noexcept;
+
+    private:
+        unsigned int id_ = 0;
     };
 } // namespace jactorio::render
 

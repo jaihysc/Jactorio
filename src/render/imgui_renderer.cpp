@@ -10,10 +10,10 @@
 
 #include "render/imgui_renderer.h"
 
-#include <GL/glew.h>
 #include <cstdint> // intptr_t
-#include <cstdio>
 #include <imgui.h>
+
+#include "render/opengl/error.h"
 
 using namespace jactorio;
 
@@ -23,11 +23,50 @@ void render::ImGuiRenderer::Init() {
     io.BackendRendererName = "imgui_impl_opengl3";
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field,
                                                                // allowing for large meshes.
-    InitDeviceObjects();
+
+    shader_.Init({{"data/core/shaders/im_vs.vert", GL_VERTEX_SHADER}, //
+                  {"data/core/shaders/im_fs.frag", GL_FRAGMENT_SHADER}});
+
+    attribLocationTex_      = shader_.GetUniformLocation("u_texture");
+    attribLocationProjMtx_  = shader_.GetUniformLocation("u_proj_mtx");
+    attribLocationVtxPos_   = (GLuint)shader_.GetAttribLocation("Position");
+    attribLocationVtxUV_    = (GLuint)shader_.GetAttribLocation("UV");
+    attribLocationVtxColor_ = (GLuint)shader_.GetAttribLocation("Color");
+
+    vbo_.Init();
+    index_.Init();
+    vertexArray_.Init();
+
+    // Setup attributes for ImDrawVert
+    vertexArray_.Bind();
+    vbo_.Bind();
+    index_.Bind();
+
+    DEBUG_OPENGL_CALL(glEnableVertexAttribArray(attribLocationVtxPos_));
+    DEBUG_OPENGL_CALL(glEnableVertexAttribArray(attribLocationVtxUV_));
+    DEBUG_OPENGL_CALL(glEnableVertexAttribArray(attribLocationVtxColor_));
+    DEBUG_OPENGL_CALL(glVertexAttribPointer(attribLocationVtxPos_, //
+                                            2,
+                                            GL_FLOAT,
+                                            GL_FALSE,
+                                            sizeof(ImDrawVert),
+                                            (GLvoid*)IM_OFFSETOF(ImDrawVert, pos)));
+    DEBUG_OPENGL_CALL(glVertexAttribPointer(attribLocationVtxUV_, //
+                                            2,
+                                            GL_FLOAT,
+                                            GL_FALSE,
+                                            sizeof(ImDrawVert),
+                                            (GLvoid*)IM_OFFSETOF(ImDrawVert, uv)));
+    DEBUG_OPENGL_CALL(glVertexAttribPointer(attribLocationVtxColor_,
+                                            4,
+                                            GL_UNSIGNED_BYTE,
+                                            GL_TRUE,
+                                            sizeof(ImDrawVert),
+                                            (GLvoid*)IM_OFFSETOF(ImDrawVert, col)));
+    VertexArray::Unbind();
 }
 
 void render::ImGuiRenderer::Terminate() {
-    DestroyDeviceObjects();
     DestroyFontsTexture();
 }
 
@@ -38,14 +77,7 @@ void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
     int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0)
         return;
-
-    // Setup desired GL state
-    // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared
-    // among GL contexts) The renderer would actually work without any VAO bound, but then our VertexAttrib calls would
-    // overwrite the default one currently bound.
-    GLuint vertex_array_object = 0;
-    glGenVertexArrays(1, &vertex_array_object);
-    SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
+    SetupRenderState(draw_data);
 
     // Will project scissor/clipping rectangles into framebuffer space
     ImVec2 clip_off   = draw_data->DisplayPos;       // (0,0) unless using multi-viewports
@@ -72,7 +104,7 @@ void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
                 // (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer
                 // to reset render state.)
                 if (pcmd->UserCallback == ImDrawCallback_ResetRenderState)
-                    SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
+                    SetupRenderState(draw_data);
                 else
                     pcmd->UserCallback(cmd_list, pcmd);
             }
@@ -102,9 +134,6 @@ void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
             }
         }
     }
-
-    // Destroy the temporary VAO
-    glDeleteVertexArrays(1, &vertex_array_object);
 
     // Scissor must be disabled PRIOR to gl clear or it does not clear the entire screen
     glDisable(GL_SCISSOR_TEST);
@@ -146,40 +175,13 @@ void render::ImGuiRenderer::DestroyFontsTexture() {
     }
 }
 
-bool render::ImGuiRenderer::InitDeviceObjects() {
-    shader_.Init({{"data/core/shaders/im_vs.vert", GL_VERTEX_SHADER}, //
-                  {"data/core/shaders/im_fs.frag", GL_FRAGMENT_SHADER}});
-
-    attribLocationTex_      = shader_.GetUniformLocation("u_texture");
-    attribLocationProjMtx_  = shader_.GetUniformLocation("u_proj_mtx");
-    attribLocationVtxPos_   = (GLuint)shader_.GetAttribLocation("Position");
-    attribLocationVtxUV_    = (GLuint)shader_.GetAttribLocation("UV");
-    attribLocationVtxColor_ = (GLuint)shader_.GetAttribLocation("Color");
-
-    // Create buffers
-    glGenBuffers(1, &vboHandle_);
-    glGenBuffers(1, &elementsHandle_);
-    return true;
-}
-
-void render::ImGuiRenderer::DestroyDeviceObjects() {
-    if (vboHandle_) {
-        glDeleteBuffers(1, &vboHandle_);
-        vboHandle_ = 0;
-    }
-    if (elementsHandle_) {
-        glDeleteBuffers(1, &elementsHandle_);
-        elementsHandle_ = 0;
-    }
-}
-
-void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
-                                             int fb_width,
-                                             int fb_height,
-                                             GLuint vertex_array_object) const {
+void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data) const {
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     glEnable(GL_SCISSOR_TEST);
     shader_.Bind();
+    vertexArray_.Bind();
+    vbo_.Bind();
+    index_.Bind();
 
     // Support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
     bool clip_origin_lower_left = true;
@@ -213,24 +215,4 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data,
 #ifdef GL_SAMPLER_BINDING
     glBindSampler(0, 0); // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
 #endif
-
-    (void)vertex_array_object;
-    glBindVertexArray(vertex_array_object);
-
-    // Bind vertex/index buffers and setup attributes for ImDrawVert
-    glBindBuffer(GL_ARRAY_BUFFER, vboHandle_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsHandle_);
-    glEnableVertexAttribArray(attribLocationVtxPos_);
-    glEnableVertexAttribArray(attribLocationVtxUV_);
-    glEnableVertexAttribArray(attribLocationVtxColor_);
-    glVertexAttribPointer(
-        attribLocationVtxPos_, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, pos));
-    glVertexAttribPointer(
-        attribLocationVtxUV_, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)IM_OFFSETOF(ImDrawVert, uv));
-    glVertexAttribPointer(attribLocationVtxColor_,
-                          4,
-                          GL_UNSIGNED_BYTE,
-                          GL_TRUE,
-                          sizeof(ImDrawVert),
-                          (GLvoid*)IM_OFFSETOF(ImDrawVert, col));
 }
