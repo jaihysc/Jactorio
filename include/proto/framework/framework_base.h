@@ -67,6 +67,8 @@ namespace jactorio::proto
         UniqueDataBase& operator=(UniqueDataBase&& other) noexcept = default;
 
 
+        /// Assigned and used for identifying the unique data when serializing/deserializing
+        /// 0 indicates invalid id
         UniqueDataIdT internalId = 0;
 
         CEREAL_SERIALIZE(archive) {

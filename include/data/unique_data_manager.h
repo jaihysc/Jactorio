@@ -21,11 +21,16 @@ namespace jactorio::data
         struct DebugInfo;
 
     public:
-        // For serializing
-        void AssignId(proto::UniqueDataBase& framework_base) noexcept;
+        // To serialize:
+        // 1. Call AssignId() with the unique data
+        // 2. Serialize the assigned id to unique_data
 
+        // To deserialize:
+        // 1. Deserialize all unique data first, call StoreRelocationEntry() with each
+        // 2. Call RelocationTableGet with serialized id to retrieve unique data
 
-        // For deserializing
+        void AssignId(proto::UniqueDataBase& unique_data) noexcept;
+
         void StoreRelocationEntry(proto::UniqueDataBase& unique_data);
         J_NODISCARD proto::UniqueDataBase& RelocationTableGet(UniqueDataIdT id) const noexcept;
 

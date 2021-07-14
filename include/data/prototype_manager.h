@@ -118,10 +118,12 @@ namespace jactorio::data
         void Clear();
 
 
-        // ======================================================================
+        // To serialize:
+        // 1. Serialize prototype internal id
 
-
-        // Deserialize
+        // To deserialize:
+        // 1. Call GenerateRelocationTable()
+        // 2. Call RelocationTableGet with serialized id to retrieve prototype
 
         /// RelocationTableGet can be used after this is called
         void GenerateRelocationTable();
