@@ -114,19 +114,17 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::Logic& logic) 
 }
 
 void game::InserterLogicUpdate(World& world, Logic& logic) {
-    DropoffQueue dropoff_queue{};
+    DropoffQueue dropoff_queue{}; // TODO We can allocate this ahead of time
     PickupQueue pickup_queue{};
 
-    for (auto* chunk : world.LogicGetChunks()) {
-        for (auto* tile : chunk->GetLogicGroup(LogicGroup::inserter)) {
-            auto* inserter_data = tile->GetUniqueData<proto::InserterData>();
-            assert(inserter_data != nullptr);
+    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::inserter)) {
+        const auto* inserter_proto = SafeCast<const proto::Inserter*>(prototype.Get());
+        assert(inserter_proto != nullptr);
 
-            const auto* proto_data = tile->GetPrototype<proto::Inserter>();
-            assert(proto_data != nullptr);
+        auto* inserter_data = SafeCast<proto::InserterData*>(unique_data.Get());
+        assert(inserter_data != nullptr);
 
-            RotateInserters(dropoff_queue, pickup_queue, {*proto_data, *inserter_data});
-        }
+        RotateInserters(dropoff_queue, pickup_queue, {*inserter_proto, *inserter_data});
     }
 
     ProcessInserterDropoff(dropoff_queue, logic);

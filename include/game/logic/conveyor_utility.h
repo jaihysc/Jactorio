@@ -126,10 +126,6 @@ namespace jactorio::game
     /// Conveyor shrinks 1 tile shorter, the tile after the current head becomes the head
     void ConveyorShortenFront(ConveyorStruct& con_struct);
 
-    /// Removes conveyor at coord to be considered for logic updates
-    /// \param logic_group Logic group of conveyor
-    void ConveyorLogicRemove(World& world, const WorldCoord& coord, ConveyorStruct& con_struct, LogicGroup logic_group);
-
     /// Renumbers structIndex for tiles along a conveyor segment at provided coord
     /// \param start_index Index to start renumbering at, renumber stops when index >= con_struct length
     void ConveyorRenumber(World& world, WorldCoord coord, int start_index = 0);

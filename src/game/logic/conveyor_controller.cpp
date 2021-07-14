@@ -164,55 +164,43 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
 }
 
 /// Moves items for conveyors
-/// \param l_chunk Chunk to update
-void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
-    const auto& logic_group = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
+static void LogicUpdateMoveItems(const proto::Conveyor& line_proto, proto::ConveyorData& conveyor_data) {
+    auto& line_segment = *conveyor_data.structure;
 
-    for (const auto& tile : logic_group) {
-        const auto& line_proto = *tile->GetPrototype<proto::Conveyor>();
-        auto& line_segment     = *tile->GetUniqueData<proto::ConveyorData>()->structure;
-
-        // Left
-        {
-            auto& left       = line_segment.left;
-            const auto index = line_segment.left.index;
-            // Empty or index indicates nothing should be moved
-            if (line_segment.left.IsActive()) {
-                left.lane[index].dist -= line_proto.speed;
-                line_segment.left.backItemDistance -= line_proto.speed;
-            }
+    // Left
+    {
+        auto& left       = line_segment.left;
+        const auto index = line_segment.left.index;
+        // Empty or index indicates nothing should be moved
+        if (line_segment.left.IsActive()) {
+            left.lane[index].dist -= line_proto.speed;
+            line_segment.left.backItemDistance -= line_proto.speed;
         }
+    }
 
-        // Right
-        {
-            auto& right      = line_segment.right;
-            const auto index = line_segment.right.index;
-            // Empty or index indicates nothing should be moved
-            if (line_segment.right.IsActive()) {
-                right.lane[index].dist -= line_proto.speed;
-                line_segment.right.backItemDistance -= line_proto.speed;
-            }
+    // Right
+    {
+        auto& right      = line_segment.right;
+        const auto index = line_segment.right.index;
+        // Empty or index indicates nothing should be moved
+        if (line_segment.right.IsActive()) {
+            right.lane[index].dist -= line_proto.speed;
+            line_segment.right.backItemDistance -= line_proto.speed;
         }
     }
 }
 
 /// Transitions items on conveyors to other lines and modifies whether of not the line is active
-/// \param l_chunk Chunk to update
-void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
-    const auto& logic_group = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
+static void LogicUpdateTransitionItems(const proto::Conveyor& line_proto, proto::ConveyorData& conveyor_data) {
+    auto& line_segment = *conveyor_data.structure;
 
-    for (const auto& tile : logic_group) {
-        const auto* line_proto = tile->GetPrototype<proto::Conveyor>();
-        auto& line_segment     = *tile->GetUniqueData<proto::ConveyorData>()->structure;
+    const auto tiles_moved = line_proto.speed;
 
-        auto tiles_moved = line_proto->speed;
+    if (line_segment.left.IsActive())
+        UpdateSide<true>(tiles_moved, line_segment);
 
-        if (line_segment.left.IsActive())
-            UpdateSide<true>(tiles_moved, line_segment);
-
-        if (line_segment.right.IsActive())
-            UpdateSide<false>(tiles_moved, line_segment);
-    }
+    if (line_segment.right.IsActive())
+        UpdateSide<false>(tiles_moved, line_segment);
 }
 
 void game::ConveyorLogicUpdate(World& world) {
@@ -220,11 +208,23 @@ void game::ConveyorLogicUpdate(World& world) {
     // 		1. Move items on their conveyors
     //		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-    for (const auto& chunk_pair : world.LogicGetChunks()) {
-        LogicUpdateMoveItems(*chunk_pair);
+    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::conveyor)) {
+        const auto* line_proto = SafeCast<const proto::Conveyor*>(prototype.Get());
+        auto* con_data         = SafeCast<proto::ConveyorData*>(unique_data.Get());
+
+        assert(line_proto != nullptr);
+        assert(con_data != nullptr);
+
+        LogicUpdateMoveItems(*line_proto, *con_data);
     }
 
-    for (const auto& chunk_pair : world.LogicGetChunks()) {
-        LogicUpdateTransitionItems(*chunk_pair);
+    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::conveyor)) {
+        const auto* line_proto = SafeCast<const proto::Conveyor*>(prototype.Get());
+        auto* con_data         = SafeCast<proto::ConveyorData*>(unique_data.Get());
+
+        assert(line_proto != nullptr);
+        assert(con_data != nullptr);
+
+        LogicUpdateTransitionItems(*line_proto, *con_data);
     }
 }

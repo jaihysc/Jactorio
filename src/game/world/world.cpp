@@ -58,19 +58,6 @@ Position2<OverlayOffsetAxis> game::World::WorldCToOverlayC(const WorldCoord& coo
 
 // ======================================================================
 
-game::World::World(const World& other)
-    : updateDispatcher{other.updateDispatcher},
-      chunkTexCoordIds_{other.chunkTexCoordIds_},
-      worldChunks_{other.worldChunks_},
-      logicChunks_{other.logicChunks_},
-      worldGenSeed_{other.worldGenSeed_},
-      worldGenChunks_{other.worldGenChunks_} {
-
-    for (auto*& logic_chunk : logicChunks_) {
-        logic_chunk = GetChunkC(logic_chunk->GetPosition());
-    }
-}
-
 void game::World::DeleteChunk(const ChunkCoord& c_coord) {
     worldChunks_.erase(std::make_tuple(c_coord.x, c_coord.y));
 
@@ -84,7 +71,9 @@ void game::World::DeleteChunk(const ChunkCoord& c_coord) {
 
 void game::World::Clear() {
     worldChunks_.clear();
-    logicChunks_.clear();
+    for (auto& list : logicLists_) {
+        list.clear();
+    }
     worldGenChunks_.clear();
 }
 
@@ -285,58 +274,41 @@ bool game::World::Remove(const WorldCoord& coord, const Orientation orien) {
 void game::World::LogicRegister(const LogicGroup group, const WorldCoord& coord, const TileLayer tlayer) {
     assert(group != LogicGroup::count_);
     assert(tlayer != TileLayer::count_);
+    auto& list = logicLists_[static_cast<int>(group)];
 
-    auto* chunk = GetChunkW(coord);
-    assert(chunk != nullptr);
-
-    auto* tile        = GetTile(coord, tlayer);
-    auto& logic_group = chunk->GetLogicGroup(group);
-
-    // Already added to logic group at tile
-    if (std::find(logic_group.begin(), logic_group.end(), tile) != logic_group.end())
-        return;
-
-    LogicAddChunk(*chunk);
-    chunk->GetLogicGroup(group).push_back(tile);
-}
-
-void game::World::LogicRemove(const LogicGroup group,
-                              const WorldCoord& coord,
-                              const std::function<bool(ChunkTile*)>& pred) {
-    auto* chunk = GetChunkW(coord);
-    assert(chunk);
-
-    auto& logic_group = chunk->GetLogicGroup(group);
-
-    logic_group.erase(std::remove_if(logic_group.begin(), logic_group.end(), pred), logic_group.end());
-
-    // Remove from logic chunks if now empty
-    for (auto& i_group : chunk->logicGroups) {
-        if (!i_group.empty())
+    // Do not add if already added, ignoring prototype/unique data
+    for (auto& object : list) {
+        if (object.coord == coord) {
             return;
+        }
     }
 
-    logicChunks_.erase(std::remove(logicChunks_.begin(), logicChunks_.end(), chunk), logicChunks_.end());
+    auto* tile = GetTile(coord, tlayer);
+    assert(tile != nullptr);
+
+    list.push_back({tile->GetPrototype(), tile->GetUniqueData(), coord});
 }
 
 void game::World::LogicRemove(const LogicGroup group, const WorldCoord& coord, const TileLayer tlayer) {
-    auto* tile = GetTile(coord, tlayer);
-    LogicRemove(group, coord, [&](ChunkTile* i_tile) { return i_tile == tile; });
-}
+    assert(group != LogicGroup::count_);
+    assert(tlayer != TileLayer::count_);
+    auto& list = logicLists_[static_cast<int>(group)];
 
-void game::World::LogicAddChunk(Chunk& chunk) {
-    // Only add a chunk for logic updates once
-    if (std::find(logicChunks_.begin(), logicChunks_.end(), &chunk) == logicChunks_.end()) {
-        logicChunks_.emplace_back(&chunk);
+    for (std::size_t i = 0; i < list.size(); ++i) {
+        auto& object = list[i];
+        if (object.coord == coord) {
+            list.erase(list.begin() + i);
+            return;
+        }
     }
 }
 
-game::World::LogicChunkContainerT& game::World::LogicGetChunks() {
-    return const_cast<LogicChunkContainerT&>(static_cast<const World*>(this)->LogicGetChunks());
+game::World::LogicListT& game::World::LogicGet(const LogicGroup group) {
+    return const_cast<LogicListT&>(static_cast<const World*>(this)->LogicGet(group));
 }
 
-const game::World::LogicChunkContainerT& game::World::LogicGetChunks() const {
-    return logicChunks_;
+const game::World::LogicListT& game::World::LogicGet(const LogicGroup group) const {
+    return logicLists_[static_cast<int>(group)];
 }
 
 // ======================================================================
@@ -544,30 +516,4 @@ void game::World::DeserializePostProcess() {
             tile.GetPrototype()->OnDeserialize(*this, coord, tile);
         }
     });
-}
-
-
-// ======================================================================
-
-
-game::World::SerialLogicChunkContainerT game::World::ToSerializeLogicChunkContainer() const {
-    SerialLogicChunkContainerT serial_logic;
-
-    serial_logic.reserve(logicChunks_.size());
-
-    for (const auto& logic_chunk : logicChunks_) {
-        serial_logic.push_back(logic_chunk->GetPosition());
-    }
-
-    return serial_logic;
-}
-
-void game::World::FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic) {
-    assert(logicChunks_.empty());
-
-    for (const auto& logic_chunk : serial_logic) {
-        logicChunks_.push_back(GetChunkC(logic_chunk));
-    }
-
-    assert(logicChunks_.size() == serial_logic.size());
 }

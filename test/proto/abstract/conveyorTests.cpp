@@ -74,18 +74,16 @@ namespace jactorio::proto
         /// \param l_index index for left only segment in logic group
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
-            game::Chunk& chunk = *world_.GetChunkC({0, 0});
-            auto& logic_group  = chunk.GetLogicGroup(game::LogicGroup::conveyor);
-
-            ASSERT_EQ(logic_group.size(), 3);
+            auto tiles = GetConveyors();
+            ASSERT_EQ(tiles.size(), 3);
 
             {
-                auto& line_segment = GetSegment(logic_group[r_index]);
+                auto& line_segment = GetSegment(tiles[r_index]);
                 EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
                 EXPECT_EQ(line_segment.length, 2);
             }
             {
-                auto& line_segment = GetSegment(logic_group[l_index]);
+                auto& line_segment = GetSegment(tiles[l_index]);
                 EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
                 EXPECT_EQ(line_segment.length, 2);
             }
@@ -93,8 +91,16 @@ namespace jactorio::proto
 
         // Grouping
 
-        std::vector<game::ChunkTile*>& GetConveyors(const ChunkCoord& chunk_coords) {
-            return world_.GetChunkC(chunk_coords)->GetLogicGroup(game::LogicGroup::conveyor);
+        /// \return All conveyors registered for logic updates
+        std::vector<game::ChunkTile*> GetConveyors() {
+            auto& logic_list = world_.LogicGet(game::LogicGroup::conveyor);
+
+            std::vector<game::ChunkTile*> tiles;
+            tiles.reserve(logic_list.size());
+            for (auto& object : logic_list) {
+                tiles.push_back(world_.GetTile(object.coord, game::TileLayer::entity));
+            }
+            return tiles;
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
@@ -135,9 +141,9 @@ namespace jactorio::proto
         // ======================================================================
 
         // Added current chunk as a logic chunk
-        ASSERT_EQ(world_.LogicGetChunks().size(), 1);
+        ASSERT_EQ(world_.LogicGet(game::LogicGroup::conveyor).size(), 1);
 
-        auto& tiles = GetConveyors({-1, 0});
+        auto tiles = GetConveyors();
 
         // Should have created a conveyor structure
         ASSERT_EQ(tiles.size(), 1);
@@ -156,7 +162,7 @@ namespace jactorio::proto
         TlRemoveEvents({0, 0});
 
         // Conveyor structure count should be 0 as it was removed
-        EXPECT_TRUE(world_.GetChunkC({0, 0})->GetLogicGroup(game::LogicGroup::conveyor).empty());
+        EXPECT_TRUE(world_.LogicGet(game::LogicGroup::conveyor).empty());
     }
 
     TEST_F(ConveyorTest, OnDeserializeRelinkTarget) {
@@ -200,7 +206,7 @@ namespace jactorio::proto
         BuildConveyor({1, 0}, Orientation::right);
         BuildConveyor({0, 0}, Orientation::right);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -226,7 +232,7 @@ namespace jactorio::proto
 
         TlRemoveEvents({0, 0});
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -298,7 +304,7 @@ namespace jactorio::proto
         left_tile->SetPrototype(Orientation::left, &lineProto_);
         TlBuildEvents({1, 0}, Orientation::left);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -322,7 +328,7 @@ namespace jactorio::proto
         down_tile->SetPrototype(Orientation::down, &lineProto_);
         TlBuildEvents({0, 0}, Orientation::down);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -349,7 +355,7 @@ namespace jactorio::proto
 
         TlRemoveEvents({0, 1});
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 1);
 
@@ -462,7 +468,7 @@ namespace jactorio::proto
         BuildConveyor({1, 1}, Orientation::up);
         BuildConveyor({1, 2}, Orientation::up);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -499,7 +505,7 @@ namespace jactorio::proto
 
         BuildConveyor({1, 1}, Orientation::right);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -530,7 +536,7 @@ namespace jactorio::proto
 
         BuildConveyor({1, 0}, Orientation::down);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -566,7 +572,7 @@ namespace jactorio::proto
 
         BuildConveyor({0, 1}, Orientation::left);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -616,7 +622,7 @@ namespace jactorio::proto
         }
 
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
         ASSERT_EQ(tiles.size(), 4);
 
         // Right

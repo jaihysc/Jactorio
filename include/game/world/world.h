@@ -13,6 +13,7 @@
 #include "core/data_type.h"
 #include "core/dvector.h"
 #include "game/world/chunk.h"
+#include "game/world/logic_group.h"
 #include "game/world/update_dispatcher.h"
 
 namespace jactorio::proto
@@ -26,10 +27,31 @@ namespace jactorio::proto
 
 namespace jactorio::game
 {
+    /// Represents entity registered for logic updates
+    struct LogicObject
+    {
+        data::SerialProtoPtr<const proto::FrameworkBase> prototype  = nullptr;
+        data::SerialUniqueDataPtr<proto::UniqueDataBase> uniqueData = nullptr;
+        WorldCoord coord;
+
+        CEREAL_SERIALIZE(archive) {
+            archive(prototype, uniqueData, coord);
+        }
+
+        friend bool operator==(const LogicObject& lhs, const LogicObject& rhs) {
+            return std::tie(lhs.prototype, lhs.uniqueData, lhs.coord) ==
+                std::tie(rhs.prototype, rhs.uniqueData, rhs.coord);
+        }
+
+        friend bool operator!=(const LogicObject& lhs, const LogicObject& rhs) {
+            return !(lhs == rhs);
+        }
+    };
+
     /// Stores all data for a world
     class World
     {
-        using LogicChunkContainerT       = std::vector<Chunk*>;
+        using LogicListT                 = std::vector<LogicObject>;
         using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
 
         /// Format: | 0 1 2 | 0 1 2 |
@@ -50,28 +72,6 @@ namespace jactorio::game
 
 
         // World access
-
-        World()  = default;
-        ~World() = default;
-
-        World(const World& other);
-        World(World&& other) noexcept = default;
-
-        World& operator=(World other) {
-            swap(*this, other);
-            return *this;
-        }
-
-        friend void swap(World& lhs, World& rhs) noexcept {
-            using std::swap;
-            swap(lhs.updateDispatcher, rhs.updateDispatcher);
-            swap(lhs.chunkTexCoordIds_, rhs.chunkTexCoordIds_);
-            swap(lhs.worldChunks_, rhs.worldChunks_);
-            swap(lhs.logicChunks_, rhs.logicChunks_);
-            swap(lhs.worldGenSeed_, rhs.worldGenSeed_);
-            swap(lhs.worldGenChunks_, rhs.worldGenChunks_);
-        }
-
 
         /// Creates chunk
         /// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
@@ -186,27 +186,16 @@ namespace jactorio::game
 
 
         // ==============================================================
-        // Logic chunk
+        // Logic updates
 
-        /// Adds a tile at coordinates to be considered for logic updates
+        /// Adds a tile layer at tlayer at coord to group to be considered for logic updates
         void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
-        /// Removes a tile at coordinates to be considered for logic updates
-        /// w/ custom comparison func to remove
-        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTile*)>& pred);
-
-        /// Removes a tile at coordinates to be considered for logic updates
+        /// Removes a group at tlayer at coord from being considered for logic updates
         void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
-
-        /// Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
-        /// a reference to the existing one will be returned
-        /// \param chunk The chunk this logic chunk is associated with
-        void LogicAddChunk(Chunk& chunk);
-
-        /// Returns all the chunks which require logic updates
-        J_NODISCARD LogicChunkContainerT& LogicGetChunks();
-        J_NODISCARD const LogicChunkContainerT& LogicGetChunks() const;
+        J_NODISCARD LogicListT& LogicGet(LogicGroup group);
+        J_NODISCARD const LogicListT& LogicGet(LogicGroup group) const;
 
         // ======================================================================
         // World generation
@@ -251,20 +240,10 @@ namespace jactorio::game
         void DeserializePostProcess();
 
 
-        CEREAL_LOAD(archive) {
-            SerialLogicChunkContainerT logic_chunks;
-            archive(updateDispatcher, chunkTexCoordIds_, worldChunks_, worldGenSeed_, logic_chunks);
-
-            logicChunks_.clear();
-
-            FromSerializeLogicChunkContainer(logic_chunks);
+        CEREAL_SERIALIZE(archive) {
+            // NOTE: Unique data is only available after deserializing worldChunks_
+            archive(updateDispatcher, chunkTexCoordIds_, worldChunks_, logicLists_, worldGenSeed_);
         }
-
-        CEREAL_SAVE(archive) {
-            auto logic_chunks = ToSerializeLogicChunkContainer();
-            archive(updateDispatcher, chunkTexCoordIds_, worldChunks_, worldGenSeed_, logic_chunks);
-        }
-
 
         UpdateDispatcher updateDispatcher;
 
@@ -276,15 +255,12 @@ namespace jactorio::game
 
         /// Chunks increment heading right and down
         std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
-        LogicChunkContainerT logicChunks_;
+        std::array<LogicListT, kLogicGroupCount> logicLists_;
 
 
         int worldGenSeed_ = 1001;
         /// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
         mutable std::set<ChunkKey> worldGenChunks_;
-
-        J_NODISCARD SerialLogicChunkContainerT ToSerializeLogicChunkContainer() const;
-        void FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic);
     };
 } // namespace jactorio::game
 

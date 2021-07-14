@@ -50,32 +50,6 @@ namespace jactorio::game
         EXPECT_FLOAT_EQ(World::WorldCToOverlayC(-65), 31);
     }
 
-    TEST_F(WorldTest, CopyLogicChunk) {
-        {
-            auto& chunk = world_.EmplaceChunk({0, 0});
-            world_.LogicAddChunk(chunk);
-        }
-
-        auto world_copy = world_;
-
-        ASSERT_EQ(world_copy.LogicGetChunks().size(), 1);
-
-        EXPECT_EQ(*world_copy.LogicGetChunks().begin(), world_copy.GetChunkC({0, 0}));
-    }
-
-    TEST_F(WorldTest, MoveLogicChunk) {
-        {
-            auto& chunk = world_.EmplaceChunk({0, 0});
-            world_.LogicAddChunk(chunk);
-        }
-
-        auto world_move = std::move(world_);
-
-        ASSERT_EQ(world_move.LogicGetChunks().size(), 1);
-
-        EXPECT_EQ(*world_move.LogicGetChunks().begin(), world_move.GetChunkC({0, 0}));
-    }
-
     TEST_F(WorldTest, AddChunk) {
         const auto& added_chunk = world_.EmplaceChunk({5, 1});
 
@@ -238,7 +212,7 @@ namespace jactorio::game
         auto& added_chunk = world_.EmplaceChunk({6, 6});
 
         EXPECT_EQ(world_.GetChunkC({6, 6}), &added_chunk);
-        world_.LogicAddChunk(added_chunk);
+        world_.LogicRegister(LogicGroup::inserter, {192, 192}, TileLayer::entity);
         world_.QueueChunkGeneration({0, 0});
 
 
@@ -251,7 +225,7 @@ namespace jactorio::game
         EXPECT_EQ(world_.GetChunkC({0, 0}), nullptr);
 
         EXPECT_EQ(world_.GetChunkC({6, 6}), nullptr);
-        EXPECT_TRUE(world_.LogicGetChunks().empty());
+        EXPECT_TRUE(world_.LogicGet(LogicGroup::inserter).empty());
     }
 
 
@@ -261,88 +235,34 @@ namespace jactorio::game
         world_.EmplaceChunk({1, 0}); // 32, 0 is chunk coords 1, 0
         world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
-        auto& logic_chunks = world_.LogicGetChunks();
+        auto& logic_list = world_.LogicGet(LogicGroup::inserter);
+        EXPECT_EQ(logic_list.size(), 1);
 
-        // Added chunk
-        ASSERT_EQ(logic_chunks.size(), 1);
-
-        EXPECT_NE(std::find(logic_chunks.begin(), logic_chunks.end(), world_.GetChunkC({1, 0})), logic_chunks.end());
-
-
-        // Registering again will not duplicate logic chunk
-        world_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
-        EXPECT_EQ(logic_chunks.size(), 1);
-
-
-        // Registering same position does nothing
-        world_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
-        EXPECT_EQ((*logic_chunks.begin())->GetLogicGroup(LogicGroup::inserter).size(), 2);
+        // Registering again will not duplicate
+        // Does not care about modified prototypes / unique data
+        const proto::ContainerEntity container;
+        world_.GetTile({32, 0}, TileLayer::entity)->SetPrototype(Direction::up, container);
+        world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        EXPECT_EQ(logic_list.size(), 1);
     }
 
     TEST_F(WorldTest, LogicRemove) {
         world_.EmplaceChunk({1, 0});
         world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
-
+        world_.LogicRegister(LogicGroup::inserter, {33, 0}, TileLayer::entity);
         world_.LogicRegister(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
 
-        // Registering again will not duplicate logic chunk
-        world_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
-
-
-        // Removed 1, another one remains
         world_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
+        EXPECT_EQ(world_.LogicGet(LogicGroup::inserter).size(), 1);
+        EXPECT_EQ(world_.LogicGet(LogicGroup::conveyor).size(), 1);
 
+        EXPECT_EQ(world_.LogicGet(LogicGroup::inserter)[0].coord, WorldCoord(33, 0));
 
-        // Inserter group empty, but conveyor group is not, DO NOT remove from logic chunks
-        world_.LogicRemove(LogicGroup::inserter, {42, 0}, TileLayer::entity);
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
-
-
-        // All groups empty, remove logic chunk
-        world_.LogicRemove(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
-    }
-
-    TEST_F(WorldTest, LogicRemoveNonExistent) {
-        world_.EmplaceChunk({1, 0});
-
-        // Removed 1, another one remains
+        // Removing again does nothing
         world_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGet(LogicGroup::inserter).size(), 1);
+        EXPECT_EQ(world_.LogicGet(LogicGroup::conveyor).size(), 1);
     }
-
-    TEST_F(WorldTest, LogicAddChunk) {
-        Chunk chunk({0, 0});
-
-        world_.LogicAddChunk(chunk);
-        // Should return reference to newly created and added chunk
-
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
-    }
-
-    TEST_F(WorldTest, LogicAddChunkNoDuplicate) {
-        // If the chunk already exists, it should not add it
-        Chunk chunk({0, 0});
-
-        world_.LogicAddChunk(chunk);
-        world_.LogicAddChunk(chunk); // Attempting to add the same chunk again
-
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
-    }
-
-    TEST_F(WorldTest, LogicClearChunkData) {
-        Chunk chunk({0, 0});
-
-        world_.LogicAddChunk(chunk);
-
-        // Clear
-        world_.Clear();
-
-        // Vector reference should now be empty
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
-    }
-
 
     class WorldDeserialize : public testing::Test
     {
@@ -446,13 +366,14 @@ namespace jactorio::game
     }
 
     TEST_F(WorldDeserialize, DeserializeLogicChunks) {
-        world_.LogicAddChunk(world_.EmplaceChunk({0, 0}));
+        world_.EmplaceChunk({0, 0});
+        world_.LogicRegister(LogicGroup::inserter, {2, 3}, TileLayer::resource);
+        const auto old_logic_object = world_.LogicGet(LogicGroup::inserter)[0];
 
-        auto result               = TestSerializeDeserialize(world_);
-        auto& result_logic_chunks = result.LogicGetChunks();
+        auto result             = TestSerializeDeserialize(world_);
+        auto& result_logic_list = result.LogicGet(LogicGroup::inserter);
 
-        ASSERT_EQ(result_logic_chunks.size(), 1);
-
-        EXPECT_EQ(result_logic_chunks[0], result.GetChunkC({0, 0}));
+        ASSERT_EQ(result_logic_list.size(), 1);
+        EXPECT_EQ(old_logic_object, result_logic_list[0]);
     }
 } // namespace jactorio::game

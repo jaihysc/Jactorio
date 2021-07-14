@@ -304,7 +304,7 @@ void game::ConveyorCreate(World& world,
             ConveyorLengthenFront(con_behind_struct);
 
             // Remove old head from logic group, add new head which is now 1 tile ahead
-            ConveyorLogicRemove(world, coord, con_behind_struct, logic_group);
+            world.LogicRemove(logic_group, coord.Incremented(con_behind_struct.direction, -1), TileLayer::entity);
             world.LogicRegister(logic_group, coord, TileLayer::entity);
 
             ConveyorRenumber(world, coord);
@@ -357,7 +357,7 @@ void game::ConveyorDestroy(World& world, const WorldCoord& coord, const LogicGro
         (o_line_data->structIndex == 1 &&
          o_line_segment->terminationType != ConveyorStruct::TerminationType::straight)) {
 
-        ConveyorLogicRemove(world, coord, *o_line_segment, logic_group);
+        world.LogicRemove(logic_group, coord, TileLayer::entity);
     }
     else {
         o_line_segment->length = o_line_data->structIndex;
@@ -376,18 +376,6 @@ void game::ConveyorLengthenFront(ConveyorStruct& con_struct) {
 void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
     con_struct.length--;
     con_struct.headOffset--;
-}
-
-void game::ConveyorLogicRemove(World& world,
-                               const WorldCoord& coord,
-                               ConveyorStruct& con_struct,
-                               const LogicGroup logic_group) {
-    world.LogicRemove(logic_group, coord, [&con_struct](auto* t_layer) {
-        assert(t_layer != nullptr);
-
-        auto* line_data = GetConData(*t_layer);
-        return line_data->structure.get() == &con_struct;
-    });
 }
 
 void game::ConveyorRenumber(World& world, WorldCoord coord, const int start_index) {

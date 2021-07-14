@@ -111,7 +111,7 @@ namespace jactorio
         return container_layer;
     }
 
-    /// Creates an inserter at coord
+    /// Creates an inserter at coord using OnBuild (Registers for logic updates)
     inline game::ChunkTile& TestSetupInserter(game::World& world,
                                               game::Logic& logic,
                                               const WorldCoord& coord,
@@ -138,10 +138,9 @@ namespace jactorio
         assert(tile != nullptr);
 
         tile->SetPrototype(con_struct_p->direction, &con_proto);
-
         tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
 
-        chunk->GetLogicGroup(game::LogicGroup::conveyor).emplace_back(tile);
+        world.LogicRegister(game::LogicGroup::conveyor, coord, game::TileLayer::entity);
     }
 
     /// Creates a assembly machine at coordinates
@@ -170,7 +169,7 @@ namespace jactorio
         return *tile;
     }
 
-    /// Creates a drill AND resource in the world with orientation, calling OnBuild
+    /// Creates a drill AND resource in the world with orientation using OnBuild
     inline game::ChunkTile& TestSetupDrill(game::World& world,
                                            game::Logic& logic,
                                            const WorldCoord& coord,
@@ -190,6 +189,7 @@ namespace jactorio
         return *tile;
     }
 
+    // TODO be more consistent in ALWAYS calling on build to create these
     /// Creates conveyor at tile with provided conveyor structure
     inline auto& TestSetupConveyor(game::World& world,
                                    const WorldCoord& coord,

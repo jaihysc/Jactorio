@@ -114,12 +114,12 @@ void proto::Inserter::InitPickupDropoff(game::World& world,
     {
         auto emit_coords = GetDropoffCoord(coord, orientation);
         world.updateDispatcher.Register(coord, emit_coords, *this);
-        world.UpdateDispatch(emit_coords, UpdateType::place);
+        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
     }
     // Pickup side
     {
         auto emit_coords = GetPickupCoord(coord, orientation);
         world.updateDispatcher.Register(coord, emit_coords, *this);
-        world.UpdateDispatch(emit_coords, UpdateType::place);
+        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
     }
 }
