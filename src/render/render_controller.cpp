@@ -12,7 +12,6 @@
 #include "proto/localization.h"
 #include "render/imgui_renderer.h"
 #include "render/opengl/error.h"
-#include "render/renderer.h"
 
 using namespace jactorio;
 

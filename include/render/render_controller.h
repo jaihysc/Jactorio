@@ -6,8 +6,8 @@
 
 #include "gui/imgui_manager.h"
 #include "render/display_window.h"
-#include "render/renderer.h"
 #include "render/spritemap_generator.h"
+#include "render/tile_renderer.h"
 
 namespace jactorio
 {
@@ -16,8 +16,6 @@ namespace jactorio
 
 namespace jactorio::render
 {
-    class Renderer;
-
     /// Top level class for controlling rendering
     class RenderController
     {
@@ -40,7 +38,7 @@ namespace jactorio::render
         // The ordering of members is deliberate to control destruction order
         DisplayWindow displayWindow; // Holds gl context(all members below require)
         gui::ImGuiManager imManager;
-        Renderer renderer;
+        TileRenderer renderer;
         RendererSprites rendererSprites;
 
     private:

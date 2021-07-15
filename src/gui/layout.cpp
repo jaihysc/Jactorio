@@ -4,7 +4,7 @@
 
 #include "game/player/player.h"
 #include "gui/colors.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -37,8 +37,8 @@ ImVec2 gui::GetWindowSize() {
 }
 
 ImVec2 gui::GetWindowCenter() {
-    return {SafeCast<float>(render::Renderer::GetWindowWidth()) / 2,
-            SafeCast<float>(render::Renderer::GetWindowHeight()) / 2};
+    return {SafeCast<float>(render::TileRenderer::GetWindowWidth()) / 2,
+            SafeCast<float>(render::TileRenderer::GetWindowHeight()) / 2};
 }
 
 void gui::SetupNextWindowLeft(const ImVec2& window_size) {

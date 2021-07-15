@@ -92,11 +92,11 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/render/display_window.cpp
         ${JACTORIO_DIR}/render/imgui_renderer.cpp
         ${JACTORIO_DIR}/render/proto_renderer.cpp
-        ${JACTORIO_DIR}/render/renderer.cpp
         ${JACTORIO_DIR}/render/render_controller.cpp
         ${JACTORIO_DIR}/render/render_loop.cpp
         ${JACTORIO_DIR}/render/renderer_layer.cpp
         ${JACTORIO_DIR}/render/spritemap_generator.cpp
+        ${JACTORIO_DIR}/render/tile_renderer.cpp
         )
 # ======================================== END Source files .cpp
 

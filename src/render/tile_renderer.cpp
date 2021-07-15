@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -18,10 +18,10 @@
 
 using namespace jactorio;
 
-unsigned int render::Renderer::windowWidth_  = 0;
-unsigned int render::Renderer::windowHeight_ = 0;
+unsigned int render::TileRenderer::windowWidth_  = 0;
+unsigned int render::TileRenderer::windowHeight_ = 0;
 
-void render::Renderer::Init() {
+void render::TileRenderer::Init() {
     // This does not need to change as everything is already prepared in world space
     const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
     mvpManager_.GlSetModelMatrix(model_matrix);
@@ -35,12 +35,12 @@ void render::Renderer::Init() {
     GlSetupTessellation();
 }
 
-void render::Renderer::InitTexture(const Spritemap& spritemap, const Texture& texture) noexcept {
+void render::TileRenderer::InitTexture(const Spritemap& spritemap, const Texture& texture) noexcept {
     spritemap_ = &spritemap;
     texture_   = &texture;
 }
 
-void render::Renderer::InitShader() {
+void render::TileRenderer::InitShader() {
     assert(spritemap_ != nullptr);
     auto [terrain_tex_coords, terrain_tex_coord_size] = spritemap_->GenCurrentFrame();
     LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
@@ -62,25 +62,25 @@ void render::Renderer::InitShader() {
     DEBUG_OPENGL_CALL(glUniform1i(shader_.GetUniformLocation("u_texture"), kTextureSlot));
 }
 
-void render::Renderer::GlClear() noexcept {
+void render::TileRenderer::GlClear() noexcept {
     DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-void render::Renderer::GlBind() const noexcept {
+void render::TileRenderer::GlBind() const noexcept {
     texture_->Bind(kTextureSlot);
     shader_.Bind();
 }
 
 
-unsigned render::Renderer::GetWindowWidth() noexcept {
+unsigned render::TileRenderer::GetWindowWidth() noexcept {
     return windowWidth_;
 }
 
-unsigned render::Renderer::GetWindowHeight() noexcept {
+unsigned render::TileRenderer::GetWindowHeight() noexcept {
     return windowHeight_;
 }
 
-void render::Renderer::GlResizeWindow(const unsigned int window_x, const unsigned int window_y) noexcept {
+void render::TileRenderer::GlResizeWindow(const unsigned int window_x, const unsigned int window_y) noexcept {
     // glViewport is critical, changes the size of the rendering area
     DEBUG_OPENGL_CALL(glViewport(0, 0, window_x, window_y));
 
@@ -95,11 +95,11 @@ void render::Renderer::GlResizeWindow(const unsigned int window_x, const unsigne
 }
 
 
-size_t render::Renderer::GetDrawThreads() const noexcept {
+size_t render::TileRenderer::GetDrawThreads() const noexcept {
     return drawThreads_;
 }
 
-void render::Renderer::GlSetDrawThreads(const size_t threads) {
+void render::TileRenderer::GlSetDrawThreads(const size_t threads) {
     assert(threads > 0);
     drawThreads_ = threads;
 
@@ -112,11 +112,11 @@ void render::Renderer::GlSetDrawThreads(const size_t threads) {
     assert(renderLayers_.size() == drawThreads_);
 }
 
-float render::Renderer::GetZoom() const noexcept {
+float render::TileRenderer::GetZoom() const noexcept {
     return zoom_;
 }
 
-void render::Renderer::SetZoom(float zoom) noexcept {
+void render::TileRenderer::SetZoom(float zoom) noexcept {
     if (zoom < 0.f) {
         zoom = 0.f;
     }
@@ -127,11 +127,11 @@ void render::Renderer::SetZoom(float zoom) noexcept {
     zoom_ = zoom;
 }
 
-void render::Renderer::SetPlayerPosition(const Position2<float>& player_position) noexcept {
+void render::TileRenderer::SetPlayerPosition(const Position2<float>& player_position) noexcept {
     playerPosition_ = player_position;
 }
 
-void render::Renderer::GlRender(const game::World& world) {
+void render::TileRenderer::GlRender(const game::World& world) {
     assert(drawThreads_ > 0);
     assert(renderLayers_.size() == drawThreads_);
 
@@ -225,7 +225,7 @@ void render::Renderer::GlRender(const game::World& world) {
         Position2 render_tile_offset{tile_offset.x, i * game::Chunk::kChunkWidth + tile_offset.y};
 
         chunkDrawThreads_[i] = std::async(std::launch::async,
-                                          &Renderer::PrepareChunkRow,
+                                          &TileRenderer::PrepareChunkRow,
                                           this,
                                           std::ref(r_layer),
                                           std::ref(world),
@@ -250,7 +250,7 @@ void render::Renderer::GlRender(const game::World& world) {
         Position2 render_tile_offset{tile_offset.x, i * game::Chunk::kChunkWidth + tile_offset.y};
 
         chunkDrawThreads_[thread_n] = std::async(std::launch::async,
-                                                 &Renderer::PrepareChunkRow,
+                                                 &TileRenderer::PrepareChunkRow,
                                                  this,
                                                  std::ref(r_layer),
                                                  std::ref(world),
@@ -277,16 +277,16 @@ void render::Renderer::GlRender(const game::World& world) {
     }
 }
 
-void render::Renderer::GlPrepareBegin() {
+void render::TileRenderer::GlPrepareBegin() {
     GlPrepareBegin(renderLayers_[0]);
 }
-void render::Renderer::GlPrepareEnd() {
+void render::TileRenderer::GlPrepareEnd() {
     GlPrepareEnd(renderLayers_[0]);
 }
 
-void render::Renderer::PrepareSprite(const WorldCoord& coord,
-                                     const SpriteTexCoordIndexT tex_coord_id,
-                                     const Dimension& dimension) {
+void render::TileRenderer::PrepareSprite(const WorldCoord& coord,
+                                         const SpriteTexCoordIndexT tex_coord_id,
+                                         const Dimension& dimension) {
     auto& r_layer = renderLayers_[0];
 
     const auto screen_pos = WorldCoordToBufferPos(playerPosition_, coord);
@@ -300,8 +300,8 @@ void render::Renderer::PrepareSprite(const WorldCoord& coord,
     }
 }
 
-WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& player_pos,
-                                                   const Position2<int32_t>& screen_pos) const {
+WorldCoord render::TileRenderer::ScreenPosToWorldCoord(const Position2<float>& player_pos,
+                                                       const Position2<int32_t>& screen_pos) const {
     const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
     const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
 
@@ -334,8 +334,8 @@ WorldCoord render::Renderer::ScreenPosToWorldCoord(const Position2<float>& playe
     return {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
 }
 
-Position2<uint16_t> render::Renderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
-                                                            const WorldCoord& coord) const {
+Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
+                                                                const WorldCoord& coord) const {
     const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
     const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
 
@@ -358,7 +358,7 @@ Position2<uint16_t> render::Renderer::WorldCoordToBufferPos(const Position2<floa
 
 // ======================================================================
 
-void render::Renderer::GlSetupTessellation() {
+void render::TileRenderer::GlSetupTessellation() {
     // Setup tessellation
     constexpr auto input_patch_vertices  = 1;
     constexpr auto output_patch_vertices = 4;
@@ -384,18 +384,18 @@ void render::Renderer::GlSetupTessellation() {
     DEBUG_OPENGL_CALL(glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, outer_level));
 }
 
-void render::Renderer::GlDraw(const uint64_t count) noexcept {
+void render::TileRenderer::GlDraw(const uint64_t count) noexcept {
     DEBUG_OPENGL_CALL(glDrawArrays(GL_PATCHES, 0, SafeCast<GLsizei>(count)));
 }
 
-void render::Renderer::GlDrawIndex(const uint64_t index_count) noexcept {
+void render::TileRenderer::GlDrawIndex(const uint64_t index_count) noexcept {
     DEBUG_OPENGL_CALL(glDrawElements(GL_PATCHES,
                                      SafeCast<GLsizei>(index_count),
                                      GL_UNSIGNED_INT,
                                      nullptr)); // Pointer not needed as index buffer is already bound
 }
 
-void render::Renderer::CalculateViewMatrix(const Position2<int> i_player) noexcept {
+void render::TileRenderer::CalculateViewMatrix(const Position2<int> i_player) noexcept {
     // Decimal is used to shift the camera
     // Invert the movement to give the illusion of moving in the correct direction
     const auto camera_offset =
@@ -419,18 +419,18 @@ void render::Renderer::CalculateViewMatrix(const Position2<int> i_player) noexce
     mvpManager_.UpdateViewTransform();
 }
 
-Position2<int> render::Renderer::GetTileDrawAmount() const noexcept {
+Position2<int> render::TileRenderer::GetTileDrawAmount() const noexcept {
     const auto matrix = glm::vec4(1, -1, 1, 1) / mvpManager_.GetMvpMatrix();
     return Position2{LossyCast<int>(matrix.x / LossyCast<double>(tileWidth) * 2) + 2,
                      LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2};
 }
 
-void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
-                                       const game::World& world,
-                                       std::mutex& world_gen_mutex,
-                                       const Position2<int> row_start,
-                                       const int chunk_span,
-                                       const Position2<int> render_tile_offset) const noexcept {
+void render::TileRenderer::PrepareChunkRow(RendererLayer& r_layer,
+                                           const game::World& world,
+                                           std::mutex& world_gen_mutex,
+                                           const Position2<int> row_start,
+                                           const int chunk_span,
+                                           const Position2<int> render_tile_offset) const noexcept {
     auto [tex_ids, readable_chunks] = world.GetChunkTexCoordIds(row_start);
 
     if (readable_chunks < chunk_span) {
@@ -484,11 +484,11 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
     }
 }
 
-FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
-                                                const SpriteTexCoordIndexT* tex_coord_ids,
-                                                const Position2<int> render_tile_offset,
-                                                const Position2<uint8_t> tile_start,
-                                                const Position2<uint8_t> tile_end) const noexcept {
+FORCEINLINE void render::TileRenderer::PrepareChunk(RendererLayer& r_layer,
+                                                    const SpriteTexCoordIndexT* tex_coord_ids,
+                                                    const Position2<int> render_tile_offset,
+                                                    const Position2<uint8_t> tile_start,
+                                                    const Position2<uint8_t> tile_end) const noexcept {
     tex_coord_ids += tile_start.y * game::Chunk::kChunkWidth * game::kTileLayerCount;
 
 
@@ -528,9 +528,9 @@ FORCEINLINE void render::Renderer::PrepareChunk(RendererLayer& r_layer,
     }
 }
 
-FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
-                                                        const game::Chunk& chunk,
-                                                        const Position2<int> render_tile_offset) const {
+FORCEINLINE void render::TileRenderer::PrepareOverlayLayers(RendererLayer& r_layer,
+                                                            const game::Chunk& chunk,
+                                                            const Position2<int> render_tile_offset) const {
     assert(false); // PushBack usage needs to be updated
 
     for (int layer_index = 0; layer_index < game::kOverlayLayerCount; ++layer_index) {
@@ -550,7 +550,7 @@ FORCEINLINE void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
     }
 }
 
-void render::Renderer::UpdateAnimationTexCoords() const noexcept {
+void render::TileRenderer::UpdateAnimationTexCoords() const noexcept {
     auto [tex_coords, size] = spritemap_->GenNextFrame();
 
     static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
@@ -559,19 +559,19 @@ void render::Renderer::UpdateAnimationTexCoords() const noexcept {
                                    reinterpret_cast<const GLfloat*>(tex_coords)));
 }
 
-void render::Renderer::GlPrepareBegin(RendererLayer& r_layer) {
+void render::TileRenderer::GlPrepareBegin(RendererLayer& r_layer) {
     r_layer.Clear();
     r_layer.GlWriteBegin();
 }
 
-void render::Renderer::GlPrepareEnd(RendererLayer& r_layer) {
+void render::TileRenderer::GlPrepareEnd(RendererLayer& r_layer) {
     r_layer.GlWriteEnd();
     r_layer.GlBindBuffers();
     r_layer.GlHandleBufferResize();
     GlDraw(r_layer.Size());
 }
 
-void render::Renderer::GlUpdateTileProjectionMatrix(const float zoom) noexcept {
+void render::TileRenderer::GlUpdateTileProjectionMatrix(const float zoom) noexcept {
     // Must subtract some because zooming to EXACTLY half leaves no pixels remaining, making everything invisible
     const auto max_pixel_zoom     = std::min(windowWidth_, windowHeight_) / 2.f - 1;
     constexpr auto min_pixel_zoom = 1.f;

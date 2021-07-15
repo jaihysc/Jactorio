@@ -19,7 +19,7 @@ namespace jactorio::game
 
 namespace jactorio::render
 {
-    class Renderer;
+    class TileRenderer;
 } // namespace jactorio::render
 
 namespace jactorio::gui
@@ -31,7 +31,7 @@ namespace jactorio::gui
                         game::Logic& logic,
                         game::Player& player,
                         const data::PrototypeManager& proto,
-                        render::Renderer& renderer);
+                        render::TileRenderer& renderer);
 
     void DebugTimings();
 
@@ -45,7 +45,7 @@ namespace jactorio::gui
     void DebugConveyorInfo(GameWorlds& worlds,
                            game::Player& player,
                            const data::PrototypeManager& proto,
-                           render::Renderer& renderer);
+                           render::TileRenderer& renderer);
 
     void DebugInserterInfo(GameWorlds& worlds, game::Player& player);
 

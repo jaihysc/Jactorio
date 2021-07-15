@@ -16,7 +16,7 @@
 #include "gui/imgui_manager.h"
 #include "proto/sprite.h"
 #include "render/render_loop.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -182,7 +182,7 @@ bool render::DisplayWindow::WindowContextActive() const {
 // ======================================================================
 // Events
 
-void HandleWindowEvent(render::Renderer& renderer, game::EventData& event, const SDL_Event& sdl_event) {
+void HandleWindowEvent(render::TileRenderer& renderer, game::EventData& event, const SDL_Event& sdl_event) {
     switch (sdl_event.window.event) {
     case SDL_WINDOWEVENT_RESIZED:
     case SDL_WINDOWEVENT_SIZE_CHANGED:

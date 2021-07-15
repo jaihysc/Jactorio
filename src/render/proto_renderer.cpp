@@ -8,7 +8,6 @@
 #include "proto/inserter.h"
 #include "proto/sprite.h"
 #include "render/conveyor_offset.h"
-#include "render/renderer.h"
 
 using namespace jactorio;
 

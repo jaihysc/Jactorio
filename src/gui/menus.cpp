@@ -20,7 +20,7 @@
 #include "proto/recipe_category.h"
 #include "proto/recipe_group.h"
 #include "proto/sprite.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -366,7 +366,7 @@ void gui::CraftingQueue(const Context& context,
         auto window_height = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
         window_height += kGuiStyleWindowPaddingY;
 
-        const auto max_window_height = render::Renderer::GetWindowHeight() / 2; // Pixels
+        const auto max_window_height = render::TileRenderer::GetWindowHeight() / 2; // Pixels
         if (window_height > max_window_height)
             window_height = max_window_height;
 
@@ -377,7 +377,7 @@ void gui::CraftingQueue(const Context& context,
     const auto& recipe_queue = context.player.crafting.GetRecipeQueue();
     const auto window_height = get_window_height(recipe_queue.size());
 
-    ImGui::SetNextWindowPos({0, SafeCast<float>(render::Renderer::GetWindowHeight() - window_height)});
+    ImGui::SetNextWindowPos({0, SafeCast<float>(render::TileRenderer::GetWindowHeight() - window_height)});
     ImGui::SetNextWindowSize({GetTotalItemSlotWidth(slot_span) + GetTotalWindowPaddingX() + kGuiStyleScrollBarSize,
                               SafeCast<float>(window_height)});
 
@@ -418,8 +418,8 @@ void gui::PickupProgressbar(const Context& context,
 
     ImGui::SetNextWindowSize({progress_bar_width, progress_bar_height});
     ImGui::SetNextWindowPos(
-        {SafeCast<float>(render::Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
-         SafeCast<float>(render::Renderer::GetWindowHeight()) - progress_bar_height});
+        {SafeCast<float>(render::TileRenderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
+         SafeCast<float>(render::TileRenderer::GetWindowHeight()) - progress_bar_height});
 
     // Window
     GuiMenu menu;

@@ -23,7 +23,7 @@
 #include "proto/label.h"
 #include "proto/sprite.h"
 #include "proto/transport_belt.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -42,7 +42,7 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::Logic& logic,
                          game::Player& player,
                          const data::PrototypeManager& proto,
-                         render::Renderer& renderer) {
+                         render::TileRenderer& renderer) {
     if (show_tile_info)
         DebugTileInfo(worlds, player);
 
@@ -291,7 +291,9 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     }
 }
 
-static void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto, render::Renderer& renderer) {
+static void ShowConveyorSegments(game::World& world,
+                                 const data::PrototypeManager& proto,
+                                 render::TileRenderer& renderer) {
     const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
     const auto* sprite_moving       = proto.Get<proto::Sprite>("__core__/rect-green");
     const auto* sprite_left_moving  = proto.Get<proto::Sprite>("__core__/rect-aqua");
@@ -372,7 +374,7 @@ static void ShowConveyorSegments(game::World& world, const data::PrototypeManage
 void gui::DebugConveyorInfo(GameWorlds& worlds,
                             game::Player& player,
                             const data::PrototypeManager& proto,
-                            render::Renderer& renderer) {
+                            render::TileRenderer& renderer) {
     static WorldCoord last_valid_line_segment;
     static bool use_last_valid_line_segment = true;
     static bool show_conveyor_structs       = false;

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_RENDERER_H
-#define JACTORIO_INCLUDE_RENDER_RENDERER_H
+#ifndef JACTORIO_INCLUDE_RENDER_TILE_RENDERER_H
+#define JACTORIO_INCLUDE_RENDER_TILE_RENDERER_H
 #pragma once
 
 #include <future>
@@ -30,7 +30,7 @@ namespace jactorio::render
     class Spritemap;
     class Texture;
 
-    class Renderer
+    class TileRenderer
     {
         // Rendering specifications
         //
@@ -55,10 +55,10 @@ namespace jactorio::render
     public:
         static constexpr unsigned int tileWidth = 1;
 
-        Renderer() = default;
+        TileRenderer() = default;
 
-        Renderer(const Renderer& other)     = delete;
-        Renderer(Renderer&& other) noexcept = delete;
+        TileRenderer(const TileRenderer& other)     = delete;
+        TileRenderer(TileRenderer&& other) noexcept = delete;
 
         /// Sets up renderer + OpenGl settings, only need to call once on program start
         /// \exception RendererException Failed to setup
@@ -194,4 +194,4 @@ namespace jactorio::render
     };
 }; // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDER_RENDERER_H
+#endif // JACTORIO_INCLUDE_RENDER_TILE_RENDERER_H

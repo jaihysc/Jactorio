@@ -6,7 +6,7 @@
 #include "game/world/world.h"
 #include "proto/abstract/entity.h"
 #include "proto/sprite.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -21,7 +21,7 @@ Position2<int32_t> game::MouseSelection::GetCursor() noexcept {
 }
 
 
-void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
+void game::MouseSelection::DrawCursorOverlay(render::TileRenderer& renderer,
                                              GameWorlds& worlds,
                                              Player& player,
                                              const data::PrototypeManager& proto) {

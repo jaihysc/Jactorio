@@ -28,7 +28,7 @@ namespace jactorio::game
 
 namespace jactorio::render
 {
-    class Renderer;
+    class TileRenderer;
 }
 
 namespace jactorio::game
@@ -44,7 +44,7 @@ namespace jactorio::game
 
         /// Draws a selection box if NO entity is selected
         /// otherwise, draws a ghost of the entity selected at the cursor
-        static void DrawCursorOverlay(render::Renderer& renderer,
+        static void DrawCursorOverlay(render::TileRenderer& renderer,
                                       GameWorlds& worlds,
                                       Player& player,
                                       const data::PrototypeManager& proto);

@@ -19,7 +19,6 @@
 #include "proto/localization.h"
 #include "render/display_window.h"
 #include "render/imgui_renderer.h"
-#include "render/renderer.h"
 #include "render/spritemap_generator.h"
 
 using namespace jactorio;

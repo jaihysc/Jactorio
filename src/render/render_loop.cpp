@@ -18,7 +18,7 @@ using namespace jactorio;
 unsigned int window_x = 0;
 unsigned int window_y = 0;
 
-void render::ChangeWindowSize(Renderer& renderer,
+void render::ChangeWindowSize(TileRenderer& renderer,
                               game::EventData& event,
                               const unsigned int window_size_x,
                               const unsigned int window_size_y) {
@@ -50,7 +50,7 @@ static void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::s
 
     SDL_GL_SwapWindow(display_window.GetWindow());
 
-    render::Renderer::GlClear();
+    render::TileRenderer::GlClear();
 }
 
 /// Retrieves and handles sdl events

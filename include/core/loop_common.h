@@ -10,11 +10,6 @@
 #include "gui/main_menu_data.h"
 #include "render/render_controller.h"
 
-namespace jactorio::render
-{
-    class Renderer;
-}
-
 namespace jactorio
 {
     /// Used between threaded loops

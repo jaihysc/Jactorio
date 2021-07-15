@@ -10,7 +10,6 @@
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
 #include "proto/tile.h"
-#include "render/renderer.h"
 
 using namespace jactorio;
 
