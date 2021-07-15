@@ -10,6 +10,7 @@
 #include "core/execution_timer.h"
 #include "game/player/player.h"
 #include "game/world/chunk_tile.h"
+#include "game/world/world.h"
 #include "gui/colors.h"
 #include "gui/context.h"
 #include "gui/menu_data.h"
@@ -119,7 +120,7 @@ void gui::ImGuiManager::Init(const render::DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void gui::ImGuiManager::InitCharacterData(const render::Spritemap& spritemap, const render::Texture& texture) {
+void gui::ImGuiManager::InitData(const render::Spritemap& spritemap, const render::Texture& texture) {
     spritePositions_ = &spritemap.GetTexCoords();
     texId_           = texture.GetId();
 }
@@ -139,13 +140,53 @@ void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const 
     io.Fonts->Build();
 }
 
-void gui::ImGuiManager::Draw(GameWorlds& worlds,
-                             game::Logic& logic,
-                             game::Player& player,
-                             const data::PrototypeManager& proto,
-                             game::EventData& event) const {
+void gui::ImGuiManager::PrepareInWorld(GameWorlds& worlds,
+                                       game::Logic& logic,
+                                       game::Player& player,
+                                       const data::PrototypeManager& proto,
+                                       game::EventData& event) const {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
+    PrepareWorld(worlds[player.world.GetId()]);
+    PrepareGui(worlds, logic, player, proto, event);
+}
 
+void gui::ImGuiManager::BeginFrame(const render::DisplayWindow& display_window) const {
+    imRenderer.worldVert.clear();
+    imRenderer.worldIndices.clear();
+    ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
+    ImGui::NewFrame();
+}
+
+void gui::ImGuiManager::RenderFrame() const {
+    imRenderer.Bind();
+    imRenderer.RenderWorld(texId_);
+
+    ImGui::Render();
+    imRenderer.RenderGui(ImGui::GetDrawData());
+}
+
+void gui::ImGuiManager::PrepareWorld(const game::World& world) const {
+    for (auto& logic_object : world.LogicGet(game::LogicGroup::conveyor)) {
+        //
+    }
+    for (auto& logic_object : world.LogicGet(game::LogicGroup::inserter)) {
+        //
+    }
+
+    // TODO temp data
+    imRenderer.worldVert = {{{0, 0}, {0, 0}, IM_COL32(255, 255, 255, 255)}, //
+                            {{0, 100}, {0, 1}, IM_COL32(255, 255, 255, 255)},
+                            {{200, 100}, {1, 1}, IM_COL32(255, 255, 255, 255)},
+                            {{200, 0}, {1, 0}, IM_COL32(255, 255, 255, 255)}};
+
+    imRenderer.worldIndices = {0, 1, 2, 2, 3, 0};
+}
+
+void gui::ImGuiManager::PrepareGui(GameWorlds& worlds,
+                                   game::Logic& logic,
+                                   game::Player& player,
+                                   const data::PrototypeManager& proto,
+                                   game::EventData& event) const {
     // Has imgui handled a mouse or keyboard event?
     ImGuiIO& io             = ImGui::GetIO();
     input_mouse_captured    = io.WantCaptureMouse;
@@ -194,13 +235,4 @@ void gui::ImGuiManager::Draw(GameWorlds& worlds,
     CursorWindow(context, nullptr, nullptr);
     CraftingQueue(context, nullptr, nullptr);
     PickupProgressbar(context, nullptr, nullptr);
-}
-
-void gui::ImGuiManager::BeginFrame(const render::DisplayWindow& display_window) const {
-    ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
-    ImGui::NewFrame();
-}
-void gui::ImGuiManager::RenderFrame() const {
-    ImGui::Render();
-    imRenderer.Render(ImGui::GetDrawData());
 }

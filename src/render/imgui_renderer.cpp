@@ -11,8 +11,8 @@
 #include "render/imgui_renderer.h"
 
 #include <cstdint> // intptr_t
-#include <imgui.h>
 
+#include "core/convert.h"
 #include "render/opengl/error.h"
 
 using namespace jactorio;
@@ -70,7 +70,34 @@ void render::ImGuiRenderer::Terminate() {
     DestroyFontsTexture();
 }
 
-void render::ImGuiRenderer::Render(ImDrawData* draw_data) const {
+void render::ImGuiRenderer::Bind() const noexcept {
+    shader_.Bind();
+    vertexArray_.Bind();
+    vbo_.Bind();
+    index_.Bind();
+}
+
+void render::ImGuiRenderer::RenderWorld(const unsigned tex_id) const noexcept {
+    DEBUG_OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, //
+                                   SafeCast<GLsizeiptr>(worldVert.size()) * sizeof(ImDrawVert),
+                                   worldVert.data(),
+                                   GL_STREAM_DRAW));
+
+    // This can be generated ahead of time?
+    DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, //
+                                   SafeCast<GLsizeiptr>(worldIndices.size()) * sizeof(ImDrawIdx),
+                                   worldIndices.data(),
+                                   GL_STREAM_DRAW));
+
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, tex_id));
+    DEBUG_OPENGL_CALL(
+        glDrawElements(GL_TRIANGLES,                           //
+                       SafeCast<GLsizei>(worldIndices.size()), // Count is indices in index array, NOT triangle number
+                       sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+                       nullptr));
+}
+
+void render::ImGuiRenderer::RenderGui(ImDrawData* draw_data) const {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer
     // coordinates)
     int fb_width  = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
@@ -178,10 +205,6 @@ void render::ImGuiRenderer::DestroyFontsTexture() {
 void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data) const {
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     glEnable(GL_SCISSOR_TEST);
-    shader_.Bind();
-    vertexArray_.Bind();
-    vbo_.Bind();
-    index_.Bind();
 
     // Support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
     bool clip_origin_lower_left = true;

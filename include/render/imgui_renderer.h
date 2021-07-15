@@ -4,12 +4,13 @@
 #define JACTORIO_INCLUDE_RENDER_IMGUI_RENDERER_H
 #pragma once
 
+#include <imgui.h>
+#include <vector>
+
 #include "render/opengl/index_buffer.h"
 #include "render/opengl/shader.h"
 #include "render/opengl/vertex_array.h"
 #include "render/opengl/vertex_buffer.h"
-
-struct ImDrawData;
 
 namespace jactorio::render
 {
@@ -26,9 +27,22 @@ namespace jactorio::render
     public:
         void Init();
         void Terminate();
-        void Render(ImDrawData* draw_data) const;
+
+        /// Binds the buffers used for rendering world and gui
+        void Bind() const noexcept;
+
+        /// \param tex_id Texture which will be used to render to world
+        void RenderWorld(unsigned tex_id) const noexcept;
+        void RenderGui(ImDrawData* draw_data) const;
 
         bool InitFontsTexture();
+
+        // For drawing to the world
+        // TODO make this a class, buffers can be mapped to avoid copying
+
+        // This can be modified from const the same way imgui can rendered from const
+        mutable std::vector<ImDrawVert> worldVert;
+        mutable std::vector<ImDrawIdx> worldIndices;
 
     private:
         void DestroyFontsTexture();

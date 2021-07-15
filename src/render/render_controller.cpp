@@ -66,11 +66,11 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
         gui::MainMenu(common);
     }
 
-    imManager.Draw(common.gameController.worlds,
-                   common.gameController.logic,
-                   player,
-                   common.gameController.proto,
-                   common.gameController.event);
+    imManager.PrepareInWorld(common.gameController.worlds,
+                             common.gameController.logic,
+                             player,
+                             common.gameController.proto,
+                             common.gameController.event);
 
     gui::DebugMenuLogic(
         common.gameController.worlds, common.gameController.logic, player, common.gameController.proto, renderer);
@@ -117,6 +117,6 @@ void render::RenderController::InitTextures(ThreadedLoopCommon& common) {
 
     renderer.InitTexture(rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain),
                          rendererSprites.GetTexture(proto::Sprite::SpriteGroup::terrain));
-    imManager.InitCharacterData(rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::gui),
-                                rendererSprites.GetTexture(proto::Sprite::SpriteGroup::gui));
+    imManager.InitData(rendererSprites.GetSpritemap(proto::Sprite::SpriteGroup::gui),
+                       rendererSprites.GetTexture(proto::Sprite::SpriteGroup::gui));
 }

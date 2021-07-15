@@ -51,22 +51,20 @@ namespace jactorio::gui
 
         /// Sets up ImGui context
         void Init(const render::DisplayWindow& display_window);
-
-        /// Initializes the spritemap for rendering the character menus
+        /// Initializes the spritemap for rendering the world and character menus
         /// \remark Requires Sprite::sprite_group::gui to be initialized
-        void InitCharacterData(const render::Spritemap& spritemap, const render::Texture& texture);
+        void InitData(const render::Spritemap& spritemap, const render::Texture& texture);
 
         /// Loads glyphs from provided localization's font
         /// \exception std::runtime_error if load failed
         void LoadFont(const proto::Localization& localization) const;
 
-        // TODO move this elsewhere
-        /// Draws all the menus when in world
-        void Draw(GameWorlds& worlds,
-                  game::Logic& logic,
-                  game::Player& player,
-                  const data::PrototypeManager& proto,
-                  game::EventData& event) const;
+        /// Prepares for drawing everything when player is in world
+        void PrepareInWorld(GameWorlds& worlds,
+                            game::Logic& logic,
+                            game::Player& player,
+                            const data::PrototypeManager& proto,
+                            game::EventData& event) const;
 
         void BeginFrame(const render::DisplayWindow& display_window) const;
         void RenderFrame() const;
@@ -74,6 +72,15 @@ namespace jactorio::gui
         render::ImGuiRenderer imRenderer;
 
     private:
+        /// Prepares objects that are drawn as part of the world
+        void PrepareWorld(const game::World& world) const;
+        /// Prepares objects that are drawn as part of the gui
+        void PrepareGui(GameWorlds& worlds,
+                        game::Logic& logic,
+                        game::Player& player,
+                        const data::PrototypeManager& proto,
+                        game::EventData& event) const;
+
         bool hasImGuiContext_ = false;
         bool hasInitRenderer_ = false;
 
