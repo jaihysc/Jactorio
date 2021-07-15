@@ -9,7 +9,6 @@
 
 #include "core/data_type.h"
 #include "core/orientation.h"
-#include "render/opengl/mvp_manager.h"
 #include "render/opengl/shader.h"
 #include "render/renderer_layer.h"
 
@@ -186,7 +185,6 @@ namespace jactorio::render
         /// Each thread gets a render layer
         std::vector<RendererLayer> renderLayers_;
 
-        MvpManager mvpManager_;
         float zoom_ = 0.5f;
 
         /// Cached player's position, for convenience to avoid having to pass player around everywhere

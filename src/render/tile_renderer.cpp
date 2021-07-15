@@ -27,7 +27,7 @@ render::TileRenderer::TileRenderer(RendererCommon& common) : common_(&common) {}
 void render::TileRenderer::Init() {
     // This does not need to change as everything is already prepared in world space
     const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
-    mvpManager_.GlSetModelMatrix(model_matrix);
+    common_->mvpManager.GlSetModelMatrix(model_matrix);
 
     // Get window size
     GLint m_viewport[4];
@@ -59,7 +59,7 @@ void render::TileRenderer::InitShader() {
                   {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
                  {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size)}});
     shader_.Bind();
-    mvpManager_.SetMvpUniformLocation(shader_.GetUniformLocation("u_model_view_projection_matrix"));
+    common_->mvpManager.SetMvpUniformLocation(shader_.GetUniformLocation("u_model_view_projection_matrix"));
 
     // Texture will be bound to specified slot, tell this to shader
     DEBUG_OPENGL_CALL(glUniform1i(shader_.GetUniformLocation("u_texture"), kTextureSlot));
@@ -160,7 +160,7 @@ void render::TileRenderer::GlRender(const game::World& world) {
 
     GlUpdateTileProjectionMatrix(zoom_ - 0.01f);
     CalculateViewMatrix(i_player);
-    mvpManager_.CalculateMvpMatrix();
+    common_->mvpManager.CalculateMvpMatrix();
 
     // View matrix depends on mvp matrix to calculate correct camera offset
     // Thus we must calculate the mvp matrix twice
@@ -200,8 +200,8 @@ void render::TileRenderer::GlRender(const game::World& world) {
 
     // Zoom in more to hide the black edges from camera movement
     GlUpdateTileProjectionMatrix(zoom_);
-    mvpManager_.CalculateMvpMatrix();
-    mvpManager_.UpdateShaderMvp();
+    common_->mvpManager.CalculateMvpMatrix();
+    common_->mvpManager.UpdateShaderMvp();
 
     // ======================================================================
 
@@ -312,10 +312,10 @@ WorldCoord render::TileRenderer::ScreenPosToWorldCoord(const Position2<float>& p
     const auto norm_screen_pos_y = 2 * (SafeCast<float>(screen_pos.y) / SafeCast<float>(GetWindowHeight())) - 1;
 
     const glm::vec4 adjusted_screen_pos =
-        mvpManager_.GetMvpMatrix() / glm::vec4(norm_screen_pos_x, norm_screen_pos_y, 1, 1);
+        common_->mvpManager.GetMvpMatrix() / glm::vec4(norm_screen_pos_x, norm_screen_pos_y, 1, 1);
 
     // Normalize window center between -1 and 1, since is window center, simplifies to 0
-    auto screen_center_pos = mvpManager_.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
+    auto screen_center_pos = common_->mvpManager.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
 
     // Players can be partially on a tile, adjust the center accordingly to the correct location
     screen_center_pos.x -= SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
@@ -347,7 +347,7 @@ Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<
     const auto pixels_from_center_y = (coord.y - truncated_player_pos_y) * tileWidth;
 
     // From top left of screen (Top left 0, 0)
-    const auto buffer_center_pos = mvpManager_.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
+    const auto buffer_center_pos = common_->mvpManager.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
     auto buffer_pos_x            = pixels_from_center_x + buffer_center_pos.x;
     auto buffer_pos_y            = pixels_from_center_y + buffer_center_pos.y;
 
@@ -408,7 +408,7 @@ void render::TileRenderer::CalculateViewMatrix(const Position2<int> i_player) no
     // Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
     const auto tile_amount = GetTileDrawAmount();
 
-    const auto& view_transform = mvpManager_.GetViewTransform();
+    const auto& view_transform = common_->mvpManager.GetViewTransform();
 
     // Operations inside lossy cast centers of player position at the center of screen
     // Use truncating division, such that for odd # of tiles (e.g 5), the top left of third tile is at center of screen
@@ -419,11 +419,11 @@ void render::TileRenderer::CalculateViewMatrix(const Position2<int> i_player) no
     view_transform->y =
         LossyCast<float>(windowHeight_) / 2 - LossyCast<float>(tile_amount.y / 2 * tileWidth) + camera_offset.y;
 
-    mvpManager_.UpdateViewTransform();
+    common_->mvpManager.UpdateViewTransform();
 }
 
 Position2<int> render::TileRenderer::GetTileDrawAmount() const noexcept {
-    const auto matrix = glm::vec4(1, -1, 1, 1) / mvpManager_.GetMvpMatrix();
+    const auto matrix = glm::vec4(1, -1, 1, 1) / common_->mvpManager.GetMvpMatrix();
     return Position2{LossyCast<int>(matrix.x / LossyCast<double>(tileWidth) * 2) + 2,
                      LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2};
 }
@@ -589,5 +589,5 @@ void render::TileRenderer::GlUpdateTileProjectionMatrix(const float zoom) noexce
     }
 
     assert(pixel_zoom > 0);
-    mvpManager_.GlSetProjectionMatrix(MvpManager::ToProjMatrix(windowWidth_, windowHeight_, pixel_zoom));
+    common_->mvpManager.GlSetProjectionMatrix(MvpManager::ToProjMatrix(windowWidth_, windowHeight_, pixel_zoom));
 }

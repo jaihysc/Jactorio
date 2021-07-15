@@ -81,6 +81,9 @@ void render::ImGuiRenderer::Bind() const noexcept {
 }
 
 void render::ImGuiRenderer::RenderWorld(const unsigned tex_id) const noexcept {
+    DEBUG_OPENGL_CALL(
+        glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &common_->mvpManager.GetMvpMatrix()[0][0]));
+
     DEBUG_OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, //
                                    SafeCast<GLsizeiptr>(worldVert.size()) * sizeof(ImDrawVert),
                                    worldVert.data(),
