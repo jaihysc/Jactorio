@@ -6,6 +6,7 @@
 
 #include "gui/imgui_manager.h"
 #include "render/display_window.h"
+#include "render/renderer_common.h"
 #include "render/spritemap_generator.h"
 #include "render/tile_renderer.h"
 
@@ -37,8 +38,9 @@ namespace jactorio::render
 
         // The ordering of members is deliberate to control destruction order
         DisplayWindow displayWindow; // Holds gl context(all members below require)
-        gui::ImGuiManager imManager;
-        TileRenderer renderer;
+        RendererCommon rCommon;
+        gui::ImGuiManager imManager{rCommon};
+        TileRenderer renderer{rCommon};
         RendererSprites rendererSprites;
 
     private:

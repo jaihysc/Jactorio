@@ -13,6 +13,7 @@
 #include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/opengl/error.h"
+#include "render/renderer_common.h"
 #include "render/renderer_exception.h"
 #include "render/spritemap_generator.h"
 
@@ -20,6 +21,8 @@ using namespace jactorio;
 
 unsigned int render::TileRenderer::windowWidth_  = 0;
 unsigned int render::TileRenderer::windowHeight_ = 0;
+
+render::TileRenderer::TileRenderer(RendererCommon& common) : common_(&common) {}
 
 void render::TileRenderer::Init() {
     // This does not need to change as everything is already prepared in world space

@@ -14,6 +14,8 @@
 
 namespace jactorio::render
 {
+    struct RendererCommon;
+
     /// The name is ImGui Renderer because it is adapted from ImGui's renderer, but it can be used
     /// for Jactorio rendering as well
     /// It is useful for rendering more complex geometry, which our renderer highly optimized for tiles
@@ -25,6 +27,11 @@ namespace jactorio::render
         using GLint  = int;
 
     public:
+        explicit ImGuiRenderer(RendererCommon& common);
+
+        ImGuiRenderer(const ImGuiRenderer& other)     = delete;
+        ImGuiRenderer(ImGuiRenderer&& other) noexcept = delete;
+
         void Init();
         void Terminate();
 
@@ -48,6 +55,8 @@ namespace jactorio::render
         void DestroyFontsTexture();
 
         void SetupRenderState(ImDrawData* draw_data) const;
+
+        RendererCommon* common_ = nullptr;
 
         Shader shader_;
 

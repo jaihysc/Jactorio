@@ -27,6 +27,7 @@ namespace jactorio::game
 
 namespace jactorio::render
 {
+    struct RendererCommon;
     class Spritemap;
     class Texture;
 
@@ -55,7 +56,7 @@ namespace jactorio::render
     public:
         static constexpr unsigned int tileWidth = 1;
 
-        TileRenderer() = default;
+        explicit TileRenderer(RendererCommon& common);
 
         TileRenderer(const TileRenderer& other)     = delete;
         TileRenderer(TileRenderer&& other) noexcept = delete;
@@ -172,6 +173,8 @@ namespace jactorio::render
         /// Updates projection matrix and zoom level
         /// \tparam zoom Between [0, 1]. 0 furthest, 1 closest (auto clamps if out of range)
         void GlUpdateTileProjectionMatrix(float zoom) noexcept;
+
+        RendererCommon* common_ = nullptr;
 
         Shader shader_;
         const Spritemap* spritemap_ = nullptr;

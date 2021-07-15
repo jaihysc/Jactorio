@@ -14,8 +14,11 @@
 
 #include "core/convert.h"
 #include "render/opengl/error.h"
+#include "render/renderer_common.h"
 
 using namespace jactorio;
+
+render::ImGuiRenderer::ImGuiRenderer(RendererCommon& common) : common_(&common) {}
 
 void render::ImGuiRenderer::Init() {
     // Setup back-end capabilities flags

@@ -46,8 +46,11 @@ namespace jactorio::gui
     class ImGuiManager
     {
     public:
-        ImGuiManager() = default;
+        explicit ImGuiManager(render::RendererCommon& common) : imRenderer(common) {}
         ~ImGuiManager();
+
+        ImGuiManager(const ImGuiManager& other)     = delete;
+        ImGuiManager(ImGuiManager&& other) noexcept = delete;
 
         /// Sets up ImGui context
         void Init(const render::DisplayWindow& display_window);
