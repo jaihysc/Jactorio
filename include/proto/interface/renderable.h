@@ -28,11 +28,6 @@ namespace jactorio::proto
     struct UniqueDataBase;
 } // namespace jactorio::proto
 
-namespace jactorio::render
-{
-    class RendererLayer;
-} // namespace jactorio::render
-
 namespace jactorio::proto
 {
     /// For inheriting by IPrototypeRenderable, thus enabling usage by render
@@ -60,12 +55,6 @@ namespace jactorio::proto
 
         /// Displays the menu associated with itself with the provided data
         virtual bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const = 0;
-
-        /// \param pixel_offset Pixels to top left of current tile
-        virtual void OnRDrawUniqueData(render::RendererLayer& layer,
-                                       const SpriteTexCoords& uv_coords,
-                                       const Position2<float>& pixel_offset,
-                                       const UniqueDataBase* unique_data) const {}
     };
 } // namespace jactorio::proto
 

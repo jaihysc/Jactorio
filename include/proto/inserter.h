@@ -84,11 +84,6 @@ namespace jactorio::proto
                                                          const WorldCoord& coord,
                                                          Orientation orientation) const override;
 
-        void OnRDrawUniqueData(render::RendererLayer& layer,
-                               const SpriteTexCoords& uv_coords,
-                               const Position2<float>& pixel_offset,
-                               const UniqueDataBase* unique_data) const override;
-
         /// \param orientation Points towards dropoff
         void OnBuild(game::World& world,
                      game::Logic& logic,

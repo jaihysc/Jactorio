@@ -14,13 +14,6 @@ SpriteTexCoordIndexT proto::Inserter::OnGetTexCoordId(const game::World& /*world
     return sprite->texCoordId + static_cast<int>(orientation);
 }
 
-void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
-                                        const SpriteTexCoords& uv_coords,
-                                        const Position2<float>& pixel_offset,
-                                        const UniqueDataBase* unique_data) const {
-    DrawInserterArm(layer, uv_coords, pixel_offset, *this, *SafeCast<const InserterData*>(unique_data));
-}
-
 void proto::Inserter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
