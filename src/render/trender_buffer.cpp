@@ -1,12 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/renderer_layer.h"
+#include "render/trender_buffer.h"
 
 #include "core/convert.h"
 
 using namespace jactorio;
 
-render::RendererLayer::RendererLayer() {
+render::TRenderBuffer::TRenderBuffer() {
     baseVb_.Init();
     vertexArray_.Init();
     vertexArray_.AddBuffer(&baseVb_, kBaseValsPerElement, 0);
@@ -16,11 +16,11 @@ render::RendererLayer::RendererLayer() {
 }
 
 
-uint32_t render::RendererLayer::Capacity() const noexcept {
+uint32_t render::TRenderBuffer::Capacity() const noexcept {
     return eCapacity_;
 }
 
-void render::RendererLayer::Reserve(const uint32_t count) noexcept {
+void render::TRenderBuffer::Reserve(const uint32_t count) noexcept {
     assert(count > 0); // Count must be greater than 0
 
     gResizeVertexBuffers_ = true;
@@ -28,15 +28,15 @@ void render::RendererLayer::Reserve(const uint32_t count) noexcept {
     LOG_MESSAGE(debug, "Queuing buffer resize");
 }
 
-void render::RendererLayer::ResizeDefault() noexcept {
+void render::TRenderBuffer::ResizeDefault() noexcept {
     Reserve(kInitialSize);
 }
 
-void render::RendererLayer::Clear() noexcept {
+void render::TRenderBuffer::Clear() noexcept {
     writePtr_ = baseBuffer_;
 }
 
-void render::RendererLayer::GlWriteBegin() noexcept {
+void render::TRenderBuffer::GlWriteBegin() noexcept {
     assert(!writeEnabled_);
     assert(eCapacity_ > 0); // Mapping fails unless capacity is at least 1
 
@@ -46,7 +46,7 @@ void render::RendererLayer::GlWriteBegin() noexcept {
     writeEnabled_ = true;
 }
 
-void render::RendererLayer::GlWriteEnd() noexcept {
+void render::TRenderBuffer::GlWriteEnd() noexcept {
     assert(writeEnabled_);
 
     baseVb_.UnMap();
@@ -54,7 +54,7 @@ void render::RendererLayer::GlWriteEnd() noexcept {
     writeEnabled_ = false;
 }
 
-void render::RendererLayer::GlHandleBufferResize() {
+void render::TRenderBuffer::GlHandleBufferResize() {
     // Only resize if resize is set
     if (!gResizeVertexBuffers_)
         return;
@@ -67,7 +67,7 @@ void render::RendererLayer::GlHandleBufferResize() {
     LOG_MESSAGE_F(debug, "Buffer resized to %d", eCapacity_);
 }
 
-void render::RendererLayer::GlBindBuffers() const noexcept {
+void render::TRenderBuffer::GlBindBuffers() const noexcept {
     vertexArray_.Bind();
     baseVb_.Bind();
 }

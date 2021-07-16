@@ -10,7 +10,7 @@
 #include "core/data_type.h"
 #include "core/orientation.h"
 #include "render/opengl/shader.h"
-#include "render/renderer_layer.h"
+#include "render/trender_buffer.h"
 
 namespace jactorio::proto
 {
@@ -142,7 +142,7 @@ namespace jactorio::render
         /// \param row_start Chunk coordinate where the row of chunks starts
         /// \param chunk_span Number of chunks spanned
         /// \param render_tile_offset Offset drawn tiles on screen by this tile amount
-        void PrepareChunkRow(RendererLayer& r_layer,
+        void PrepareChunkRow(TRenderBuffer& r_layer,
                              const game::World& world,
                              std::mutex& world_gen_mutex,
                              Position2<int> row_start,
@@ -153,13 +153,13 @@ namespace jactorio::render
         /// tex_coord_ids should never be nullptr
         /// \param tile_start Only prepares tiles with x >= tile_start.x && y >= tile_start.y
         /// \param tile_end Only prepares tiles with x < tile_end.x && y < tile_end.y
-        void PrepareChunk(RendererLayer& r_layer,
+        void PrepareChunk(TRenderBuffer& r_layer,
                           const SpriteTexCoordIndexT* tex_coord_ids,
                           Position2<int> render_tile_offset,
                           Position2<uint8_t> tile_start,
                           Position2<uint8_t> tile_end) const noexcept;
 
-        void PrepareOverlayLayers(RendererLayer& r_layer,
+        void PrepareOverlayLayers(TRenderBuffer& r_layer,
                                   const game::Chunk& chunk,
                                   Position2<int> render_tile_offset) const;
 
@@ -169,9 +169,9 @@ namespace jactorio::render
 
 
         /// Allows layer to be drawn on
-        static void GlPrepareBegin(RendererLayer& r_layer);
+        static void GlPrepareBegin(TRenderBuffer& r_layer);
         /// Renders current layer, can no longer be drawn on
-        static void GlPrepareEnd(RendererLayer& r_layer);
+        static void GlPrepareEnd(TRenderBuffer& r_layer);
 
         /// Updates projection matrix and zoom level
         /// \tparam zoom Between [0, 1]. 0 furthest, 1 closest (auto clamps if out of range)
@@ -187,7 +187,7 @@ namespace jactorio::render
         std::vector<std::future<void>> chunkDrawThreads_;
 
         /// Each thread gets a render layer
-        std::vector<RendererLayer> renderLayers_;
+        std::vector<TRenderBuffer> renderLayers_;
 
         float zoom_ = 0.5f;
 

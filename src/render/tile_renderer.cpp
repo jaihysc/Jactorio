@@ -432,7 +432,7 @@ Position2<int> render::TileRenderer::GetTileDrawAmount() const noexcept {
                      LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2};
 }
 
-void render::TileRenderer::PrepareChunkRow(RendererLayer& r_layer,
+void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
                                            const game::World& world,
                                            std::mutex& world_gen_mutex,
                                            const Position2<int> row_start,
@@ -491,7 +491,7 @@ void render::TileRenderer::PrepareChunkRow(RendererLayer& r_layer,
     }
 }
 
-FORCEINLINE void render::TileRenderer::PrepareChunk(RendererLayer& r_layer,
+FORCEINLINE void render::TileRenderer::PrepareChunk(TRenderBuffer& r_layer,
                                                     const SpriteTexCoordIndexT* tex_coord_ids,
                                                     const Position2<int> render_tile_offset,
                                                     const Position2<uint8_t> tile_start,
@@ -535,7 +535,7 @@ FORCEINLINE void render::TileRenderer::PrepareChunk(RendererLayer& r_layer,
     }
 }
 
-FORCEINLINE void render::TileRenderer::PrepareOverlayLayers(RendererLayer& r_layer,
+FORCEINLINE void render::TileRenderer::PrepareOverlayLayers(TRenderBuffer& r_layer,
                                                             const game::Chunk& chunk,
                                                             const Position2<int> render_tile_offset) const {
     assert(false); // PushBack usage needs to be updated
@@ -566,12 +566,12 @@ void render::TileRenderer::UpdateAnimationTexCoords() const noexcept {
                                    reinterpret_cast<const GLfloat*>(tex_coords)));
 }
 
-void render::TileRenderer::GlPrepareBegin(RendererLayer& r_layer) {
+void render::TileRenderer::GlPrepareBegin(TRenderBuffer& r_layer) {
     r_layer.Clear();
     r_layer.GlWriteBegin();
 }
 
-void render::TileRenderer::GlPrepareEnd(RendererLayer& r_layer) {
+void render::TileRenderer::GlPrepareEnd(TRenderBuffer& r_layer) {
     r_layer.GlWriteEnd();
     r_layer.GlBindBuffers();
     r_layer.GlHandleBufferResize();

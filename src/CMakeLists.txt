@@ -94,9 +94,9 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/render/proto_renderer.cpp
         ${JACTORIO_DIR}/render/render_controller.cpp
         ${JACTORIO_DIR}/render/render_loop.cpp
-        ${JACTORIO_DIR}/render/renderer_layer.cpp
         ${JACTORIO_DIR}/render/spritemap_generator.cpp
         ${JACTORIO_DIR}/render/tile_renderer.cpp
+        ${JACTORIO_DIR}/render/trender_buffer.cpp
         )
 # ======================================== END Source files .cpp
 
