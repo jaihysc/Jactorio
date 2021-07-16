@@ -88,6 +88,9 @@ void proto::Inserter::PostLoadValidate(const data::PrototypeManager& proto) cons
     J_PROTO_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
     J_PROTO_ASSERT(armSprite != nullptr, "Arm sprite not provided");
     J_PROTO_ASSERT(handSprite != nullptr, "Hand sprite not provided");
+
+    J_PROTO_ASSERT(armSprite->group == Sprite::SpriteGroup::gui, "Arm sprite must be in group GUI");
+    J_PROTO_ASSERT(handSprite->group == Sprite::SpriteGroup::gui, "Hand sprite must be in group TERRAIN");
 }
 
 // ======================================================================

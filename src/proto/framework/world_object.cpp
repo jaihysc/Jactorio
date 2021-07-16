@@ -38,10 +38,14 @@ SpriteTexCoordIndexT proto::FWorldObject::OnGetTexCoordId(const game::World& /*w
 
 void proto::FWorldObject::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
     J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
+    J_PROTO_ASSERT(sprite->group == Sprite::SpriteGroup::terrain, "Sprite must be in group TERRAIN");
 
     if (spriteE != nullptr || spriteS != nullptr || spriteW != nullptr) {
         J_PROTO_ASSERT(spriteE != nullptr, "spriteE was not specified");
         J_PROTO_ASSERT(spriteS != nullptr, "spriteS was not specified");
         J_PROTO_ASSERT(spriteW != nullptr, "spriteW was not specified");
+        J_PROTO_ASSERT(spriteE->group == Sprite::SpriteGroup::terrain, "SpriteE must be in group TERRAIN");
+        J_PROTO_ASSERT(spriteS->group == Sprite::SpriteGroup::terrain, "SpriteS must be in group TERRAIN");
+        J_PROTO_ASSERT(spriteW->group == Sprite::SpriteGroup::terrain, "SpriteW must be in group TERRAIN");
     }
 }

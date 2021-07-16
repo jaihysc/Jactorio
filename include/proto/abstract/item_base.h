@@ -5,6 +5,7 @@
 #pragma once
 
 #include "proto/framework/framework_base.h"
+#include "proto/sprite.h"
 
 namespace jactorio::proto
 {
@@ -26,6 +27,7 @@ namespace jactorio::proto
 
     inline void ItemBase::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
         J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
+        J_PROTO_ASSERT(sprite->group == Sprite::SpriteGroup::gui, "Item sprite must be in GUI");
     }
 } // namespace jactorio::proto
 
