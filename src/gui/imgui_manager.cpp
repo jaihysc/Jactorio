@@ -7,7 +7,6 @@
 
 #include "jactorio.h"
 
-#include "core/execution_timer.h"
 #include "game/player/player.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world.h"
@@ -15,11 +14,14 @@
 #include "gui/context.h"
 #include "gui/menu_data.h"
 #include "gui/menus.h"
+#include "proto/abstract/conveyor.h"
 #include "proto/abstract/entity.h"
 #include "proto/localization.h"
 #include "render/display_window.h"
 #include "render/imgui_renderer.h"
+#include "render/proto_renderer.h"
 #include "render/spritemap_generator.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -139,19 +141,9 @@ void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const 
     io.Fonts->Build();
 }
 
-void gui::ImGuiManager::PrepareInWorld(GameWorlds& worlds,
-                                       game::Logic& logic,
-                                       game::Player& player,
-                                       const data::PrototypeManager& proto,
-                                       game::EventData& event) const {
-    EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
-    PrepareWorld(worlds[player.world.GetId()]);
-    PrepareGui(worlds, logic, player, proto, event);
-}
-
 void gui::ImGuiManager::BeginFrame(const render::DisplayWindow& display_window) const {
-    imRenderer.worldVert.clear();
-    imRenderer.worldIndices.clear();
+    imRenderer.buffer.vert.clear();
+    imRenderer.buffer.idx.clear();
     ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
     ImGui::NewFrame();
 }
@@ -164,21 +156,18 @@ void gui::ImGuiManager::RenderFrame() const {
     imRenderer.RenderGui(ImGui::GetDrawData());
 }
 
-void gui::ImGuiManager::PrepareWorld(const game::World& world) const {
-    for (auto& logic_object : world.LogicGet(game::LogicGroup::conveyor)) {
-        //
+void gui::ImGuiManager::PrepareWorld(const game::World& world, const render::TileRenderer& renderer) const {
+    for (auto [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::conveyor)) {
+        const auto pixel_pos   = renderer.WorldCoordToBufferPos(coord);
+        const auto pixel_pos_f = Position2(LossyCast<float>(pixel_pos.x), LossyCast<float>(pixel_pos.y));
+
+        const auto* conveyor = SafeCast<const proto::ConveyorData*>(unique_data.Get());
+
+        PrepareConveyorSegmentItems(imRenderer.buffer, *spritePositions_, pixel_pos_f, *conveyor->structure);
     }
     for (auto& logic_object : world.LogicGet(game::LogicGroup::inserter)) {
         //
     }
-
-    // TODO temp data
-    imRenderer.worldVert = {{{0, 0}, {0, 0}, IM_COL32(255, 255, 255, 255)}, //
-                            {{0, 100}, {0, 1}, IM_COL32(255, 255, 255, 255)},
-                            {{200, 100}, {1, 1}, IM_COL32(255, 255, 255, 255)},
-                            {{200, 0}, {1, 0}, IM_COL32(255, 255, 255, 255)}};
-
-    imRenderer.worldIndices = {0, 1, 2, 2, 3, 0};
 }
 
 void gui::ImGuiManager::PrepareGui(GameWorlds& worlds,

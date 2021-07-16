@@ -4,6 +4,7 @@
 
 #include <GL/glew.h>
 
+#include "core/execution_timer.h"
 #include "core/loop_common.h"
 #include "gui/imgui_manager.h"
 #include "gui/main_menu.h"
@@ -58,21 +59,26 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
         renderer, common.gameController.worlds, common.gameController.player, common.gameController.proto);
 
 
-    std::lock_guard gui_guard{common.playerDataMutex};
-    imManager.BeginFrame(displayWindow);
+    {
+        std::lock_guard gui_guard{common.playerDataMutex};
+        EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
-    if (IsVisible(gui::Menu::MainMenu)) {
-        gui::MainMenu(common);
-    }
+        imManager.BeginFrame(displayWindow);
 
-    imManager.PrepareInWorld(common.gameController.worlds,
+        if (IsVisible(gui::Menu::MainMenu)) {
+            gui::MainMenu(common);
+        }
+
+        imManager.PrepareWorld(player_world, renderer);
+        imManager.PrepareGui(common.gameController.worlds,
                              common.gameController.logic,
                              player,
                              common.gameController.proto,
                              common.gameController.event);
 
-    gui::DebugMenuLogic(
-        common.gameController.worlds, common.gameController.logic, player, common.gameController.proto, renderer);
+        gui::DebugMenuLogic(
+            common.gameController.worlds, common.gameController.logic, player, common.gameController.proto, renderer);
+    }
 
     renderer.GlPrepareEnd();
 

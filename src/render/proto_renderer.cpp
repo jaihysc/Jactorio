@@ -2,31 +2,29 @@
 
 #include "render/proto_renderer.h"
 
-#include "jactorio.h"
-
 #include "game/logic/conveyor_struct.h"
 #include "proto/inserter.h"
 #include "proto/sprite.h"
 #include "render/conveyor_offset.h"
+#include "render/imgui_renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
-constexpr float kPixelZ = 0.1f;
-
 /// \param tile_offset Tile offset (for distance after each item)
-void PrepareConveyorSegmentData(render::RendererLayer& layer,
-                                const SpriteTexCoords& uv_coords,
-                                const game::ConveyorStruct& line_segment,
-                                std::deque<game::ConveyorItem>& line_segment_side,
-                                Position2<double> tile_offset,
-                                const Position2<OverlayOffsetAxis>& pixel_offset) {
+static void PrepareConveyorSegmentData(render::IRenderBuffer& buf,
+                                       const SpriteTexCoords& tex_coords,
+                                       const game::ConveyorStruct& conveyor,
+                                       std::deque<game::ConveyorItem>& conveyor_lane,
+                                       Position2<double> tile_offset,
+                                       const Position2<OverlayOffsetAxis>& pixel_offset) {
     using namespace game;
 
     // Either offset_x or offset_y which will be INCREASED or DECREASED
     double* target_offset;
     double multiplier = 1; // Either 1 or -1 to add or subtract
 
-    switch (line_segment.direction) {
+    switch (conveyor.direction) {
     case Orientation::up:
         target_offset = &tile_offset.y;
         break;
@@ -49,52 +47,68 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
     }
 
     // Shift items 1 tile forwards if segment bends
-    if (line_segment.terminationType != ConveyorStruct::TerminationType::straight) {
-        Position2Increment(line_segment.direction, tile_offset, 1);
+    if (conveyor.terminationType != ConveyorStruct::TerminationType::straight) {
+        Position2Increment(conveyor.direction, tile_offset, 1);
     }
 
-    for (const auto& line_item : line_segment_side) {
+    for (const auto& [dist, item] : conveyor_lane) {
         // Move the target offset (up or down depending on multiplier)
-        *target_offset += line_item.dist.getAsDouble() * multiplier;
+        *target_offset += dist.getAsDouble() * multiplier;
 
-        constexpr float pixel_z = kPixelZ;
-        // In pixels
+        // tl = Top left; br = Bottom right
+        constexpr auto f_tile_width = static_cast<float>(render::TileRenderer::tileWidth);
+        const auto tl               = Position2{
+            pixel_offset.x + LossyCast<float>(tile_offset.x) * f_tile_width,
+            pixel_offset.y + LossyCast<float>(tile_offset.y) * f_tile_width,
+        };
+        const auto br = Position2{
+            pixel_offset.x + LossyCast<float>(tile_offset.x + ConveyorProp::kItemWidth) * f_tile_width,
+            pixel_offset.y + LossyCast<float>(tile_offset.y + ConveyorProp::kItemWidth) * f_tile_width,
+        };
 
-        /* // TODO removed
-        layer.PushBack(
-            {{
-                 {
-                     pixel_offset.x + LossyCast<float>(tile_offset.x) * SafeCast<float>(render::Renderer::tileWidth),
-                     pixel_offset.y + LossyCast<float>(tile_offset.y) * SafeCast<float>(render::Renderer::tileWidth),
-                 },
-                 {
-                     pixel_offset.x +
-                         LossyCast<float>(tile_offset.x + ConveyorProp::kItemWidth) *
-                             SafeCast<float>(render::Renderer::tileWidth),
-                     pixel_offset.y +
-                         LossyCast<float>(tile_offset.y + ConveyorProp::kItemWidth) *
-                             SafeCast<float>(render::Renderer::tileWidth),
-                 },
-             },
-             {uv_pos.topLeft, uv_pos.bottomRight}},
-            pixel_z);
-            */
+        const auto& uv = tex_coords[item->sprite->texCoordId];
+
+
+        const auto index = buf.vert.size();
+
+        buf.vert.push_back({{tl.x, tl.y}, //
+                            {uv.topLeft.x, uv.topLeft.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{tl.x, br.y}, //
+                            {uv.topLeft.x, uv.bottomRight.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{br.x, br.y}, //
+                            {uv.bottomRight.x, uv.bottomRight.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{br.x, tl.y}, //
+                            {uv.bottomRight.x, uv.topLeft.y},
+                            IM_COL32(255, 255, 255, 255)});
+
+        buf.idx.push_back(index);
+        buf.idx.push_back(index + 1);
+        buf.idx.push_back(index + 2);
+        buf.idx.push_back(index + 2);
+        buf.idx.push_back(index + 3);
+        buf.idx.push_back(index);
     }
 }
 
-void render::DrawConveyorSegmentItems(RendererLayer& layer,
-                                      const SpriteTexCoords& uv_coords,
-                                      const Position2<OverlayOffsetAxis>& pixel_offset,
-                                      game::ConveyorStruct& line_segment) {
+static void PrepareConveyorSegmentItemsLeft(render::IRenderBuffer& buf,
+                                            const SpriteTexCoords& tex_coords,
+                                            const Position2<OverlayOffsetAxis>& pixel_offset,
+                                            game::ConveyorStruct& conveyor) {
+    using namespace render;
+
     Position2<double> tile_offset;
 
     // Don't render if items are not marked visible! Wow!
-    if (!line_segment.left.visible)
-        goto prepare_right;
+    if (!conveyor.left.visible) {
+        return;
+    }
 
     // Left
     // The offsets for straight are always applied to bend left and right
-    switch (line_segment.direction) {
+    switch (conveyor.direction) {
     case Orientation::up:
         tile_offset.x += ConveyorOffset::Up::kLX;
         break;
@@ -110,9 +124,9 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     }
 
     // Left side
-    switch (line_segment.terminationType) {
+    switch (conveyor.terminationType) {
     case game::ConveyorStruct::TerminationType::straight:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y -= ConveyorOffset::Up::kSY;
             break;
@@ -129,7 +143,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         break;
 
     case game::ConveyorStruct::TerminationType::bend_left:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y += ConveyorOffset::Up::kBlLY;
             break;
@@ -146,7 +160,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         break;
 
     case game::ConveyorStruct::TerminationType::bend_right:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y += ConveyorOffset::Up::kBrLY;
             break;
@@ -165,7 +179,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         // Side insertion
     case game::ConveyorStruct::TerminationType::right_only:
     case game::ConveyorStruct::TerminationType::left_only:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y += ConveyorOffset::Up::kSfY;
             break;
@@ -181,18 +195,22 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         }
         break;
     }
-    PrepareConveyorSegmentData(layer, uv_coords, line_segment, line_segment.left.lane, tile_offset, pixel_offset);
+    PrepareConveyorSegmentData(buf, tex_coords, conveyor, conveyor.left.lane, tile_offset, pixel_offset);
+}
 
-prepare_right:
-    if (!line_segment.right.visible)
+static void PrepareConveyorSegmentItemsRight(render::IRenderBuffer& buf,
+                                             const SpriteTexCoords& tex_coords,
+                                             const Position2<OverlayOffsetAxis>& pixel_offset,
+                                             game::ConveyorStruct& conveyor) {
+    using namespace render;
+    Position2<double> tile_offset;
+
+    if (!conveyor.right.visible) {
         return;
-
-    // Right
-    tile_offset.x = 0;
-    tile_offset.y = 0;
+    }
 
     // The offsets for straight are always applied to bend left and right
-    switch (line_segment.direction) {
+    switch (conveyor.direction) {
     case Orientation::up:
         tile_offset.x += ConveyorOffset::Up::kRX;
         break;
@@ -209,9 +227,9 @@ prepare_right:
 
 
     // Right side
-    switch (line_segment.terminationType) {
+    switch (conveyor.terminationType) {
     case game::ConveyorStruct::TerminationType::straight:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y -= ConveyorOffset::Up::kSY;
             break;
@@ -228,7 +246,7 @@ prepare_right:
         break;
 
     case game::ConveyorStruct::TerminationType::bend_left:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y += ConveyorOffset::Up::kBlRY;
             break;
@@ -245,7 +263,7 @@ prepare_right:
         break;
 
     case game::ConveyorStruct::TerminationType::bend_right:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y += ConveyorOffset::Up::kBrRY;
             break;
@@ -264,7 +282,7 @@ prepare_right:
         // Side insertion
     case game::ConveyorStruct::TerminationType::right_only:
     case game::ConveyorStruct::TerminationType::left_only:
-        switch (line_segment.direction) {
+        switch (conveyor.direction) {
         case Orientation::up:
             tile_offset.y += ConveyorOffset::Up::kSfY;
             break;
@@ -280,12 +298,20 @@ prepare_right:
         }
         break;
     }
-    PrepareConveyorSegmentData(layer, uv_coords, line_segment, line_segment.right.lane, tile_offset, pixel_offset);
+    PrepareConveyorSegmentData(buf, tex_coords, conveyor, conveyor.right.lane, tile_offset, pixel_offset);
+}
+
+void render::PrepareConveyorSegmentItems(IRenderBuffer& buf,
+                                         const SpriteTexCoords& tex_coords,
+                                         const Position2<OverlayOffsetAxis>& pixel_offset,
+                                         game::ConveyorStruct& conveyor) {
+    PrepareConveyorSegmentItemsLeft(buf, tex_coords, pixel_offset, conveyor);
+    PrepareConveyorSegmentItemsRight(buf, tex_coords, pixel_offset, conveyor);
 }
 
 // ======================================================================
 
-void render::DrawInserterArm(RendererLayer& layer,
+void render::DrawInserterArm(IRenderBuffer& buf,
                              const SpriteTexCoords& uv_coords,
                              const Position2<OverlayOffsetAxis>& pixel_offset,
                              const proto::Inserter& inserter_proto,
@@ -303,7 +329,7 @@ void render::DrawInserterArm(RendererLayer& layer,
         const float rotation_offset = static_cast<float>(inserter_data.orientation) * 90;
 
         // Hand
-        layer.PushBack({{// Cover tile
+        buf.PushBack({{// Cover tile
                          {pixel_offset.x + arm_pixel_offset, pixel_offset.y + arm_pixel_offset},
                          {pixel_offset.x + Renderer::tileWidth - arm_pixel_offset,
                           pixel_offset.y + Renderer::tileWidth - arm_pixel_offset}},
@@ -320,7 +346,7 @@ void render::DrawInserterArm(RendererLayer& layer,
 
         const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);
 
-        layer.PushBack({{{pixel_offset.x + held_item_pixel_offset, pixel_offset.y + held_item_pixel_offset},
+        buf.PushBack({{{pixel_offset.x + held_item_pixel_offset, pixel_offset.y + held_item_pixel_offset},
                          {pixel_offset.x + Renderer::tileWidth - held_item_pixel_offset,
                           pixel_offset.y + Renderer::tileWidth - held_item_pixel_offset}},
                         {uv.topLeft, uv.bottomRight}},

@@ -30,6 +30,7 @@ namespace jactorio::render
     class RendererSprites;
     class Spritemap;
     class Texture;
+    class TileRenderer;
 } // namespace jactorio::render
 
 
@@ -62,21 +63,12 @@ namespace jactorio::gui
         /// \exception std::runtime_error if load failed
         void LoadFont(const proto::Localization& localization) const;
 
-        /// Prepares for drawing everything when player is in world
-        void PrepareInWorld(GameWorlds& worlds,
-                            game::Logic& logic,
-                            game::Player& player,
-                            const data::PrototypeManager& proto,
-                            game::EventData& event) const;
-
         void BeginFrame(const render::DisplayWindow& display_window) const;
         void RenderFrame() const;
 
-        render::ImGuiRenderer imRenderer;
-
-    private:
         /// Prepares objects that are drawn as part of the world
-        void PrepareWorld(const game::World& world) const;
+        /// Renderer is needed to convert world coord to coordinates for rendering
+        void PrepareWorld(const game::World& world, const render::TileRenderer& renderer) const;
         /// Prepares objects that are drawn as part of the gui
         void PrepareGui(GameWorlds& worlds,
                         game::Logic& logic,
@@ -84,6 +76,9 @@ namespace jactorio::gui
                         const data::PrototypeManager& proto,
                         game::EventData& event) const;
 
+        render::ImGuiRenderer imRenderer;
+
+    private:
         bool hasImGuiContext_ = false;
         bool hasInitRenderer_ = false;
 

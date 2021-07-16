@@ -85,20 +85,20 @@ void render::ImGuiRenderer::RenderWorld(const unsigned tex_id) const noexcept {
         glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &common_->mvpManager.GetMvpMatrix()[0][0]));
 
     DEBUG_OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, //
-                                   SafeCast<GLsizeiptr>(worldVert.size()) * sizeof(ImDrawVert),
-                                   worldVert.data(),
+                                   SafeCast<GLsizeiptr>(buffer.vert.size()) * sizeof(ImDrawVert),
+                                   buffer.vert.data(),
                                    GL_STREAM_DRAW));
 
     // This can be generated ahead of time?
     DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, //
-                                   SafeCast<GLsizeiptr>(worldIndices.size()) * sizeof(ImDrawIdx),
-                                   worldIndices.data(),
+                                   SafeCast<GLsizeiptr>(buffer.idx.size()) * sizeof(ImDrawIdx),
+                                   buffer.idx.data(),
                                    GL_STREAM_DRAW));
 
     DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, tex_id));
     DEBUG_OPENGL_CALL(
-        glDrawElements(GL_TRIANGLES,                           //
-                       SafeCast<GLsizei>(worldIndices.size()), // Count is indices in index array, NOT triangle number
+        glDrawElements(GL_TRIANGLES,                         //
+                       SafeCast<GLsizei>(buffer.idx.size()), // Count is indices in index array, NOT triangle number
                        sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
                        nullptr));
 }

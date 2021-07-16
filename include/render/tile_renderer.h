@@ -119,6 +119,10 @@ namespace jactorio::render
         J_NODISCARD Position2<uint16_t> WorldCoordToBufferPos(const Position2<float>& player_pos,
                                                               const WorldCoord& coord) const;
 
+        /// Uses cached player position
+        /// \return On screen position of world coord, suitable for sending to buffers for rendering
+        J_NODISCARD Position2<uint16_t> WorldCoordToBufferPos(const WorldCoord& coord) const;
+
     private:
         /// \exception RendererException Failed to setup
         static void GlSetupTessellation();

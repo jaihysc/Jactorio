@@ -359,6 +359,10 @@ Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<
     return {LossyCast<uint16_t>(std::round(buffer_pos_x)), LossyCast<uint16_t>(std::round(buffer_pos_y))};
 }
 
+Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const WorldCoord& coord) const {
+    return WorldCoordToBufferPos(playerPosition_, coord);
+}
+
 // ======================================================================
 
 void render::TileRenderer::GlSetupTessellation() {

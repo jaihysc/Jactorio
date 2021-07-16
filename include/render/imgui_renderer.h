@@ -16,6 +16,13 @@ namespace jactorio::render
 {
     struct RendererCommon;
 
+    // TODO buffers can be mapped to avoid copying
+    struct IRenderBuffer
+    {
+        mutable std::vector<ImDrawVert> vert;
+        mutable std::vector<ImDrawIdx> idx;
+    };
+
     /// The name is ImGui Renderer because it is adapted from ImGui's renderer, but it can be used
     /// for Jactorio rendering as well
     /// It is useful for rendering more complex geometry, which our renderer highly optimized for tiles
@@ -44,12 +51,9 @@ namespace jactorio::render
 
         bool InitFontsTexture();
 
-        // For drawing to the world
-        // TODO make this a class, buffers can be mapped to avoid copying
-
-        // This can be modified from const the same way imgui can rendered from const
-        mutable std::vector<ImDrawVert> worldVert;
-        mutable std::vector<ImDrawIdx> worldIndices;
+        /// For drawing to the world
+        /// This can be modified from const the same way imgui can rendered from const
+        mutable IRenderBuffer buffer;
 
     private:
         void DestroyFontsTexture();

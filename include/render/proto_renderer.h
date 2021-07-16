@@ -23,14 +23,18 @@ namespace jactorio
 
 namespace jactorio::render
 {
-    class RendererLayer;
+    class IRenderBuffer;
 
-    void DrawConveyorSegmentItems(RendererLayer& layer,
-                                  const SpriteTexCoords& uv_coords,
-                                  const Position2<float>& pixel_offset,
-                                  game::ConveyorStruct& line_segment);
+    /// \param buf Prepares data to buf
+    /// \param tex_coords Holds tex coord for items on conveyor
+    /// \param pixel_offset Offset applied to each item rendered
+    /// \param conveyor Conveyor to be rendered
+    void PrepareConveyorSegmentItems(IRenderBuffer& buf,
+                                     const SpriteTexCoords& tex_coords,
+                                     const Position2<float>& pixel_offset,
+                                     game::ConveyorStruct& conveyor);
 
-    void DrawInserterArm(RendererLayer& layer,
+    void DrawInserterArm(IRenderBuffer& buf,
                          const SpriteTexCoords& uv_coords,
                          const Position2<float>& pixel_offset,
                          const proto::Inserter& inserter_proto,
