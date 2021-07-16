@@ -2,6 +2,8 @@
 
 #include "render/proto_renderer.h"
 
+#include <glm/gtx/rotate_vector.hpp>
+
 #include "game/logic/conveyor_struct.h"
 #include "proto/inserter.h"
 #include "proto/sprite.h"
@@ -311,46 +313,151 @@ void render::PrepareConveyorSegmentItems(IRenderBuffer& buf,
 
 // ======================================================================
 
-void render::DrawInserterArm(IRenderBuffer& buf,
-                             const SpriteTexCoords& uv_coords,
-                             const Position2<OverlayOffsetAxis>& pixel_offset,
-                             const proto::Inserter& inserter_proto,
-                             const proto::InserterData& inserter_data) {
+void render::PrepareInserterParts(IRenderBuffer& buf,
+                                  const SpriteTexCoords& tex_coords,
+                                  const Position2<OverlayOffsetAxis>& pixel_offset,
+                                  const proto::Inserter& inserter,
+                                  const proto::InserterData& inserter_data) {
+    // These constants are of a tile
+    constexpr auto arm_width  = 0.5f;
+    constexpr auto arm_length = 0.9f; // Since arm is centered, arm sticks out of the tile by 0.4
 
-    // TODO removed
-    /*
+    // Since center of inserter on sprite is NOT center of tile, offset a little so arm lines up with inserter
+    constexpr auto arm_offset = glm::vec2{-0.05, -0.05f};
+
+
+    constexpr auto arm_pixel_offset = arm_offset * glm::vec2{static_cast<float>(TileRenderer::tileWidth)};
+
+    constexpr auto arm_pixel_width = arm_width * TileRenderer::tileWidth;
+    const auto arm_pixel_length    = arm_length * TileRenderer::tileWidth +
+        SafeCast<float>(TileRenderer::tileWidth) * SafeCast<float>(inserter.tileReach - 1);
+    // ^^^ Accounts for arm lengths > 1
+
+    // Rotation from 12:00 position
+    const auto rotation_rad = glm::radians(LossyCast<float>(inserter_data.rotationDegree.getAsDouble()) +
+                                           static_cast<float>(inserter_data.orientation) * 90);
+
+    // To world space
+    const auto transform = glm::vec2{pixel_offset.x + static_cast<float>(TileRenderer::tileWidth) / 2,
+                                     pixel_offset.y + static_cast<float>(TileRenderer::tileWidth) / 2} +
+        arm_pixel_offset;
+
+    // Arm
     {
-        const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
+        const auto& uv = tex_coords[inserter.handSprite->texCoordId];
 
-        constexpr float arm_width        = 0.5f;
-        constexpr float arm_pixel_offset = (Renderer::tileWidth - arm_width * Renderer::tileWidth) / 2;
+        // Center of rotation is the end of the arm
+        // Thus center end of arm at 0,0
+        auto tl = glm::vec2{-arm_pixel_width / 2, -arm_pixel_length};
+        auto br = glm::vec2{arm_pixel_width / 2, 0.f};
+        auto tr = glm::vec2{br.x, tl.y};
+        auto bl = glm::vec2{tl.x, br.y};
 
-        // Ensures arm is always facing pickup / dropoff
-        const float rotation_offset = static_cast<float>(inserter_data.orientation) * 90;
+        tl = glm::rotate(tl, rotation_rad);
+        tr = glm::rotate(tr, rotation_rad);
+        bl = glm::rotate(bl, rotation_rad);
+        br = glm::rotate(br, rotation_rad);
 
-        // Hand
-        buf.PushBack({{// Cover tile
-                         {pixel_offset.x + arm_pixel_offset, pixel_offset.y + arm_pixel_offset},
-                         {pixel_offset.x + Renderer::tileWidth - arm_pixel_offset,
-                          pixel_offset.y + Renderer::tileWidth - arm_pixel_offset}},
-                        {uv.topLeft, uv.bottomRight}},
-                       kPixelZ,
-                       LossyCast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset));
+        tl += transform;
+        tr += transform;
+        bl += transform;
+        br += transform;
+
+        const auto index = buf.vert.size();
+
+        buf.vert.push_back({{tl.x, tl.y}, //
+                            {uv.topLeft.x, uv.topLeft.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{bl.x, bl.y}, //
+                            {uv.topLeft.x, uv.bottomRight.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{br.x, br.y}, //
+                            {uv.bottomRight.x, uv.bottomRight.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{tr.x, tr.y}, //
+                            {uv.bottomRight.x, uv.topLeft.y},
+                            IM_COL32(255, 255, 255, 255)});
+
+        buf.idx.push_back(index);
+        buf.idx.push_back(index + 1);
+        buf.idx.push_back(index + 2);
+        buf.idx.push_back(index + 2);
+        buf.idx.push_back(index + 3);
+        buf.idx.push_back(index);
     }
-
 
     // Held item
     if (inserter_data.status == proto::InserterData::Status::dropoff) {
-        constexpr auto held_item_pixel_offset =
-            LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::ConveyorProp::kItemWidth) / 2);
+        // Render the top of item to align with the top of inserter arm
+        constexpr auto item_pixel_width = static_cast<float>(TileRenderer::tileWidth) * game::ConveyorProp::kItemWidth;
 
-        const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);
+        /*
+        // To always have the item upright when picking up:
+        // 1. Rotate item in opposite direction, so when rotated to arm item is upright
+        // 2. Transform to arm top
+        // 3. Rotate item to arm position
+        // 4. Transform to world
 
-        buf.PushBack({{{pixel_offset.x + held_item_pixel_offset, pixel_offset.y + held_item_pixel_offset},
-                         {pixel_offset.x + Renderer::tileWidth - held_item_pixel_offset,
-                          pixel_offset.y + Renderer::tileWidth - held_item_pixel_offset}},
-                        {uv.topLeft, uv.bottomRight}},
-                       kPixelZ);
+        // Removed since it is not very noticeable
+        // Also, when it drop off onto a conveyor, it is upside down :(
+
+        auto tl = glm::vec2{-item_pixel_width / 2, -item_pixel_width / 2};
+        auto br = glm::vec2{item_pixel_width / 2, item_pixel_width / 2};
+        auto tr = glm::vec2{br.x, tl.y};
+        auto bl = glm::vec2{tl.x, br.y};
+
+        // When inserter is up, must rotate 180 deg since pickup is facing down
+        const auto item_rotation_rad = glm::radians(180 - static_cast<float>(inserter_data.orientation) * 90);
+
+        tl = glm::rotate(tl, item_rotation_rad);
+        tr = glm::rotate(tr, item_rotation_rad);
+        bl = glm::rotate(bl, item_rotation_rad);
+        br = glm::rotate(br, item_rotation_rad);
+
+        // To 12:00 position of arm
+        const auto transform_to_arm = glm::vec2{0, -arm_pixel_length + item_pixel_width / 2};
+        tl += transform_to_arm;
+        tr += transform_to_arm;
+        bl += transform_to_arm;
+        br += transform_to_arm;
+        */
+
+        auto tl = glm::vec2{-item_pixel_width / 2, -arm_pixel_length};
+        auto br = glm::vec2{item_pixel_width / 2, -arm_pixel_length + item_pixel_width};
+        auto tr = glm::vec2{br.x, tl.y};
+        auto bl = glm::vec2{tl.x, br.y};
+
+        tl = glm::rotate(tl, rotation_rad);
+        tr = glm::rotate(tr, rotation_rad);
+        bl = glm::rotate(bl, rotation_rad);
+        br = glm::rotate(br, rotation_rad);
+
+        tl += transform;
+        tr += transform;
+        bl += transform;
+        br += transform;
+
+        const auto& uv   = tex_coords[inserter_data.heldItem.item->sprite->texCoordId];
+        const auto index = buf.vert.size();
+
+        buf.vert.push_back({{tl.x, tl.y}, //
+                            {uv.topLeft.x, uv.topLeft.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{bl.x, bl.y}, //
+                            {uv.topLeft.x, uv.bottomRight.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{br.x, br.y}, //
+                            {uv.bottomRight.x, uv.bottomRight.y},
+                            IM_COL32(255, 255, 255, 255)});
+        buf.vert.push_back({{tr.x, tr.y}, //
+                            {uv.bottomRight.x, uv.topLeft.y},
+                            IM_COL32(255, 255, 255, 255)});
+
+        buf.idx.push_back(index);
+        buf.idx.push_back(index + 1);
+        buf.idx.push_back(index + 2);
+        buf.idx.push_back(index + 2);
+        buf.idx.push_back(index + 3);
+        buf.idx.push_back(index);
     }
-    */
 }

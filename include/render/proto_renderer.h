@@ -34,11 +34,16 @@ namespace jactorio::render
                                      const Position2<float>& pixel_offset,
                                      game::ConveyorStruct& conveyor);
 
-    void DrawInserterArm(IRenderBuffer& buf,
-                         const SpriteTexCoords& uv_coords,
-                         const Position2<float>& pixel_offset,
-                         const proto::Inserter& inserter_proto,
-                         const proto::InserterData& inserter_data);
+    /// \param buf Prepares data to buf
+    /// \param tex_coords Holds tex coord for items on conveyor
+    /// \param pixel_offset Offset applied to each item rendered
+    /// \param inserter Prototype of inserter to be rendered
+    /// \param inserter_data Inserter to be rendered
+    void PrepareInserterParts(IRenderBuffer& buf,
+                              const SpriteTexCoords& tex_coords,
+                              const Position2<float>& pixel_offset,
+                              const proto::Inserter& inserter,
+                              const proto::InserterData& inserter_data);
 } // namespace jactorio::render
 
 #endif // JACTORIO_INCLUDE_RENDER_PROTO_RENDERER_H

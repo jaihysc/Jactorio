@@ -16,6 +16,7 @@
 #include "gui/menus.h"
 #include "proto/abstract/conveyor.h"
 #include "proto/abstract/entity.h"
+#include "proto/inserter.h"
 #include "proto/localization.h"
 #include "render/display_window.h"
 #include "render/imgui_renderer.h"
@@ -162,11 +163,20 @@ void gui::ImGuiManager::PrepareWorld(const game::World& world, const render::Til
         const auto pixel_pos_f = Position2(LossyCast<float>(pixel_pos.x), LossyCast<float>(pixel_pos.y));
 
         const auto* conveyor = SafeCast<const proto::ConveyorData*>(unique_data.Get());
+        assert(conveyor != nullptr);
 
         PrepareConveyorSegmentItems(imRenderer.buffer, *spritePositions_, pixel_pos_f, *conveyor->structure);
     }
-    for (auto& logic_object : world.LogicGet(game::LogicGroup::inserter)) {
-        //
+    for (auto& [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::inserter)) {
+        const auto pixel_pos   = renderer.WorldCoordToBufferPos(coord);
+        const auto pixel_pos_f = Position2(LossyCast<float>(pixel_pos.x), LossyCast<float>(pixel_pos.y));
+
+        const auto* inserter      = SafeCast<const proto::Inserter*>(prototype.Get());
+        const auto* inserter_data = SafeCast<const proto::InserterData*>(unique_data.Get());
+        assert(inserter != nullptr);
+        assert(inserter_data != nullptr);
+
+        PrepareInserterParts(imRenderer.buffer, *spritePositions_, pixel_pos_f, *inserter, *inserter_data);
     }
 }
 

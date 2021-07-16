@@ -22,12 +22,12 @@ def addInserter(name, itemSprite,
         .handSprite(
             j.Sprite()
                 .load(handSprite)
-                .group(j.SpriteGroup.TERRAIN)
+                .group(j.SpriteGroup.GUI)
         )
         .armSprite(
             j.Sprite()
                 .load(armSprite)
-                .group(j.SpriteGroup.TERRAIN)
+                .group(j.SpriteGroup.GUI)
         )
 
         .item(
