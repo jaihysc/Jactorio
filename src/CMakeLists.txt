@@ -107,8 +107,10 @@ set(JACTORIO_LIB_BUILD_FILES
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui.cpp
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_demo.cpp
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_draw.cpp
+        ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_tables.cpp
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_widgets.cpp
-        ${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_sdl.cpp
+        ${PROJECT_SOURCE_DIR}/lib/imgui/backends/imgui_impl_sdl.cpp
+        ${PROJECT_SOURCE_DIR}/lib/imgui/misc/freetype/imgui_freetype.cpp
         )
 
 IF (CMAKE_SYSTEM_NAME MATCHES Windows)

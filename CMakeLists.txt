@@ -202,7 +202,8 @@ jactorio_c_config_val("build_number" ${JACTORIO_BUILD_NUMBER})
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
-
+add_compile_definitions(IMGUI_ENABLE_FREETYPE) # Ask Imgui to use freetype as the font rasterizer
+add_compile_definitions(IMGUI_DISABLE_OBSOLETE_FUNCTIONS) # Prevents accidently using functions soon to be removed
 
 #
 add_subdirectory("lib")

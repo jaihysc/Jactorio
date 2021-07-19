@@ -108,7 +108,9 @@ void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) {
     for (const auto& local : localizations) {
         assert(local != nullptr);
         if (local->identifier == common.gameController.localIdentifier) {
-            imManager.LoadFont(*local);
+            if (!imManager.LoadFont(*local)) {
+                throw std::runtime_error("Failed to load font");
+            }
             loaded_local = true;
             break;
         }

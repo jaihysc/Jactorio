@@ -2,7 +2,7 @@
 
 #include "gui/imgui_manager.h"
 
-#include <examples/imgui_impl_sdl.h>
+#include <backends/imgui_impl_sdl.h>
 #include <imgui.h>
 
 #include "jactorio.h"
@@ -127,7 +127,7 @@ void gui::ImGuiManager::InitData(const render::Spritemap& spritemap, const rende
     texId_           = texture.GetId();
 }
 
-void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const {
+bool gui::ImGuiManager::LoadFont(const proto::Localization& localization) const {
     auto& io = ImGui::GetIO();
 
     const auto font_path = std::string(data::PrototypeManager::kDataFolder) + "/" + localization.fontPath;
@@ -139,7 +139,7 @@ void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const 
     if (io.Fonts->AddFontFromFileTTF(font_path.c_str(), localization.fontSize, nullptr, glyph_ranges) == nullptr) {
         throw std::runtime_error("Failed to load font " + font_path);
     }
-    io.Fonts->Build();
+    return io.Fonts->Build();
 }
 
 void gui::ImGuiManager::BeginFrame(const render::DisplayWindow& display_window) const {

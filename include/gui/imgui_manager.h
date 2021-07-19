@@ -59,9 +59,10 @@ namespace jactorio::gui
         /// \remark Requires Sprite::sprite_group::gui to be initialized
         void InitData(const render::Spritemap& spritemap, const render::Texture& texture);
 
-        /// Loads glyphs from provided localization's font
+        /// Loads glyphs from provided localization's font and builds font
+        /// As a result, only 1 font may be active at once
         /// \exception std::runtime_error if load failed
-        void LoadFont(const proto::Localization& localization) const;
+        J_NODISCARD bool LoadFont(const proto::Localization& localization) const;
 
         /// \remark Ensure imgui renderer is bound
         void BeginFrame(const render::DisplayWindow& display_window) const;

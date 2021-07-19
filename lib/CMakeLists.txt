@@ -32,6 +32,7 @@ validate_dependency(decimal_for_cpp)
 validate_dependency(StackWalker)
 validate_dependency(backward-cpp)
 validate_dependency(cereal)
+validate_dependency(freetype)
 
 
 # Configurate libraries
@@ -51,6 +52,7 @@ add_subdirectory("glew-cmake")
 add_subdirectory("pybind11")
 add_subdirectory("libnoise")
 add_subdirectory("SDL-mirror")
+add_subdirectory("freetype")
 
 
 
@@ -69,6 +71,7 @@ set(
 	libnoise
 	SDL2main
 	SDL2-static
+	freetype
 )
 
 if (WIN32)
@@ -122,6 +125,7 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/StackWalker/Main
 	${PROJECT_SOURCE_DIR}/lib/backward-cpp
 	${PROJECT_SOURCE_DIR}/lib/cereal/include
+	${PROJECT_SOURCE_DIR}/lib/freetype/include
 )
 # ======================================== END HEADER files .h
 
