@@ -2,6 +2,7 @@
 
 #include "gui/menus_debug.h"
 
+#include <algorithm>
 #include <fstream>
 #include <imgui.h>
 #include <ostream>
@@ -540,17 +541,37 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
         // Format of data displayed
         ImGui::Text("Registered coordinate > Listener coordinate | Listener prototype");
 
+        // Sort emit coordinates
+        std::vector<std::tuple<WorldCoordAxis, WorldCoordAxis>> emit_coords;
+        emit_coords.reserve(dispatcher_info.storedEntries.size());
+        for (const auto& [emit_coord, callbacks] : dispatcher_info.storedEntries) {
+            emit_coords.push_back(emit_coord);
+        }
+        std::sort(emit_coords.begin(), emit_coords.end(), [](const auto& a, const auto& b) {
+            const auto x1 = std::get<0>(a);
+            const auto y1 = std::get<1>(a);
+
+            const auto x2 = std::get<0>(b);
+            const auto y2 = std::get<1>(b);
+
+            if (x1 == x2) {
+                return y1 < y2;
+            }
+            return x1 < x2;
+        });
+
         size_t id = 0;
-        for (const auto& entry : dispatcher_info.storedEntries) {
+        for (const auto& emit_coord : emit_coords) {
+            auto& callbacks = dispatcher_info.storedEntries.find(emit_coord)->second;
 
-            const auto world_x = std::get<0>(entry.first);
-            const auto world_y = std::get<1>(entry.first);
+            const auto world_x = std::get<0>(emit_coord);
+            const auto world_y = std::get<1>(emit_coord);
 
-            if (ImGui::TreeNode(reinterpret_cast<void*>(id), "%d %d | %lld", world_x, world_y, entry.second.size())) {
+            if (ImGui::TreeNode(reinterpret_cast<void*>(id), "%d %d | %lld", world_x, world_y, callbacks.size())) {
 
                 ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
-                for (const auto& callback : entry.second) {
+                for (const auto& callback : callbacks) {
                     ImGui::Text("%d %d %s",
                                 callback.receiver.x,
                                 callback.receiver.y,

@@ -171,5 +171,11 @@ namespace jactorio::proto
 
         EXPECT_TRUE(inserter_data->pickup.IsInitialized());
         EXPECT_TRUE(inserter_data->dropoff.IsInitialized());
+
+        // Was a bug, registering to updateDispatcher twice
+        ASSERT_EQ(world_.updateDispatcher.GetDebugInfo().storedEntries.size(), 2);
+        for (auto& [coord, entries] : world_.updateDispatcher.GetDebugInfo().storedEntries) {
+            EXPECT_EQ(entries.size(), 1);
+        }
     }
 } // namespace jactorio::proto

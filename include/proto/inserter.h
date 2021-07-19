@@ -115,8 +115,6 @@ namespace jactorio::proto
     private:
         J_NODISCARD WorldCoord GetDropoffCoord(const WorldCoord& coord, Orientation orientation) const;
         J_NODISCARD WorldCoord GetPickupCoord(const WorldCoord& coord, Orientation orientation) const;
-
-        void InitPickupDropoff(game::World& world, const WorldCoord& coord, Orientation orientation) const;
     };
 } // namespace jactorio::proto
 

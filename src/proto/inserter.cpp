@@ -20,7 +20,19 @@ void proto::Inserter::OnBuild(game::World& world,
                               const game::TileLayer tlayer,
                               Orientation orientation) const {
     world.GetTile(coord, tlayer)->MakeUniqueData<InserterData>(orientation);
-    InitPickupDropoff(world, coord, orientation);
+
+    // Dropoff side
+    {
+        auto emit_coords = GetDropoffCoord(coord, orientation);
+        world.updateDispatcher.Register(coord, emit_coords, *this);
+        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
+    }
+    // Pickup side
+    {
+        auto emit_coords = GetPickupCoord(coord, orientation);
+        world.updateDispatcher.Register(coord, emit_coords, *this);
+        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
+    }
 }
 
 void proto::Inserter::OnTileUpdate(game::World& world,
@@ -79,7 +91,9 @@ void proto::Inserter::OnDeserialize(game::World& world, const WorldCoord& coord,
     auto* inserter_data = tile.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
-    InitPickupDropoff(world, coord, inserter_data->orientation);
+    const auto orientation = inserter_data->orientation;
+    world.UpdateDispatch(GetDropoffCoord(coord, orientation), UpdateType::place); // Calls own OnTileUpdate
+    world.UpdateDispatch(GetPickupCoord(coord, orientation), UpdateType::place);
 }
 
 void proto::Inserter::PostLoadValidate(const data::PrototypeManager& proto) const {
@@ -101,21 +115,4 @@ WorldCoord proto::Inserter::GetDropoffCoord(const WorldCoord& coord, const Orien
 
 WorldCoord proto::Inserter::GetPickupCoord(const WorldCoord& coord, const Orientation orientation) const {
     return coord.Incremented(orientation, this->tileReach * -1);
-}
-
-void proto::Inserter::InitPickupDropoff(game::World& world,
-                                        const WorldCoord& coord,
-                                        const Orientation orientation) const {
-    // Dropoff side
-    {
-        auto emit_coords = GetDropoffCoord(coord, orientation);
-        world.updateDispatcher.Register(coord, emit_coords, *this);
-        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
-    }
-    // Pickup side
-    {
-        auto emit_coords = GetPickupCoord(coord, orientation);
-        world.updateDispatcher.Register(coord, emit_coords, *this);
-        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
-    }
 }
