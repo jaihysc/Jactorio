@@ -143,14 +143,13 @@ void gui::ImGuiManager::LoadFont(const proto::Localization& localization) const 
 }
 
 void gui::ImGuiManager::BeginFrame(const render::DisplayWindow& display_window) const {
-    imRenderer.buffer.vert.clear();
-    imRenderer.buffer.idx.clear();
     ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
     ImGui::NewFrame();
+    imRenderer.buffer.GlWriteBegin();
 }
 
 void gui::ImGuiManager::RenderFrame() const {
-    imRenderer.Bind();
+    imRenderer.buffer.GlWriteEnd();
     imRenderer.RenderWorld(texId_);
 
     ImGui::Render();

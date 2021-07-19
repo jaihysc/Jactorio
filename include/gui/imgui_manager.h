@@ -63,7 +63,9 @@ namespace jactorio::gui
         /// \exception std::runtime_error if load failed
         void LoadFont(const proto::Localization& localization) const;
 
+        /// \remark Ensure imgui renderer is bound
         void BeginFrame(const render::DisplayWindow& display_window) const;
+        /// \remark Ensure imgui renderer is bound
         void RenderFrame() const;
 
         /// Prepares objects that are drawn as part of the world

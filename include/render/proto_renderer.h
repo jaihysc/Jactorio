@@ -23,7 +23,7 @@ namespace jactorio
 
 namespace jactorio::render
 {
-    struct IRenderBuffer;
+    class IRenderBuffer;
 
     /// \param buf Prepares data to buf
     /// \param tex_coords Holds tex coord for items on conveyor

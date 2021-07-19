@@ -5,23 +5,14 @@
 #pragma once
 
 #include <imgui.h>
-#include <vector>
 
-#include "render/opengl/index_buffer.h"
+#include "render/irender_buffer.h"
 #include "render/opengl/shader.h"
 #include "render/opengl/vertex_array.h"
-#include "render/opengl/vertex_buffer.h"
 
 namespace jactorio::render
 {
     struct RendererCommon;
-
-    // TODO buffers can be mapped to avoid copying
-    struct IRenderBuffer
-    {
-        mutable std::vector<ImDrawVert> vert;
-        mutable std::vector<ImDrawIdx> idx;
-    };
 
     /// The name is ImGui Renderer because it is adapted from ImGui's renderer, but it can be used
     /// for Jactorio rendering as well
@@ -51,7 +42,6 @@ namespace jactorio::render
 
         bool InitFontsTexture();
 
-        /// For drawing to the world
         /// This can be modified from const the same way imgui can rendered from const
         mutable IRenderBuffer buffer;
 
@@ -63,9 +53,6 @@ namespace jactorio::render
         RendererCommon* common_ = nullptr;
 
         Shader shader_;
-
-        VertexBuffer vbo_;
-        IndexBuffer index_;
         VertexArray vertexArray_;
 
         GLuint fontTexture_ = 0;

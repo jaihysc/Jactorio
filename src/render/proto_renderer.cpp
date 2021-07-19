@@ -71,27 +71,27 @@ static void PrepareConveyorSegmentData(render::IRenderBuffer& buf,
         const auto& uv = tex_coords[item->sprite->texCoordId];
 
 
-        const auto index = buf.vert.size();
+        const auto index = buf.VtxCount();
 
-        buf.vert.push_back({{tl.x, tl.y}, //
-                            {uv.topLeft.x, uv.topLeft.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{tl.x, br.y}, //
-                            {uv.topLeft.x, uv.bottomRight.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{br.x, br.y}, //
-                            {uv.bottomRight.x, uv.bottomRight.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{br.x, tl.y}, //
-                            {uv.bottomRight.x, uv.topLeft.y},
-                            IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{tl.x, tl.y}, //
+                     {uv.topLeft.x, uv.topLeft.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{tl.x, br.y}, //
+                     {uv.topLeft.x, uv.bottomRight.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{br.x, br.y}, //
+                     {uv.bottomRight.x, uv.bottomRight.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{br.x, tl.y}, //
+                     {uv.bottomRight.x, uv.topLeft.y},
+                     IM_COL32(255, 255, 255, 255)});
 
-        buf.idx.push_back(index);
-        buf.idx.push_back(index + 1);
-        buf.idx.push_back(index + 2);
-        buf.idx.push_back(index + 2);
-        buf.idx.push_back(index + 3);
-        buf.idx.push_back(index);
+        buf.PushIdx(index);
+        buf.PushIdx(index + 1);
+        buf.PushIdx(index + 2);
+        buf.PushIdx(index + 2);
+        buf.PushIdx(index + 3);
+        buf.PushIdx(index);
     }
 }
 
@@ -363,27 +363,27 @@ void render::PrepareInserterParts(IRenderBuffer& buf,
         bl += transform;
         br += transform;
 
-        const auto index = buf.vert.size();
+        const auto index = buf.VtxCount();
 
-        buf.vert.push_back({{tl.x, tl.y}, //
-                            {uv.topLeft.x, uv.topLeft.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{bl.x, bl.y}, //
-                            {uv.topLeft.x, uv.bottomRight.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{br.x, br.y}, //
-                            {uv.bottomRight.x, uv.bottomRight.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{tr.x, tr.y}, //
-                            {uv.bottomRight.x, uv.topLeft.y},
-                            IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{tl.x, tl.y}, //
+                     {uv.topLeft.x, uv.topLeft.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{bl.x, bl.y}, //
+                     {uv.topLeft.x, uv.bottomRight.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{br.x, br.y}, //
+                     {uv.bottomRight.x, uv.bottomRight.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{tr.x, tr.y}, //
+                     {uv.bottomRight.x, uv.topLeft.y},
+                     IM_COL32(255, 255, 255, 255)});
 
-        buf.idx.push_back(index);
-        buf.idx.push_back(index + 1);
-        buf.idx.push_back(index + 2);
-        buf.idx.push_back(index + 2);
-        buf.idx.push_back(index + 3);
-        buf.idx.push_back(index);
+        buf.PushIdx(index);
+        buf.PushIdx(index + 1);
+        buf.PushIdx(index + 2);
+        buf.PushIdx(index + 2);
+        buf.PushIdx(index + 3);
+        buf.PushIdx(index);
     }
 
     // Held item
@@ -438,26 +438,26 @@ void render::PrepareInserterParts(IRenderBuffer& buf,
         br += transform;
 
         const auto& uv   = tex_coords[inserter_data.heldItem.item->sprite->texCoordId];
-        const auto index = buf.vert.size();
+        const auto index = buf.VtxCount();
 
-        buf.vert.push_back({{tl.x, tl.y}, //
-                            {uv.topLeft.x, uv.topLeft.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{bl.x, bl.y}, //
-                            {uv.topLeft.x, uv.bottomRight.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{br.x, br.y}, //
-                            {uv.bottomRight.x, uv.bottomRight.y},
-                            IM_COL32(255, 255, 255, 255)});
-        buf.vert.push_back({{tr.x, tr.y}, //
-                            {uv.bottomRight.x, uv.topLeft.y},
-                            IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{tl.x, tl.y}, //
+                     {uv.topLeft.x, uv.topLeft.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{bl.x, bl.y}, //
+                     {uv.topLeft.x, uv.bottomRight.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{br.x, br.y}, //
+                     {uv.bottomRight.x, uv.bottomRight.y},
+                     IM_COL32(255, 255, 255, 255)});
+        buf.PushVtx({{tr.x, tr.y}, //
+                     {uv.bottomRight.x, uv.topLeft.y},
+                     IM_COL32(255, 255, 255, 255)});
 
-        buf.idx.push_back(index);
-        buf.idx.push_back(index + 1);
-        buf.idx.push_back(index + 2);
-        buf.idx.push_back(index + 2);
-        buf.idx.push_back(index + 3);
-        buf.idx.push_back(index);
+        buf.PushIdx(index);
+        buf.PushIdx(index + 1);
+        buf.PushIdx(index + 2);
+        buf.PushIdx(index + 2);
+        buf.PushIdx(index + 3);
+        buf.PushIdx(index);
     }
 }

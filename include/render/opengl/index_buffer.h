@@ -26,6 +26,14 @@ namespace jactorio::render
         /// Creates a new buffer of provided specifications
         void Reserve(const void* data, uint32_t index_count) noexcept;
 
+        /// Gets pointer to begin modifying buffer data
+        /// \remark Ensure buffer is bound
+        J_NODISCARD void* Map() const noexcept;
+
+        /// Call to finish modifying buffer data, provided pointer from Map now invalid
+        /// \remark Ensure buffer is bound
+        void UnMap() const noexcept;
+
         void Bind() const noexcept;
         static void Unbind() noexcept;
 

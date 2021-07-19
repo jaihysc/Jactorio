@@ -26,9 +26,11 @@ namespace jactorio::render
         void Init() noexcept;
 
         /// Gets pointer to begin modifying buffer data
+        /// \remark Ensure buffer is bound
         J_NODISCARD void* Map() const noexcept;
 
         /// Call to finish modifying buffer data, provided pointer from Map now invalid
+        /// \remark Ensure buffer is bound
         void UnMap() const noexcept;
 
         // void UpdateData(const void* data, uint32_t offset, uint32_t size) const;

@@ -36,14 +36,12 @@ void render::ImGuiRenderer::Init() {
     attribLocationVtxUV_    = (GLuint)shader_.GetAttribLocation("UV");
     attribLocationVtxColor_ = (GLuint)shader_.GetAttribLocation("Color");
 
-    vbo_.Init();
-    index_.Init();
+    buffer.GlInit();
     vertexArray_.Init();
 
     // Setup attributes for ImDrawVert
     vertexArray_.Bind();
-    vbo_.Bind();
-    index_.Bind();
+    buffer.GlBind();
 
     DEBUG_OPENGL_CALL(glEnableVertexAttribArray(attribLocationVtxPos_));
     DEBUG_OPENGL_CALL(glEnableVertexAttribArray(attribLocationVtxUV_));
@@ -76,31 +74,23 @@ void render::ImGuiRenderer::Terminate() {
 void render::ImGuiRenderer::Bind() const noexcept {
     shader_.Bind();
     vertexArray_.Bind();
-    vbo_.Bind();
-    index_.Bind();
+    buffer.GlBind();
 }
 
 void render::ImGuiRenderer::RenderWorld(const unsigned tex_id) const noexcept {
     DEBUG_OPENGL_CALL(
         glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &common_->mvpManager.GetMvpMatrix()[0][0]));
 
-    DEBUG_OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, //
-                                   SafeCast<GLsizeiptr>(buffer.vert.size()) * sizeof(ImDrawVert),
-                                   buffer.vert.data(),
-                                   GL_STREAM_DRAW));
-
-    // This can be generated ahead of time?
-    DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, //
-                                   SafeCast<GLsizeiptr>(buffer.idx.size()) * sizeof(ImDrawIdx),
-                                   buffer.idx.data(),
-                                   GL_STREAM_DRAW));
+    // Data for drawing is already prepared by mapping buffers
 
     DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, tex_id));
     DEBUG_OPENGL_CALL(
         glDrawElements(GL_TRIANGLES,                         //
-                       SafeCast<GLsizei>(buffer.idx.size()), // Count is indices in index array, NOT triangle number
+                       SafeCast<GLsizei>(buffer.IdxCount()), // Count is indices in index array, NOT triangle number
                        sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
                        nullptr));
+
+    buffer.GlHandleBufferResize(); // May need to resize while gui is not open
 }
 
 void render::ImGuiRenderer::RenderGui(ImDrawData* draw_data) const {
@@ -120,15 +110,24 @@ void render::ImGuiRenderer::RenderGui(ImDrawData* draw_data) const {
     for (int n = 0; n < draw_data->CmdListsCount; n++) {
         const ImDrawList* cmd_list = draw_data->CmdLists[n];
 
+        // Check for capacity
+        if (SafeCast<uint32_t>(cmd_list->VtxBuffer.Size) > buffer.VtxCapacity()) {
+            buffer.ReserveVtx(cmd_list->VtxBuffer.Size);
+        }
+        if (SafeCast<uint32_t>(cmd_list->IdxBuffer.Size) > buffer.IdxCapacity()) {
+            buffer.ReserveIdx(cmd_list->IdxBuffer.Size);
+        }
+        buffer.GlHandleBufferResize();
+
         // Upload vertex/index buffers
-        glBufferData(GL_ARRAY_BUFFER,
-                     (GLsizeiptr)cmd_list->VtxBuffer.Size * (int)sizeof(ImDrawVert),
-                     (const GLvoid*)cmd_list->VtxBuffer.Data,
-                     GL_STREAM_DRAW);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     (GLsizeiptr)cmd_list->IdxBuffer.Size * (int)sizeof(ImDrawIdx),
-                     (const GLvoid*)cmd_list->IdxBuffer.Data,
-                     GL_STREAM_DRAW);
+        buffer.GlWriteBegin();
+        for (auto& vtx : cmd_list->VtxBuffer) {
+            buffer.UncheckedPushVtx(vtx);
+        }
+        for (auto& idx : cmd_list->IdxBuffer) {
+            buffer.UncheckedPushIdx(idx);
+        }
+        buffer.GlWriteEnd();
 
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];

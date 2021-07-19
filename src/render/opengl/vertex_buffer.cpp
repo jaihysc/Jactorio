@@ -20,16 +20,12 @@ void render::VertexBuffer::Init() noexcept {
 
 void* render::VertexBuffer::Map() const noexcept {
     assert(id_ != 0);
-    Bind();
-
     DEBUG_OPENGL_CALL(void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
     return ptr;
 }
 
 void render::VertexBuffer::UnMap() const noexcept {
     assert(id_ != 0);
-    Bind();
-
     DEBUG_OPENGL_CALL(glUnmapBuffer(GL_ARRAY_BUFFER));
 }
 

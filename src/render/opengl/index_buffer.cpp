@@ -22,6 +22,17 @@ void render::IndexBuffer::Reserve(const void* data, const uint32_t index_count) 
     count_ = index_count;
 }
 
+void* render::IndexBuffer::Map() const noexcept {
+    assert(id_ != 0);
+    DEBUG_OPENGL_CALL(void* ptr = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+    return ptr;
+}
+
+void render::IndexBuffer::UnMap() const noexcept {
+    assert(id_ != 0);
+    DEBUG_OPENGL_CALL(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+}
+
 void render::IndexBuffer::Bind() const noexcept {
     DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_));
 }

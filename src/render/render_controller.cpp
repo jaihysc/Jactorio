@@ -34,6 +34,7 @@ void render::RenderController::LoadedInit(ThreadedLoopCommon& common) {
 }
 
 void render::RenderController::RenderMainMenu(ThreadedLoopCommon& common) const {
+    imManager.imRenderer.Bind();
     imManager.BeginFrame(displayWindow);
     gui::StartMenu(common);
     imManager.RenderFrame();
@@ -63,6 +64,7 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
         std::lock_guard gui_guard{common.playerDataMutex};
         EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
+        imManager.imRenderer.Bind();
         imManager.BeginFrame(displayWindow);
 
         if (IsVisible(gui::Menu::MainMenu)) {
@@ -80,8 +82,10 @@ void render::RenderController::RenderWorld(ThreadedLoopCommon& common) {
             common.gameController.worlds, common.gameController.logic, player, common.gameController.proto, renderer);
     }
 
+    renderer.GlBind();
     renderer.GlPrepareEnd();
 
+    imManager.imRenderer.Bind(); // Gui must be drawn last to be above all else
     imManager.RenderFrame();
 }
 

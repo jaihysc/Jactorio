@@ -567,13 +567,13 @@ void render::TileRenderer::UpdateAnimationTexCoords() const noexcept {
 }
 
 void render::TileRenderer::GlPrepareBegin(TRenderBuffer& r_layer) {
-    r_layer.Clear();
+    r_layer.GlBindBuffers();
     r_layer.GlWriteBegin();
 }
 
 void render::TileRenderer::GlPrepareEnd(TRenderBuffer& r_layer) {
-    r_layer.GlWriteEnd();
     r_layer.GlBindBuffers();
+    r_layer.GlWriteEnd();
     r_layer.GlHandleBufferResize();
     GlDraw(r_layer.Size());
 }
