@@ -1,13 +1,5 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-// ReSharper disable CppCStyleCast
-// ReSharper disable CppClangTidyCppcoreguidelinesInitVariables
-// ReSharper disable CppClangTidyCppcoreguidelinesProTypeCstyleCast
-// ReSharper disable CppLocalVariableMayBeConst
-// ReSharper disable CppClangTidyReadabilityIsolateDeclaration
-// ReSharper disable CppClangTidyReadabilityImplicitBoolConversion
-// ReSharper disable CppParameterMayBeConst
-
 #include "render/imgui_renderer.h"
 
 #include <cstdint> // intptr_t
@@ -23,7 +15,7 @@ render::ImGuiRenderer::ImGuiRenderer(RendererCommon& common) : common_(&common) 
 void render::ImGuiRenderer::Init() {
     // Setup back-end capabilities flags
     ImGuiIO& io            = ImGui::GetIO();
-    io.BackendRendererName = "imgui_impl_opengl3";
+    io.BackendRendererName = "Jactorio impl_opengl3";
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field,
                                                                // allowing for large meshes.
 
@@ -32,9 +24,9 @@ void render::ImGuiRenderer::Init() {
 
     attribLocationTex_      = shader_.GetUniformLocation("u_texture");
     attribLocationProjMtx_  = shader_.GetUniformLocation("u_proj_mtx");
-    attribLocationVtxPos_   = (GLuint)shader_.GetAttribLocation("Position");
-    attribLocationVtxUV_    = (GLuint)shader_.GetAttribLocation("UV");
-    attribLocationVtxColor_ = (GLuint)shader_.GetAttribLocation("Color");
+    attribLocationVtxPos_   = SafeCast<GLuint>(shader_.GetAttribLocation("Position"));
+    attribLocationVtxUV_    = SafeCast<GLuint>(shader_.GetAttribLocation("UV"));
+    attribLocationVtxColor_ = SafeCast<GLuint>(shader_.GetAttribLocation("Color"));
 
     buffer.GlInit();
     vertexArray_.Init();
@@ -51,19 +43,19 @@ void render::ImGuiRenderer::Init() {
                                             GL_FLOAT,
                                             GL_FALSE,
                                             sizeof(ImDrawVert),
-                                            (GLvoid*)IM_OFFSETOF(ImDrawVert, pos)));
+                                            reinterpret_cast<GLvoid*>(IM_OFFSETOF(ImDrawVert, pos))));
     DEBUG_OPENGL_CALL(glVertexAttribPointer(attribLocationVtxUV_, //
                                             2,
                                             GL_FLOAT,
                                             GL_FALSE,
                                             sizeof(ImDrawVert),
-                                            (GLvoid*)IM_OFFSETOF(ImDrawVert, uv)));
+                                            reinterpret_cast<GLvoid*>(IM_OFFSETOF(ImDrawVert, uv))));
     DEBUG_OPENGL_CALL(glVertexAttribPointer(attribLocationVtxColor_,
                                             4,
                                             GL_UNSIGNED_BYTE,
                                             GL_TRUE,
                                             sizeof(ImDrawVert),
-                                            (GLvoid*)IM_OFFSETOF(ImDrawVert, col)));
+                                            reinterpret_cast<GLvoid*>(IM_OFFSETOF(ImDrawVert, col))));
     VertexArray::Unbind();
 }
 
@@ -100,15 +92,15 @@ void render::ImGuiRenderer::RenderWorld(const unsigned tex_id) const noexcept {
 void render::ImGuiRenderer::RenderGui(ImDrawData* draw_data) const {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer
     // coordinates)
-    int fb_width  = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-    int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+    const auto fb_width  = LossyCast<int>(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+    const auto fb_height = LossyCast<int>(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
     if (fb_width <= 0 || fb_height <= 0)
         return;
     SetupRenderState(draw_data);
 
     // Will project scissor/clipping rectangles into framebuffer space
-    ImVec2 clip_off   = draw_data->DisplayPos;       // (0,0) unless using multi-viewports
-    ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+    const ImVec2 clip_off   = draw_data->DisplayPos;       // (0,0) unless using multi-viewports
+    const ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
 
     // Render command lists
     for (int n = 0; n < draw_data->CmdListsCount; n++) {
@@ -154,25 +146,27 @@ void render::ImGuiRenderer::RenderGui(ImDrawData* draw_data) const {
 
                 if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f) {
                     // Apply scissor/clipping rectangle
-                    glScissor((int)clip_rect.x,
-                              (int)(fb_height - clip_rect.w),
-                              (int)(clip_rect.z - clip_rect.x),
-                              (int)(clip_rect.w - clip_rect.y));
+                    DEBUG_OPENGL_CALL(glScissor(LossyCast<int>(clip_rect.x),
+                                                LossyCast<int>(fb_height - clip_rect.w),
+                                                LossyCast<int>(clip_rect.z - clip_rect.x),
+                                                LossyCast<int>(clip_rect.w - clip_rect.y)));
 
                     // Bind texture, Draw
-                    glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
-                    glDrawElementsBaseVertex(GL_TRIANGLES,
-                                             (GLsizei)pcmd->ElemCount,
-                                             sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
-                                             (void*)(intptr_t)(pcmd->IdxOffset * sizeof(ImDrawIdx)),
-                                             (GLint)pcmd->VtxOffset);
+                    DEBUG_OPENGL_CALL(
+                        glBindTexture(GL_TEXTURE_2D, SafeCast<GLuint>(reinterpret_cast<intptr_t>(pcmd->TextureId))));
+                    DEBUG_OPENGL_CALL(glDrawElementsBaseVertex(
+                        GL_TRIANGLES,
+                        SafeCast<GLsizei>(pcmd->ElemCount),
+                        sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+                        reinterpret_cast<void*>(SafeCast<intptr_t>(pcmd->IdxOffset * sizeof(ImDrawIdx))),
+                        SafeCast<GLint>(pcmd->VtxOffset)));
                 }
             }
         }
     }
 
     // Scissor must be disabled PRIOR to gl clear or it does not clear the entire screen
-    glDisable(GL_SCISSOR_TEST);
+    DEBUG_OPENGL_CALL(glDisable(GL_SCISSOR_TEST));
 }
 
 bool render::ImGuiRenderer::InitFontsTexture() {
@@ -187,25 +181,25 @@ bool render::ImGuiRenderer::InitFontsTexture() {
                                    // calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
     // Upload texture to graphics system
-    glGenTextures(1, &fontTexture_);
-    glBindTexture(GL_TEXTURE_2D, fontTexture_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    DEBUG_OPENGL_CALL(glGenTextures(1, &fontTexture_));
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, fontTexture_));
+    DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 #ifdef GL_UNPACK_ROW_LENGTH
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    DEBUG_OPENGL_CALL(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
 #endif
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
 
     // Store our identifier
-    io.Fonts->TexID = (ImTextureID)(intptr_t)fontTexture_;
+    io.Fonts->TexID = reinterpret_cast<ImTextureID>(SafeCast<intptr_t>(fontTexture_));
 
     return true;
 }
 
 void render::ImGuiRenderer::DestroyFontsTexture() {
-    if (fontTexture_) {
+    if (fontTexture_ != 0u) {
         ImGuiIO& io = ImGui::GetIO();
-        glDeleteTextures(1, &fontTexture_);
+        DEBUG_OPENGL_CALL(glDeleteTextures(1, &fontTexture_));
         io.Fonts->TexID = 0;
         fontTexture_    = 0;
     }
@@ -213,13 +207,13 @@ void render::ImGuiRenderer::DestroyFontsTexture() {
 
 void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data) const {
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
-    glEnable(GL_SCISSOR_TEST);
+    DEBUG_OPENGL_CALL(glEnable(GL_SCISSOR_TEST));
 
     // Support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
     bool clip_origin_lower_left = true;
 #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
     GLenum current_clip_origin = 0;
-    glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&current_clip_origin);
+    DEBUG_OPENGL_CALL(glGetIntegerv(GL_CLIP_ORIGIN, reinterpret_cast<GLint*>(&current_clip_origin)));
     if (current_clip_origin == GL_UPPER_LEFT)
         clip_origin_lower_left = false;
 #endif
@@ -227,24 +221,25 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data) const {
     // Setup viewport, orthographic projection matrix
     // Our visible imgui space lies from draw_data->DisplayPos (top left) to
     // draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
-    float L = draw_data->DisplayPos.x;
-    float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
-    float T = draw_data->DisplayPos.y;
-    float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
+    const auto l = draw_data->DisplayPos.x;
+    const auto r = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
+    auto t       = draw_data->DisplayPos.y;
+    auto b       = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
     if (!clip_origin_lower_left) {
-        float tmp = T;
-        T         = B;
-        B         = tmp;
+        const auto tmp = t;
+        t              = b;
+        b              = tmp;
     } // Swap top and bottom if origin is upper left
     const float ortho_projection[4][4] = {
-        {2.0f / (R - L), 0.0f, 0.0f, 0.0f},
-        {0.0f, 2.0f / (T - B), 0.0f, 0.0f},
+        {2.0f / (r - l), 0.0f, 0.0f, 0.0f},
+        {0.0f, 2.0f / (t - b), 0.0f, 0.0f},
         {0.0f, 0.0f, -1.0f, 0.0f},
-        {(R + L) / (L - R), (T + B) / (B - T), 0.0f, 1.0f},
+        {(r + l) / (l - r), (t + b) / (b - t), 0.0f, 1.0f},
     };
-    glUniform1i(attribLocationTex_, 0);
-    glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &ortho_projection[0][0]);
+    DEBUG_OPENGL_CALL(glUniform1i(attribLocationTex_, 0));
+    DEBUG_OPENGL_CALL(glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &ortho_projection[0][0]));
 #ifdef GL_SAMPLER_BINDING
-    glBindSampler(0, 0); // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
+    // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
+    DEBUG_OPENGL_CALL(glBindSampler(0, 0));
 #endif
 }
