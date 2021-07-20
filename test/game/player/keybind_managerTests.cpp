@@ -18,8 +18,8 @@ namespace jactorio::game
     {
     protected:
         InputManager input_;
-        GameController gameController_;
-        KeybindManager keybindManager_{input_, gameController_};
+        GameController gameController_{nullptr};
+        KeybindManager keybindManager_{input_, {gameController_}};
 
         /// Expects the PlayerAction test to be called after executing provided function f
         void ExpectTestActionCalled(const std::function<void()>& f) const {
@@ -39,7 +39,7 @@ namespace jactorio::game
 
         /// Deserializes KeybindManager from JSON
         void Deserialize() {
-            KeybindManager keybind_manager(input_, gameController_);
+            KeybindManager keybind_manager(input_, {gameController_});
             TestDeserialize<KeybindManager, cereal::JSONInputArchive>(keybind_manager);
 
             keybindManager_ = std::move(keybind_manager);

@@ -35,7 +35,7 @@ namespace jactorio
         volatile bool prototypeLoadingComplete = false;
 
 
-        game::GameController gameController;
+        game::GameController gameController{&this->renderController};
         /// Because OpenGL does not allow calls from different threads,
         /// this must be created and destroyed in the renderer thread
         render::RenderController* renderController = nullptr;

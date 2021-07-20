@@ -5,7 +5,6 @@
 #pragma once
 
 #include <array>
-#include <functional>
 #include <type_traits>
 
 #include "jactorio.h"
@@ -26,8 +25,8 @@ namespace jactorio::game
     {
     public:
         /// \remark Provided parameter's lifetime must exceed this object
-        explicit KeybindManager(InputManager& input, GameController& game_controller)
-            : input_(input), gameController_(game_controller) {}
+        explicit KeybindManager(InputManager& input, const PlayerAction::Context context)
+            : input_(input), paContext_(context) {}
 
 
         KeybindManager(const KeybindManager& other)     = delete;
@@ -42,7 +41,7 @@ namespace jactorio::game
         friend void swap(KeybindManager& lhs, KeybindManager& rhs) noexcept {
             using std::swap;
             swap(lhs.input_, rhs.input_);
-            swap(lhs.gameController_, rhs.gameController_);
+            swap(lhs.paContext_, rhs.paContext_);
             swap(lhs.actionCallbackId_, rhs.actionCallbackId_);
             swap(lhs.actionKeyData_, rhs.actionKeyData_);
         }
@@ -102,7 +101,7 @@ namespace jactorio::game
 
     private:
         std::reference_wrapper<InputManager> input_;
-        std::reference_wrapper<GameController> gameController_;
+        PlayerAction::Context paContext_;
 
         /// Id of each action's executor in InputManager
         /// Index by numerical value of PlayerAction::Type
@@ -136,7 +135,7 @@ namespace jactorio::game
 
         callback_id = input_.get().Register(
             [this, action_type]() {
-                PlayerAction::GetExecutor(action_type)(gameController_.get()); //
+                PlayerAction::GetExecutor(action_type)(paContext_); //
             },
             key,
             key_action,
