@@ -78,17 +78,21 @@ void render::ImGuiRenderer::Bind() const noexcept {
 }
 
 void render::ImGuiRenderer::RenderWorld(const unsigned tex_id) const noexcept {
-    DEBUG_OPENGL_CALL(
-        glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &common_->mvpManager.GetMvpMatrix()[0][0]));
+    // On Linux, if a draw call is made with no indices, it covers up the world rendered underneath
+    // blanking the screen
+    if (buffer.IdxCount() > 0) {
+        DEBUG_OPENGL_CALL(
+            glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &common_->mvpManager.GetMvpMatrix()[0][0]));
 
-    // Data for drawing is already prepared by mapping buffers
+        // Data for drawing is already prepared by mapping buffers
 
-    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, tex_id));
-    DEBUG_OPENGL_CALL(
-        glDrawElements(GL_TRIANGLES,                         //
-                       SafeCast<GLsizei>(buffer.IdxCount()), // Count is indices in index array, NOT triangle number
-                       sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
-                       nullptr));
+        DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, tex_id));
+        DEBUG_OPENGL_CALL(
+            glDrawElements(GL_TRIANGLES,                         //
+                           SafeCast<GLsizei>(buffer.IdxCount()), // Count is indices in index array, NOT triangle number
+                           sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+                           nullptr));
+    }
 
     buffer.GlHandleBufferResize(); // May need to resize while gui is not open
 }
