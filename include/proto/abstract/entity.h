@@ -115,6 +115,8 @@ namespace jactorio::proto
             assert(false); // Unimplemented
         }
 
+        /// \param coord Top left coordinate
+        /// \param tile Tile in world at coord
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}
 
 

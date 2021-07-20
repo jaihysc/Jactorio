@@ -344,25 +344,45 @@ namespace jactorio::game
             void OnDeserialize(World& /*world*/, const WorldCoord& coord, ChunkTile& tile) const override {
                 EXPECT_EQ(coord.x, 5);
                 EXPECT_EQ(coord.y, 6);
-                onDeserializeCalled = true;
+                ++onDeserializeCalled;
 
                 chunkTile = &tile;
             }
 
-            mutable bool onDeserializeCalled = false;
-            mutable ChunkTile* chunkTile     = nullptr;
+            mutable int onDeserializeCalled = 0;
+            mutable ChunkTile* chunkTile    = nullptr;
         };
 
         world_.EmplaceChunk({0, 0});
 
-        MockWorldObject mock_obj;
+        data::PrototypeManager proto;
+        data::UniqueDataManager unique;
+
+
+        auto& mock_obj = proto.Make<MockWorldObject>();
+        mock_obj.SetDimension({1, 2});
+
         auto* tile = world_.GetTile({5, 6}, TileLayer::entity);
         tile->SetPrototype(Orientation::up, &mock_obj);
 
-        world_.DeserializePostProcess();
+        auto* tile2 = world_.GetTile({5, 7}, TileLayer::entity);
+        tile2->SetPrototype(Orientation::up, &mock_obj);
+        tile2->SetupMultiTile(1, *tile);
 
-        EXPECT_TRUE(mock_obj.onDeserializeCalled);
-        EXPECT_EQ(mock_obj.chunkTile, tile);
+        data::active_prototype_manager   = &proto;
+        data::active_unique_data_manager = &unique;
+        proto.GenerateRelocationTable();
+
+        // Must serialize and deserialize, as DeserializePostProcess expects the tiles
+        // to be not linked to top left and have a multi-tile index set
+        auto result = TestSerializeDeserialize(world_);
+        result.DeserializePostProcess();
+
+        // Was bug, causing incorrect mining drill dropoff location
+        // should only call OnDeserialize for multi-tiles once at top left
+        EXPECT_EQ(mock_obj.onDeserializeCalled, 1);
+        EXPECT_EQ(mock_obj.chunkTile->GetPrototype(), tile->GetPrototype());
+        EXPECT_EQ(mock_obj.chunkTile->GetMultiTileIndex(), 0);
     }
 
     TEST_F(WorldDeserialize, DeserializeLogicChunks) {

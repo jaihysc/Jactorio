@@ -512,7 +512,7 @@ void game::World::DeserializePostProcess() {
 
     // OnDeserialize
     iterate_world_chunks([this](const auto& coord, auto& tile, auto /*tlayer*/) {
-        if (tile.GetPrototype() != nullptr) {
+        if (tile.GetPrototype() != nullptr && tile.IsTopLeft()) {
             tile.GetPrototype()->OnDeserialize(*this, coord, tile);
         }
     });

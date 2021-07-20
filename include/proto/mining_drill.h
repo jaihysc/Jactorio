@@ -125,6 +125,7 @@ namespace jactorio::proto
     private:
         static bool InitializeOutput(game::World& world, const WorldCoord& output_coord, MiningDrillData* drill_data);
 
+        /// Finds resource output coord given top left coord and orientation of this drill
         J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& coord, Orientation orientation) const;
 
         /// \param orien Orientation of drill
