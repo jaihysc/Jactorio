@@ -157,25 +157,56 @@ void gui::ImGuiManager::RenderFrame() const {
 }
 
 void gui::ImGuiManager::PrepareWorld(const game::World& world, const render::TileRenderer& renderer) const {
-    for (auto [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::conveyor)) {
-        const auto pixel_pos   = renderer.WorldCoordToBufferPos(coord);
-        const auto pixel_pos_f = Position2(LossyCast<float>(pixel_pos.x), LossyCast<float>(pixel_pos.y));
+    // Save some performance by not rendering at far zooms
+    constexpr auto min_conveyor_render_zoom = 0.6f;
+    constexpr auto min_inserter_render_zoom = 0.8f;
 
-        const auto* conveyor = SafeCast<const proto::ConveyorData*>(unique_data.Get());
-        assert(conveyor != nullptr);
 
-        PrepareConveyorSegmentItems(imRenderer.buffer, *spritePositions_, pixel_pos_f, *conveyor->structure);
+    const auto origin     = renderer.WorldCoordToBufferPos({0, 0});
+    const auto window_dim = Position2(SafeCast<float>(render::TileRenderer::GetWindowWidth()),
+                                      SafeCast<float>(render::TileRenderer::GetWindowHeight()));
+
+    auto get_pixel_pos = [&origin](const WorldCoord& coord) {
+        return Position2(SafeCast<float>(coord.x * SafeCast<int>(render::TileRenderer::tileWidth) + origin.x),
+                         SafeCast<float>(coord.y * SafeCast<int>(render::TileRenderer::tileWidth) + origin.y));
+    };
+    auto is_visible = [&window_dim](const Position2<float>& pixel_pos) {
+        if (pixel_pos.x < 0 || pixel_pos.y < 0) {
+            return false;
+        }
+        if (pixel_pos.x > window_dim.x || pixel_pos.y > window_dim.y) {
+            return false;
+        }
+        return true;
+    };
+
+    if (renderer.GetZoom() >= min_conveyor_render_zoom) {
+        for (auto [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::conveyor)) {
+            const auto pixel_pos = get_pixel_pos(coord);
+            if (!is_visible(pixel_pos)) {
+                continue;
+            }
+
+            const auto* conveyor = SafeCast<const proto::ConveyorData*>(unique_data.Get());
+            assert(conveyor != nullptr);
+
+            PrepareConveyorSegmentItems(imRenderer.buffer, *spritePositions_, pixel_pos, *conveyor->structure);
+        }
     }
-    for (auto& [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::inserter)) {
-        const auto pixel_pos   = renderer.WorldCoordToBufferPos(coord);
-        const auto pixel_pos_f = Position2(LossyCast<float>(pixel_pos.x), LossyCast<float>(pixel_pos.y));
+    if (renderer.GetZoom() >= min_inserter_render_zoom) {
+        for (auto& [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::inserter)) {
+            const auto pixel_pos = get_pixel_pos(coord);
+            if (!is_visible(pixel_pos)) {
+                continue;
+            }
 
-        const auto* inserter      = SafeCast<const proto::Inserter*>(prototype.Get());
-        const auto* inserter_data = SafeCast<const proto::InserterData*>(unique_data.Get());
-        assert(inserter != nullptr);
-        assert(inserter_data != nullptr);
+            const auto* inserter      = SafeCast<const proto::Inserter*>(prototype.Get());
+            const auto* inserter_data = SafeCast<const proto::InserterData*>(unique_data.Get());
+            assert(inserter != nullptr);
+            assert(inserter_data != nullptr);
 
-        PrepareInserterParts(imRenderer.buffer, *spritePositions_, pixel_pos_f, *inserter, *inserter_data);
+            PrepareInserterParts(imRenderer.buffer, *spritePositions_, pixel_pos, *inserter, *inserter_data);
+        }
     }
 }
 
