@@ -161,20 +161,32 @@ void gui::ImGuiManager::PrepareWorld(const game::World& world, const render::Til
     constexpr auto min_conveyor_render_zoom = 0.6f;
     constexpr auto min_inserter_render_zoom = 0.8f;
 
+    // Render extra tiles of tile margin off the screen
+    // Since inserters, conveyor items are more than one tile, despite the point registered for logic updates
+    // not visible, other parts may still be
+    constexpr auto tile_margin  = 40;
+    constexpr auto pixel_margin = SafeCast<int>(tile_margin * render::TileRenderer::tileWidth);
 
-    const auto origin     = renderer.WorldCoordToBufferPos({0, 0});
-    const auto window_dim = Position2(SafeCast<float>(render::TileRenderer::GetWindowWidth()),
-                                      SafeCast<float>(render::TileRenderer::GetWindowHeight()));
+    const auto bottom_right = renderer.WorldCoordToBufferPos(
+        renderer.ScreenPosToWorldCoord({SafeCast<int>(render::TileRenderer::GetWindowWidth()),
+                                        SafeCast<int>(render::TileRenderer::GetWindowHeight())}));
+
+    const auto top_left_cutoff     = Position2(SafeCast<float>(-pixel_margin), SafeCast<float>(-pixel_margin));
+    const auto bottom_right_cutoff = Position2(SafeCast<float>(bottom_right.x + pixel_margin), //
+                                               SafeCast<float>(bottom_right.y + pixel_margin));
+
+    const auto origin = renderer.WorldCoordToBufferPos({0, 0});
+
 
     auto get_pixel_pos = [&origin](const WorldCoord& coord) {
         return Position2(SafeCast<float>(coord.x * SafeCast<int>(render::TileRenderer::tileWidth) + origin.x),
                          SafeCast<float>(coord.y * SafeCast<int>(render::TileRenderer::tileWidth) + origin.y));
     };
-    auto is_visible = [&window_dim](const Position2<float>& pixel_pos) {
-        if (pixel_pos.x < 0 || pixel_pos.y < 0) {
+    auto is_visible = [&top_left_cutoff, &bottom_right_cutoff](const Position2<float>& pixel_pos) {
+        if (pixel_pos.x < top_left_cutoff.x || pixel_pos.y < top_left_cutoff.y) {
             return false;
         }
-        if (pixel_pos.x > window_dim.x || pixel_pos.y > window_dim.y) {
+        if (pixel_pos.x > bottom_right_cutoff.x || pixel_pos.y > bottom_right_cutoff.y) {
             return false;
         }
         return true;

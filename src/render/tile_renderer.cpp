@@ -337,8 +337,12 @@ WorldCoord render::TileRenderer::ScreenPosToWorldCoord(const Position2<float>& p
     return {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
 }
 
-Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
-                                                                const WorldCoord& coord) const {
+WorldCoord render::TileRenderer::ScreenPosToWorldCoord(const Position2<int32_t>& screen_pos) const {
+    return ScreenPosToWorldCoord(playerPosition_, screen_pos);
+}
+
+Position2<int16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<float>& player_pos,
+                                                               const WorldCoord& coord) const {
     const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
     const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
 
@@ -356,10 +360,10 @@ Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<
     buffer_pos_y -= SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
 
     // Sometimes has float 8.99999, which is wrongly truncated to 8, thus must round first
-    return {LossyCast<uint16_t>(std::round(buffer_pos_x)), LossyCast<uint16_t>(std::round(buffer_pos_y))};
+    return {LossyCast<int16_t>(std::round(buffer_pos_x)), LossyCast<int16_t>(std::round(buffer_pos_y))};
 }
 
-Position2<uint16_t> render::TileRenderer::WorldCoordToBufferPos(const WorldCoord& coord) const {
+Position2<int16_t> render::TileRenderer::WorldCoordToBufferPos(const WorldCoord& coord) const {
     return WorldCoordToBufferPos(playerPosition_, coord);
 }
 
