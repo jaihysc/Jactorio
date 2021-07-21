@@ -27,7 +27,8 @@ function(log_msg message)
 	message(" - ${message}")
 endfunction()
 
-function(jactorio_copy_runtime_files)
+# IS_TEST_BUILD true if part of build for tests, copies extra files
+function(jactorio_copy_runtime_files IS_TEST_BUILD)
 	# Copies from data/ folder to output folder
 	set(JACTORIO_DATA_FOLDER data)
 
@@ -39,6 +40,9 @@ function(jactorio_copy_runtime_files)
 		RELATIVE ${PROJECT_SOURCE_DIR}
 		${PROJECT_SOURCE_DIR}/${JACTORIO_DATA_FOLDER}/*
 	)
+	if (NOT ${IS_TEST_BUILD})
+		list(FILTER DATA_FILES EXCLUDE REGEX "test\/.*")
+	endif()
 
 	foreach(DATA_FILE ${DATA_FILES})
 		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${COPY_DESTINATION_DIR}/${DATA_FILE} COPYONLY)
