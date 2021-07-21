@@ -171,6 +171,48 @@ void game::World::SetTexCoordId(const ChunkCoord& c_coord,
                      [(ct_coord.y * Chunk::kChunkWidth + ct_coord.x) * kTileLayerCount + static_cast<int>(layer)] = id;
 }
 
+void game::World::SetAnimationOffset(const SpriteTexCoordIndexT offset) noexcept {
+    animationOffset_ = offset;
+}
+
+void game::World::EnableAnimation(WorldCoord coord, const TileLayer tlayer) noexcept {
+    const auto* tile = GetTile(coord, tlayer);
+    assert(tile != nullptr);
+
+    coord.Increment(*tile); // From top left
+    const auto dimension = tile->GetDimension();
+    for (DimensionAxis y = 0; y < dimension.y; ++y) {
+        for (DimensionAxis x = 0; x < dimension.x; ++x) {
+            const auto tile_coord = WorldCoord{coord.x + x, coord.y + y};
+
+            const auto id = GetTexCoordId(tile_coord, tlayer);
+            if (id < animationOffset_) { // Already enabled
+                return;
+            }
+            SetTexCoordId(tile_coord, tlayer, id - animationOffset_);
+        }
+    }
+}
+
+void game::World::DisableAnimation(WorldCoord coord, const TileLayer tlayer) noexcept {
+    const auto* tile = GetTile(coord, tlayer);
+    assert(tile != nullptr);
+
+    coord.Increment(*tile); // From top left
+    const auto dimension = tile->GetDimension();
+    for (DimensionAxis y = 0; y < dimension.y; ++y) {
+        for (DimensionAxis x = 0; x < dimension.x; ++x) {
+            const auto tile_coord = WorldCoord{coord.x + x, coord.y + y};
+
+            const auto id = GetTexCoordId(tile_coord, tlayer);
+            if (id >= animationOffset_) { // Animation already disabled
+                return;
+            }
+            SetTexCoordId(tile_coord, tlayer, id + animationOffset_);
+        }
+    }
+}
+
 
 // ======================================================================
 // Placement

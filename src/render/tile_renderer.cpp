@@ -43,26 +43,44 @@ void render::TileRenderer::InitTexture(const Spritemap& spritemap, const Texture
     texture_   = &texture;
 }
 
-void render::TileRenderer::InitShader() {
+SpriteTexCoordIndexT render::TileRenderer::InitShader() {
     assert(spritemap_ != nullptr);
     auto [terrain_tex_coords, terrain_tex_coord_size] = spritemap_->GenCurrentFrame();
     LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
 
     GLint max_uniform_component;
     DEBUG_OPENGL_CALL(glGetIntegerv(GL_MAX_TESS_EVALUATION_UNIFORM_COMPONENTS, &max_uniform_component));
-    if (terrain_tex_coord_size > max_uniform_component / 4) {
-        throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_uniform_component / 4));
+
+    // Each tex coord is 4 floats
+    // Pause-able animation is achieved by
+    // doubling the tex coords, one set is static, another animated versions of entities
+    const auto max_tex_coords = max_uniform_component / 4 / 2;
+    if (terrain_tex_coord_size > max_tex_coords) {
+        throw std::runtime_error(std::string("Max tex coords exceeded: ") + std::to_string(max_tex_coords));
     }
 
     shader_.Init({{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
                   {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER},
                   {"data/core/shaders/te.tese", GL_TESS_EVALUATION_SHADER}},
-                 {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size)}});
+                 {{"__terrain_tex_coords_size", std::to_string(terrain_tex_coord_size * 2)}});
     shader_.Bind();
     common_->mvpManager.SetMvpUniformLocation(shader_.GetUniformLocation("u_model_view_projection_matrix"));
 
     // Texture will be bound to specified slot, tell this to shader
     DEBUG_OPENGL_CALL(glUniform1i(shader_.GetUniformLocation("u_texture"), kTextureSlot));
+
+    // Upload the both sets of tex coords (animated and static)
+    std::vector<TexCoord> all_tex_coords;
+    all_tex_coords.reserve(terrain_tex_coord_size * 2);
+    for (int j = 0; j < 2; ++j) {
+        for (int i = 0; i < terrain_tex_coord_size; ++i) {
+            all_tex_coords.push_back(terrain_tex_coords[i]);
+        }
+    }
+    DEBUG_OPENGL_CALL(glUniform4fv(shader_.GetUniformLocation("u_tex_coords"), //
+                                   terrain_tex_coord_size * 2,
+                                   reinterpret_cast<const GLfloat*>(all_tex_coords.data())));
+    return terrain_tex_coord_size;
 }
 
 void render::TileRenderer::GlClear() noexcept {
@@ -586,6 +604,7 @@ FORCEINLINE void render::TileRenderer::PrepareOverlayLayers(TRenderBuffer& r_lay
 void render::TileRenderer::UpdateAnimationTexCoords() const noexcept {
     auto [tex_coords, size] = spritemap_->GenNextFrame();
 
+    // Update only the animated set of tex coord
     static_assert(std::is_same_v<GLfloat, TexCoord::PositionT::ValueT>);
     DEBUG_OPENGL_CALL(glUniform4fv(shader_.GetUniformLocation("u_tex_coords"), //
                                    size,

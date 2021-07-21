@@ -65,8 +65,9 @@ namespace jactorio::render
         void Init();
         /// \remark spritemap and texture must be kept alive for lifetime of Renderer
         void InitTexture(const Spritemap& spritemap, const Texture& texture) noexcept;
+        /// \return Offset which should be applied to tex coord id in order to enable/disable animations
         /// \exception std::runtime_error Too many tex coords for shader
-        void InitShader();
+        J_NODISCARD SpriteTexCoordIndexT InitShader();
 
 
         static void GlClear() noexcept;

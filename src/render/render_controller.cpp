@@ -30,7 +30,10 @@ void render::RenderController::Init() {
 void render::RenderController::LoadedInit(ThreadedLoopCommon& common) {
     InitGuiFont(common);
     InitTextures(common);
-    renderer.InitShader();
+    const auto animation_offset = renderer.InitShader();
+    for (auto& world : common.gameController.worlds) {
+        world.SetAnimationOffset(animation_offset);
+    }
 }
 
 void render::RenderController::RenderMainMenu(ThreadedLoopCommon& common) const {
