@@ -49,10 +49,11 @@ namespace jactorio::game
             render::RenderController** hRenderController = nullptr;
 
             // Hide implementation details on how the members are obtained
-            J_NODISCARD GameController& GameController() const noexcept {
+            // Cannot be called GameController on GCC since that is already a class name
+            J_NODISCARD GameController& GController() const noexcept {
                 return gameController.get();
             }
-            J_NODISCARD render::RenderController& RenderController() const noexcept {
+            J_NODISCARD render::RenderController& RController() const noexcept {
                 assert(hRenderController != nullptr);
                 assert(*hRenderController != nullptr);
                 return **hRenderController;
