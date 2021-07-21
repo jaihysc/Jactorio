@@ -67,7 +67,7 @@ void game::GameController::LogicUpdate() {
         logic.DeferralUpdate(world, logic.GameTick());
 
 
-        world.GenChunk(proto);
+        world.GenChunk(proto, 30);
 
 
         // Logistics logic

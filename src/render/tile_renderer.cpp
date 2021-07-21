@@ -439,9 +439,9 @@ Position2<int> render::TileRenderer::GetTileDrawAmount() const noexcept {
 void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
                                            const game::World& world,
                                            std::mutex& world_gen_mutex,
-                                           const Position2<int> row_start,
+                                           Position2<int> row_start,
                                            const int chunk_span,
-                                           const Position2<int> render_tile_offset) const noexcept {
+                                           Position2<int> render_tile_offset) const noexcept {
     auto [tex_ids, readable_chunks] = world.GetChunkTexCoordIds(row_start);
 
     if (readable_chunks < chunk_span) {
@@ -451,6 +451,28 @@ void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
             const auto chunk_x = x + row_start.x;
             world.QueueChunkGeneration({chunk_x, row_start.y});
         }
+    }
+
+    // If the leftmost chunk is not readable, try other ones in row
+    // avoids annoying black screens when moving left
+    if (readable_chunks == 0) {
+        int i = 1; // Not 0, since we already know current chunk has no readable chunks
+        while (readable_chunks == 0 && i < chunk_span) {
+            std::tie(tex_ids, readable_chunks) = world.GetChunkTexCoordIds({row_start.x + i, row_start.y});
+            render_tile_offset.x += game::Chunk::kChunkWidth;
+            ++i;
+        }
+        row_start.x += i - 1; // i gets increment extra time at end of while
+    }
+
+    // Despite being readable, the chunk may not be generated
+    auto tex_ids_2 = tex_ids; // Cannot move the original pointer
+    for (int i = 0; i < readable_chunks; ++i) {
+        if (tex_ids_2[0] == 0) { // First tile, bottom layer of chunk
+            std::lock_guard gen_guard{world_gen_mutex};
+            world.QueueChunkGeneration({row_start.x + i, row_start.y});
+        }
+        tex_ids_2 += game::Chunk::kChunkArea * game::kTileLayerCount;
     }
 
     // Allocate for the maximum possible tile layers to render
