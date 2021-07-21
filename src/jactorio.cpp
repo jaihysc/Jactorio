@@ -28,12 +28,23 @@ void InitializeGame() {
 }
 
 /// ENTRY POINT
-int main(int ac, char* av[]) {
+int main(const int argc, char* argv[]) {
     using namespace jactorio;
 
-    current_path(std::filesystem::path(av[0]).parent_path());
+    current_path(std::filesystem::path(argv[0]).parent_path());
 
     // Log file
+    if (argc == 2) {
+        const auto level = argv[1][0] - '0';
+        if (level >= 0 && level <= static_cast<int>(LogSeverity::none)) {
+            log_level = static_cast<LogSeverity>(level);
+        }
+        else {
+            // Have to use printf, logger is not initialized yet
+            printf("Invalid log level\n");
+            return 1;
+        }
+    }
     ResourceGuard log_guard(&CloseLogFile);
     OpenLogFile();
 

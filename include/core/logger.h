@@ -29,8 +29,10 @@ namespace jactorio
         info,
         warning,
         error,
-        critical
+        critical,
+        none
     };
+    inline LogSeverity log_level = LogSeverity::debug;
 
 
     /// Relative path supported, call this after setting the executing directory
@@ -53,9 +55,7 @@ namespace jactorio
     /// Creates a formatted log message if log level permits
     template <LogSeverity Severity, typename... Args, typename = std::common_type<Args...>>
     void MakeLogMessage(const char* format, const char* file, const int line, Args&&... args) {
-        if constexpr (static_cast<int>(Severity) >=
-#include "_config/log_level"
-        ) {
+        if (static_cast<int>(Severity) >= static_cast<int>(log_level)) {
             char buffer[kMaxLogMsgLength + 1];
             snprintf(buffer, kMaxLogMsgLength, format, args...);
             LogMessage(Severity, file, line, buffer);

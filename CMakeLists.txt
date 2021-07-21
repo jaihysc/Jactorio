@@ -199,7 +199,6 @@ if (DEFINED ENV{buildNumber})
 endif ()
 
 jactorio_c_config_val("version" "\"${GIT_REPO_VERSION}\"")
-jactorio_c_config_val("log_level" 0) # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 jactorio_c_config_val("build_target_platform" \"${CMAKE_SYSTEM_NAME}\")
 jactorio_c_config_val("build_number" ${JACTORIO_BUILD_NUMBER})
 
