@@ -86,7 +86,7 @@ void proto::MiningDrill::OnBuild(game::World& world,
                                  const WorldCoord& coord,
                                  const Orientation orientation) const {
     auto& drill_data = world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<MiningDrillData>(orientation);
-
+    world.DisableAnimation(coord, game::TileLayer::entity);
 
     drill_data.resourceCoord.x = coord.x - this->miningRadius;
     drill_data.resourceCoord.y = coord.y - this->miningRadius;
@@ -126,10 +126,12 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
         const bool success = DeductResource(world, self_tile.GetOrientation(), *drill_data);
         assert(success);
         RegisterMineCallback(logic.deferralTimer, drill_data);
+        world.EnableAnimation(receive_coord, game::TileLayer::entity);
     }
     else {
         // Un-register callback if one is registered
         logic.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
+        world.DisableAnimation(receive_coord, game::TileLayer::entity);
     }
 }
 
