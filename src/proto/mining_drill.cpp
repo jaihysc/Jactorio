@@ -124,9 +124,10 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
                                 SafeCast<const ResourceEntity*>(drill_data->outputItem->entityPrototype)->pickupTime);
 
         const bool success = DeductResource(world, self_tile.GetOrientation(), *drill_data);
-        assert(success);
-        RegisterMineCallback(logic.deferralTimer, drill_data);
-        world.EnableAnimation(receive_coord, game::TileLayer::entity);
+        if (success) {
+            RegisterMineCallback(logic.deferralTimer, drill_data);
+            world.EnableAnimation(receive_coord, game::TileLayer::entity);
+        }
     }
     else {
         // Un-register callback if one is registered

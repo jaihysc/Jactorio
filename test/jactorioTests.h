@@ -165,19 +165,15 @@ namespace jactorio
         return *tile;
     }
 
-    /// Creates a drill AND resource in the world with orientation using OnBuild
+    /// Creates a drill in the world with orientation using OnBuild
+    /// \remark Ensure a resource exists or drill will not get built
     inline game::ChunkTile& TestSetupDrill(game::World& world,
                                            game::Logic& logic,
                                            const WorldCoord& coord,
                                            const Orientation orientation,
-                                           proto::ResourceEntity& resource,
-                                           proto::MiningDrill& drill,
-                                           const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
+                                           proto::MiningDrill& drill) {
         auto* tile = world.GetTile(coord, game::TileLayer::entity);
         assert(tile != nullptr);
-
-        // Resource needed for OnBuild
-        TestSetupResource(world, coord, resource, resource_amount);
 
         tile->SetPrototype(orientation, &drill);
         drill.OnBuild(world, logic, coord, orientation);
