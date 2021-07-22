@@ -325,15 +325,11 @@ namespace jactorio::game
             void OnBuild(World& /*world*/,
                          Logic& /*logic*/,
                          const WorldCoord& /*coord*/,
-                         TileLayer /*tlayer*/,
                          Orientation /*orientation*/) const override {
                 onBuildCalled = true;
             }
 
-            void OnRemove(World& /*world*/,
-                          Logic& /*logic*/,
-                          const WorldCoord& /*coord*/,
-                          TileLayer /*tlayer*/) const override {
+            void OnRemove(World& /*world*/, Logic& /*logic*/, const WorldCoord& /*coord*/) const override {
                 onRemoveCalled = true;
             }
 

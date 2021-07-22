@@ -112,16 +112,12 @@ void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
 void proto::AssemblyMachine::OnBuild(game::World& world,
                                      game::Logic& /*logic*/,
                                      const WorldCoord& coord,
-                                     const game::TileLayer tlayer,
                                      const Orientation /*orientation*/) const {
-    world.GetTile(coord, tlayer)->MakeUniqueData<AssemblyMachineData>();
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<AssemblyMachineData>();
 }
 
-void proto::AssemblyMachine::OnRemove(game::World& world,
-                                      game::Logic& logic,
-                                      const WorldCoord& coord,
-                                      const game::TileLayer tlayer) const {
-    auto& machine_data = *world.GetTile(coord, tlayer)->GetUniqueData<AssemblyMachineData>();
+void proto::AssemblyMachine::OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const {
+    auto& machine_data = *world.GetTile(coord, game::TileLayer::entity)->GetUniqueData<AssemblyMachineData>();
 
     logic.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

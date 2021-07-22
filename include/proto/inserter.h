@@ -88,7 +88,6 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
 
@@ -97,10 +96,7 @@ namespace jactorio::proto
                           const WorldCoord& receive_coord,
                           UpdateType type) const override;
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override;
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override;
 
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;

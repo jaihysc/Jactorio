@@ -56,13 +56,9 @@ namespace jactorio
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override {}
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override {}
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override {}
     };
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
@@ -121,7 +117,7 @@ namespace jactorio
         assert(tile != nullptr);
 
         tile->SetPrototype(orientation, &inserter_proto);
-        inserter_proto.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
+        inserter_proto.OnBuild(world, logic, coord, orientation);
 
         return *tile;
     }
@@ -184,7 +180,7 @@ namespace jactorio
         TestSetupResource(world, coord, resource, resource_amount);
 
         tile->SetPrototype(orientation, &drill);
-        drill.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
+        drill.OnBuild(world, logic, coord, orientation);
 
         return *tile;
     }

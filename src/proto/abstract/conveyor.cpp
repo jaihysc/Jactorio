@@ -25,10 +25,8 @@ SpriteTexCoordIndexT proto::Conveyor::OnGetTexCoordId(const game::World& world,
 void proto::Conveyor::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              const game::TileLayer tlayer,
                               const Orientation orientation) const {
-
-    auto& con_data = world.GetTile(coord, tlayer)->MakeUniqueData<ConveyorData>();
+    auto& con_data = world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<ConveyorData>();
     BuildConveyor(world, coord, con_data, orientation, kConveyorLogicGroup);
 }
 
@@ -50,10 +48,7 @@ void proto::Conveyor::OnNeighborUpdate(game::World& world,
     ConveyorUpdateNeighborTermination(world, receive_coord);
 }
 
-void proto::Conveyor::OnRemove(game::World& world,
-                               game::Logic& /*logic*/,
-                               const WorldCoord& coord,
-                               game::TileLayer /*tlayer*/) const {
+void proto::Conveyor::OnRemove(game::World& world, game::Logic& /*logic*/, const WorldCoord& coord) const {
     RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 

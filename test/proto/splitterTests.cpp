@@ -45,7 +45,7 @@ namespace jactorio::proto
 
         TestSetupMultiTile(world_, {0, 1}, game::TileLayer::entity, Orientation::down, splitter_);
 
-        splitter_.OnBuild(world_, logic_, {0, 1}, game::TileLayer::entity, Orientation::down);
+        splitter_.OnBuild(world_, logic_, {0, 1}, Orientation::down);
 
         auto* splitter_data = world_.GetTile({0, 1}, game::TileLayer::entity)->GetUniqueData<SplitterData>();
         ASSERT_NE(splitter_data, nullptr);
@@ -80,7 +80,7 @@ namespace jactorio::proto
         con_data_rt.structure->target = splitter_data.right.structure.get();
 
 
-        splitter_.OnRemove(world_, logic_, {1, 0}, game::TileLayer::entity);
+        splitter_.OnRemove(world_, logic_, {1, 0});
 
 
         EXPECT_EQ(splitter_data.left.structure.get(), nullptr);

@@ -17,9 +17,8 @@ SpriteTexCoordIndexT proto::Inserter::OnGetTexCoordId(const game::World& /*world
 void proto::Inserter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              const game::TileLayer tlayer,
                               Orientation orientation) const {
-    world.GetTile(coord, tlayer)->MakeUniqueData<InserterData>(orientation);
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<InserterData>(orientation);
 
     // Dropoff side
     {
@@ -75,13 +74,10 @@ void proto::Inserter::OnTileUpdate(game::World& world,
     }
 }
 
-void proto::Inserter::OnRemove(game::World& world,
-                               game::Logic& /*logic*/,
-                               const WorldCoord& coord,
-                               const game::TileLayer tlayer) const {
+void proto::Inserter::OnRemove(game::World& world, game::Logic& /*logic*/, const WorldCoord& coord) const {
     world.LogicRemove(game::LogicGroup::inserter, coord, game::TileLayer::entity);
 
-    const auto* inserter_data = world.GetTile(coord, tlayer)->GetUniqueData<InserterData>();
+    const auto* inserter_data = world.GetTile(coord, game::TileLayer::entity)->GetUniqueData<InserterData>();
 
     world.updateDispatcher.Unregister({coord, GetDropoffCoord(coord, inserter_data->orientation)});
     world.updateDispatcher.Unregister({coord, GetPickupCoord(coord, inserter_data->orientation)});

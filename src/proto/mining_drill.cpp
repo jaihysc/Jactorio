@@ -84,9 +84,8 @@ bool proto::MiningDrill::OnCanBuild(const game::World& world, const WorldCoord& 
 void proto::MiningDrill::OnBuild(game::World& world,
                                  game::Logic& logic,
                                  const WorldCoord& coord,
-                                 const game::TileLayer tlayer,
                                  const Orientation orientation) const {
-    auto& drill_data = world.GetTile(coord, tlayer)->MakeUniqueData<MiningDrillData>(orientation);
+    auto& drill_data = world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<MiningDrillData>(orientation);
 
 
     drill_data.resourceCoord.x = coord.x - this->miningRadius;
@@ -135,11 +134,8 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
 }
 
 
-void proto::MiningDrill::OnRemove(game::World& world,
-                                  game::Logic& logic,
-                                  const WorldCoord& coord,
-                                  const game::TileLayer tlayer) const {
-    auto* drill_data = world.GetTile(coord, tlayer)->GetUniqueData<MiningDrillData>();
+void proto::MiningDrill::OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const {
+    auto* drill_data = world.GetTile(coord, game::TileLayer::entity)->GetUniqueData<MiningDrillData>();
     logic.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 

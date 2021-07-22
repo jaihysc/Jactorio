@@ -219,7 +219,7 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
 
     // Call events
 
-    entity->OnBuild(world, logic, coord, TileLayer::entity, orientation);
+    entity->OnBuild(world, logic, coord, orientation);
     UpdateNeighboringEntities(world, logic, coord, orientation, entity);
 
     for (DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
@@ -354,7 +354,7 @@ void game::Player::Placement::PickupEntity(
 
 
     // Call events
-    entity->OnRemove(world, logic, tl_coord, TileLayer::entity);
+    entity->OnRemove(world, logic, tl_coord);
 
     const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
     assert(result); // false indicates failed to remove entity
