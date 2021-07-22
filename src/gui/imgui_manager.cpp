@@ -239,20 +239,22 @@ void gui::ImGuiManager::PrepareGui(GameWorlds& worlds,
     // ImPopFont();
 
     MenuData menu_data = {*spritePositions_, texId_};
-    const Context context{worlds, logic, player, proto, menu_data};
+    Context context{worlds, logic, player, proto, menu_data};
 
 
     bool drew_gui = false;
 
     // Entity gui
-    auto* tile = player.placement.GetActivatedTile();
+    auto [tile, coord] = player.placement.GetActivatedTile();
     if (tile != nullptr) {
+        context.coord = coord; // Coord only valid when tile not nullptr
+
         drew_gui = tile->GetPrototype<proto::Entity>()->OnRShowGui(context, tile);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }
         else {
-            player.placement.SetActivatedTile(nullptr);
+            player.placement.DeactivateTile();
         }
     }
 

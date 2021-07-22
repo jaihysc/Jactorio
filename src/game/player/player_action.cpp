@@ -95,8 +95,9 @@ void game::PlayerAction::ToggleDebugMenu(const Context& /*c*/) {
 
 void game::PlayerAction::ToggleCharacterMenu(const Context& c) {
     // If a tile is already activated, deactivate it, otherwise open the gui menu
-    if (c.GController().player.placement.GetActivatedTile() != nullptr)
-        c.GController().player.placement.SetActivatedTile(nullptr);
+    auto [tile, coord] = c.GController().player.placement.GetActivatedTile();
+    if (tile != nullptr)
+        c.GController().player.placement.DeactivateTile();
     else
         SetVisible(gui::Menu::CharacterMenu, !IsVisible(gui::Menu::CharacterMenu));
 }

@@ -12,6 +12,9 @@ using namespace jactorio;
 void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
                                               const data::PrototypeManager& proto,
                                               const Recipe* new_recipe) {
+    // The gui menu for assembly machine enables/disables the animations
+    // Asking for world + coordinates to enable/disable animations feels beyond the scope of this method
+
     if (new_recipe != nullptr) {
         ingredientInv.Resize(new_recipe->ingredients.size());
         productInv.Resize(1);
@@ -114,6 +117,7 @@ void proto::AssemblyMachine::OnBuild(game::World& world,
                                      const WorldCoord& coord,
                                      const Orientation /*orientation*/) const {
     world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<AssemblyMachineData>();
+    world.DisableAnimation(coord, game::TileLayer::entity);
 }
 
 void proto::AssemblyMachine::OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const {

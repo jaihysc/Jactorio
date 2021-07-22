@@ -69,39 +69,39 @@ namespace jactorio::game
         world.EmplaceChunk({0, 0});
 
 
-        auto* tile_base   = world.GetTile({0, 0}, TileLayer::base);
-        auto* tile_entity = world.GetTile({0, 0}, TileLayer::entity);
-
+        auto* tile_base   = world.GetTile({3, 4}, TileLayer::base);
+        auto* tile_entity = world.GetTile({3, 4}, TileLayer::entity);
         tile_base->SetPrototype(Orientation::up, &tile_proto);
 
         // No entity, do not activate
-        EXPECT_FALSE(player.placement.TryActivateTile(world, {0, 0}));
+        EXPECT_FALSE(player.placement.TryActivateTile(world, {3, 4}));
 
-
-        // If selected item's entity is placeable, do not set activated_layer
+        // If selected item's entity is placeable, DO set activated_layer
         tile_entity->SetPrototype(Orientation::up, &entity);
-
         player.inventory.SetSelectedItem({&item, 2});
 
-        EXPECT_FALSE(player.placement.TryPlaceEntity(world, logic, {0, 0}));
-        EXPECT_EQ(player.placement.GetActivatedTile(), nullptr);
-
+        EXPECT_FALSE(player.placement.TryPlaceEntity(world, logic, {3, 4}));
+        auto [activated_tile, activated_coord] = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, nullptr);
 
         // Clicking on an entity with no placeable items selected will set activated_layer
         player.inventory.SetSelectedItem({&item_no_entity, 2});
 
-        EXPECT_TRUE(player.placement.TryActivateTile(world, {0, 0}));
-        EXPECT_EQ(player.placement.GetActivatedTile(), tile_entity);
-
+        EXPECT_TRUE(player.placement.TryActivateTile(world, {3, 4}));
+        std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, tile_entity);
+        EXPECT_EQ(activated_coord, WorldCoord(3, 4));
 
         // Clicking again will NOT unset
-        EXPECT_TRUE(player.placement.TryActivateTile(world, {0, 0}));
-        EXPECT_EQ(player.placement.GetActivatedTile(), tile_entity);
-
+        EXPECT_TRUE(player.placement.TryActivateTile(world, {3, 4}));
+        std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, tile_entity);
+        EXPECT_EQ(activated_coord, WorldCoord(3, 4));
 
         // Activated tile can be set to nullptr to deactivate
-        player.placement.SetActivatedTile(nullptr);
-        EXPECT_EQ(player.placement.GetActivatedTile(), nullptr);
+        player.placement.DeactivateTile();
+        std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, nullptr);
     }
 
     // ======================================================================
@@ -220,11 +220,11 @@ namespace jactorio::game
         player_.inventory.DecrementSelectedItem();
 
         EXPECT_TRUE(player_.placement.TryActivateTile(world_, {2, 3}));
-        EXPECT_EQ(player_.placement.GetActivatedTile(), world_.GetTile({0, 0}, TileLayer::entity));
+        EXPECT_EQ(player_.placement.GetActivatedTile().first, world_.GetTile({0, 0}, TileLayer::entity));
 
 
         player_.placement.TryPickup(world_, logic_, {1, 2});
-        EXPECT_EQ(player_.placement.GetActivatedTile(), nullptr);
+        EXPECT_EQ(player_.placement.GetActivatedTile().first, nullptr);
     }
 
     TEST_F(PlayerPlacementTest, PickupEntity) {

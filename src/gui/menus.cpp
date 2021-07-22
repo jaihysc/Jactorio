@@ -10,6 +10,7 @@
 #include "game/logic/logic.h"
 #include "game/logistic/inventory.h"
 #include "game/player/player.h"
+#include "game/world/world.h"
 #include "gui/components.h"
 #include "gui/context.h"
 #include "gui/menu_data.h"
@@ -492,8 +493,9 @@ void gui::AssemblyMachine(const Context& context,
     assert(prototype != nullptr);
     assert(unique_data != nullptr);
 
-    auto& logic       = context.logic;
-    const auto& proto = context.proto;
+    auto& player_world = context.worlds[context.player.world.GetId()];
+    auto& logic        = context.logic;
+    const auto& proto  = context.proto;
 
     const auto& machine_proto = *SafeCast<const proto::AssemblyMachine*>(prototype);
     auto& machine_data        = *SafeCast<proto::AssemblyMachineData*>(unique_data);
@@ -524,6 +526,7 @@ void gui::AssemblyMachine(const Context& context,
                 ingredient_slots.DrawSlot(reset_icon->sprite->texCoordId, [&]() {
                     if (ImGui::IsItemClicked()) {
                         machine_data.ChangeRecipe(logic, proto, nullptr);
+                        player_world.DisableAnimation(context.coord, game::TileLayer::entity);
                     }
                 });
                 return;
@@ -594,6 +597,7 @@ void gui::AssemblyMachine(const Context& context,
         RecipeMenu(context, prototype->GetLocalizedName(), [&](auto& recipe) {
             if (ImGui::IsItemClicked()) {
                 machine_data.ChangeRecipe(logic, proto, &recipe);
+                player_world.EnableAnimation(context.coord, game::TileLayer::entity);
             }
 
             if (ImGui::IsItemHovered())

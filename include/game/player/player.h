@@ -6,6 +6,7 @@
 
 #include <glm/glm.hpp>
 #include <queue>
+#include <utility>
 
 #include "core/coordinate_tuple.h"
 #include "core/orientation.h"
@@ -198,17 +199,13 @@ namespace jactorio::game
             void CounterRotateOrientation();
 
 
-            /// Sets the activated tile, use nullptr to unset
-            void SetActivatedTile(ChunkTile* tile) {
-                activatedTile_ = tile;
-            }
+            /// Un sets the activated tile
+            void DeactivateTile();
 
             /// Gets the tile of the entity activated on by the player
-            /// \return nullptr If no tile is activated by the player
-            J_NODISCARD ChunkTile* GetActivatedTile() const {
-                return activatedTile_;
-            }
-
+            /// \return nullptr If no tile is activated by the player,
+            ///  coord of activated tile (invalid if nullptr) not guaranteed top left of entities
+            J_NODISCARD std::pair<ChunkTile*, WorldCoord> GetActivatedTile() const;
 
             /// Will place an entity at the location or if an entity does not already exist
             /// \return true if entity was placed
@@ -236,6 +233,7 @@ namespace jactorio::game
                               const proto::Entity* entity);
 
             ChunkTile* activatedTile_ = nullptr;
+            WorldCoord activatedCoord_;
 
             uint16_t pickupTickCounter_ = 0;
             uint16_t pickupTickTarget_  = 1; // Avoids division by zero initially

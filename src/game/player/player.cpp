@@ -124,6 +124,13 @@ void game::Player::Placement::CounterRotateOrientation() {
     }
 }
 
+void game::Player::Placement::DeactivateTile() {
+    activatedTile_ = nullptr;
+}
+
+std::pair<game::ChunkTile*, WorldCoord> game::Player::Placement::GetActivatedTile() const {
+    return {activatedTile_, activatedCoord_};
+}
 
 /// \param coord Top left tile x, y
 /// \param orientation Orientation of placed / removed entity
@@ -258,7 +265,8 @@ bool game::Player::Placement::TryActivateTile(game::World& world, const WorldCoo
     // else
 
     // Clicking on an existing entity will activate it
-    activatedTile_ = tile->GetTopLeft();
+    activatedTile_  = tile->GetTopLeft();
+    activatedCoord_ = coord;
     return true;
 }
 
