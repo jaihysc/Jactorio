@@ -3,6 +3,8 @@
 #include "gui/menus.h"
 
 #include <functional>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include <sstream>
 
 #include "core/utility.h"
@@ -336,10 +338,9 @@ void gui::CursorWindow(const Context& context,
         // Slightly off center so that user can still click
         ImGui::SetNextWindowPos({LossyCast<float>(game::MouseSelection::GetCursor().x),
                                  LossyCast<float>(game::MouseSelection::GetCursor().y) + 2.f});
-        ImGui::SetNextWindowFocus();
 
         GuiMenu menu;
-        menu.AppendFlags(ImGuiWindowFlags_NoBackground);
+        menu.AppendFlags(ImGuiWindowFlags_NoBackground, ImGuiWindowFlags_NoFocusOnAppearing);
         menu.Begin("_selected_item");
 
         const auto& positions = context.menuData.spritePositions.at(selected_stack->item->sprite->texCoordId);
@@ -352,6 +353,10 @@ void gui::CursorWindow(const Context& context,
 
         ImGui::SameLine(10.f);
         ImGui::Text("%d", selected_stack->count);
+
+        // The window cannot take focus to allow clicking buttons, but it must also be at the very front
+        // A bit of a hack using internal functions, but this is the best idea I have
+        ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
     }
 }
 
