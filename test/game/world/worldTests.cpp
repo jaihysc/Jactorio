@@ -194,23 +194,23 @@ namespace jactorio::game
 
     TEST_F(WorldTest, EnableDisableAnimation) {
         world_.EmplaceChunk({0, 0});
-        world_.SetAnimationOffset(101);
+        constexpr auto animation_offset = 101;
 
         proto::ContainerEntity container;
         container.SetDimension({2, 3});
         TestSetupMultiTile(world_, {1, 2}, TileLayer::entity, Direction::up, container);
 
-        auto check_disabled = [this]() {
+        auto check_disabled = [this, animation_offset]() {
             for (int y = 2; y <= 4; ++y) {
                 for (int x = 1; x <= 2; ++x) {
-                    EXPECT_EQ(world_.GetTexCoordId({x, y}, TileLayer::entity), 101);
+                    EXPECT_EQ(world_.GetTexCoordId({x, y}, TileLayer::entity), animation_offset);
                 }
             }
         };
-        world_.DisableAnimation({2, 2}, TileLayer::entity); // Does not need to be top left
+        world_.DisableAnimation({2, 2}, TileLayer::entity, animation_offset); // Does not need to be top left
         check_disabled();
-        world_.DisableAnimation({2, 2}, TileLayer::entity); // Calling multiple times does nothing
-        world_.DisableAnimation({2, 2}, TileLayer::entity);
+        world_.DisableAnimation({2, 2}, TileLayer::entity, animation_offset); // Calling multiple times does nothing
+        world_.DisableAnimation({2, 2}, TileLayer::entity, animation_offset);
         check_disabled();
 
 
@@ -221,10 +221,10 @@ namespace jactorio::game
                 }
             }
         };
-        world_.EnableAnimation({2, 4}, TileLayer::entity); // Does not need to be top left
+        world_.EnableAnimation({2, 4}, TileLayer::entity, animation_offset); // Does not need to be top left
         check_enabled();
-        world_.EnableAnimation({2, 4}, TileLayer::entity); // Calling multiple times does nothing
-        world_.EnableAnimation({2, 4}, TileLayer::entity);
+        world_.EnableAnimation({2, 4}, TileLayer::entity, animation_offset); // Calling multiple times does nothing
+        world_.EnableAnimation({2, 4}, TileLayer::entity, animation_offset);
         check_enabled();
     }
 

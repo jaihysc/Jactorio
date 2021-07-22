@@ -168,16 +168,13 @@ namespace jactorio::game
                            TileLayer layer,
                            SpriteTexCoordIndexT id) noexcept;
 
-        /// Should be set when initializing
-        /// Offset applied to tex coord id to enable/disable animations
-        /// If 0, animations can never be disabled
-        void SetAnimationOffset(SpriteTexCoordIndexT offset) noexcept;
-
         /// Enables animation for multi-tile(if exists) at tile layer at coord
         /// All animations are enabled by default
-        void EnableAnimation(WorldCoord coord, TileLayer tlayer) noexcept;
+        void EnableAnimation(const WorldCoord& coord, TileLayer tlayer) noexcept;
+        void EnableAnimation(WorldCoord coord, TileLayer tlayer, SpriteTexCoordIndexT animation_offset) noexcept;
         /// Disables animation for multi-tile(if exists) at tile layer at coord
-        void DisableAnimation(WorldCoord coord, TileLayer tlayer) noexcept;
+        void DisableAnimation(const WorldCoord& coord, TileLayer tlayer) noexcept;
+        void DisableAnimation(WorldCoord coord, TileLayer tlayer, SpriteTexCoordIndexT animation_offset) noexcept;
 
 
         // ======================================================================
@@ -262,8 +259,6 @@ namespace jactorio::game
         using ChunkKey    = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
         using ChunkHasher = hash<ChunkKey>;
 
-        /// Offset applied to tex coord id to enable/disable animations
-        SpriteTexCoordIndexT animationOffset_ = 0;
         DVector<DVector<TexCoordIdArrayT>> chunkTexCoordIds_;
 
         /// Chunks increment heading right and down

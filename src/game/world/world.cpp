@@ -10,6 +10,7 @@
 
 #include "proto/noise_layer.h"
 #include "proto/sprite.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -171,11 +172,13 @@ void game::World::SetTexCoordId(const ChunkCoord& c_coord,
                      [(ct_coord.y * Chunk::kChunkWidth + ct_coord.x) * kTileLayerCount + static_cast<int>(layer)] = id;
 }
 
-void game::World::SetAnimationOffset(const SpriteTexCoordIndexT offset) noexcept {
-    animationOffset_ = offset;
+void game::World::EnableAnimation(const WorldCoord& coord, const TileLayer tlayer) noexcept {
+    EnableAnimation(coord, tlayer, render::TileRenderer::GetAnimationOffset());
 }
 
-void game::World::EnableAnimation(WorldCoord coord, const TileLayer tlayer) noexcept {
+void game::World::EnableAnimation(WorldCoord coord,
+                                  const TileLayer tlayer,
+                                  const SpriteTexCoordIndexT animation_offset) noexcept {
     const auto* tile = GetTile(coord, tlayer);
     assert(tile != nullptr);
 
@@ -186,15 +189,21 @@ void game::World::EnableAnimation(WorldCoord coord, const TileLayer tlayer) noex
             const auto tile_coord = WorldCoord{coord.x + x, coord.y + y};
 
             const auto id = GetTexCoordId(tile_coord, tlayer);
-            if (id < animationOffset_) { // Already enabled
+            if (id < animation_offset) { // Already enabled
                 return;
             }
-            SetTexCoordId(tile_coord, tlayer, id - animationOffset_);
+            SetTexCoordId(tile_coord, tlayer, id - animation_offset);
         }
     }
 }
 
-void game::World::DisableAnimation(WorldCoord coord, const TileLayer tlayer) noexcept {
+void game::World::DisableAnimation(const WorldCoord& coord, const TileLayer tlayer) noexcept {
+    DisableAnimation(coord, tlayer, render::TileRenderer::GetAnimationOffset());
+}
+
+void game::World::DisableAnimation(WorldCoord coord,
+                                   const TileLayer tlayer,
+                                   const SpriteTexCoordIndexT animation_offset) noexcept {
     const auto* tile = GetTile(coord, tlayer);
     assert(tile != nullptr);
 
@@ -205,10 +214,10 @@ void game::World::DisableAnimation(WorldCoord coord, const TileLayer tlayer) noe
             const auto tile_coord = WorldCoord{coord.x + x, coord.y + y};
 
             const auto id = GetTexCoordId(tile_coord, tlayer);
-            if (id >= animationOffset_) { // Animation already disabled
+            if (id >= animation_offset) { // Animation already disabled
                 return;
             }
-            SetTexCoordId(tile_coord, tlayer, id + animationOffset_);
+            SetTexCoordId(tile_coord, tlayer, id + animation_offset);
         }
     }
 }

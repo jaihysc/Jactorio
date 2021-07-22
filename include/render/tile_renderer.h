@@ -65,9 +65,8 @@ namespace jactorio::render
         void Init();
         /// \remark spritemap and texture must be kept alive for lifetime of Renderer
         void InitTexture(const Spritemap& spritemap, const Texture& texture) noexcept;
-        /// \return Offset which should be applied to tex coord id in order to enable/disable animations
         /// \exception std::runtime_error Too many tex coords for shader
-        J_NODISCARD SpriteTexCoordIndexT InitShader();
+        void InitShader();
 
 
         static void GlClear() noexcept;
@@ -87,6 +86,9 @@ namespace jactorio::render
 
         J_NODISCARD size_t GetDrawThreads() const noexcept;
         void GlSetDrawThreads(size_t threads);
+
+        /// Apply to tex coord id to enable/disable animations
+        J_NODISCARD static SpriteTexCoordIndexT GetAnimationOffset() noexcept;
 
         /// \return Zoom between [0,1] 0: Furthest out; 1:Furthest in
         J_NODISCARD float GetZoom() const noexcept;
@@ -198,6 +200,8 @@ namespace jactorio::render
 
         static unsigned int windowWidth_;
         static unsigned int windowHeight_;
+
+        static SpriteTexCoordIndexT animationOffset_;
     };
 }; // namespace jactorio::render
 

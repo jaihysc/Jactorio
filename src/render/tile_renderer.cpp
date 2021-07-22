@@ -22,6 +22,8 @@ using namespace jactorio;
 unsigned int render::TileRenderer::windowWidth_  = 0;
 unsigned int render::TileRenderer::windowHeight_ = 0;
 
+SpriteTexCoordIndexT render::TileRenderer::animationOffset_ = 0;
+
 render::TileRenderer::TileRenderer(RendererCommon& common) : common_(&common) {}
 
 void render::TileRenderer::Init() {
@@ -43,7 +45,7 @@ void render::TileRenderer::InitTexture(const Spritemap& spritemap, const Texture
     texture_   = &texture;
 }
 
-SpriteTexCoordIndexT render::TileRenderer::InitShader() {
+void render::TileRenderer::InitShader() {
     assert(spritemap_ != nullptr);
     auto [terrain_tex_coords, terrain_tex_coord_size] = spritemap_->GenCurrentFrame();
     LOG_MESSAGE_F(info, "%d tex coords for tesselation renderer", terrain_tex_coord_size);
@@ -80,7 +82,7 @@ SpriteTexCoordIndexT render::TileRenderer::InitShader() {
     DEBUG_OPENGL_CALL(glUniform4fv(shader_.GetUniformLocation("u_tex_coords"), //
                                    terrain_tex_coord_size * 2,
                                    reinterpret_cast<const GLfloat*>(all_tex_coords.data())));
-    return terrain_tex_coord_size;
+    animationOffset_ = terrain_tex_coord_size;
 }
 
 void render::TileRenderer::GlClear() noexcept {
@@ -131,6 +133,10 @@ void render::TileRenderer::GlSetDrawThreads(const size_t threads) {
 
     assert(chunkDrawThreads_.size() == drawThreads_);
     assert(renderLayers_.size() == drawThreads_);
+}
+
+SpriteTexCoordIndexT render::TileRenderer::GetAnimationOffset() noexcept {
+    return animationOffset_;
 }
 
 float render::TileRenderer::GetZoom() const noexcept {
