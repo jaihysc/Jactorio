@@ -81,23 +81,13 @@ namespace jactorio::proto
         PYTHON_PROP(Tile4Way, resourceOutput);
 
 
-        // ======================================================================
         // Rendering
 
         bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
 
 
-        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::World& world,
-                                               const WorldCoord& coord) const override;
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                   GameTickT game_tick) const override;
-
-        // ======================================================================
         // Logic
+
         /// Finds the FIRST output item of the mining drill, beginning from top left
         /// \param orien Orientation of drill
         J_NODISCARD Item* FindOutputItem(const game::World& world, WorldCoord coord, Orientation orien) const;
@@ -113,7 +103,6 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
         void OnNeighborUpdate(game::World& world,
@@ -122,20 +111,17 @@ namespace jactorio::proto
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override;
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override;
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
-        void ValidatedPostLoad() override;
 
     private:
         static bool InitializeOutput(game::World& world, const WorldCoord& output_coord, MiningDrillData* drill_data);
 
+        /// Finds resource output coord given top left coord and orientation of this drill
         J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& coord, Orientation orientation) const;
 
         /// \param orien Orientation of drill

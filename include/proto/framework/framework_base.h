@@ -14,48 +14,10 @@
 #include "data/cereal/serialize.h"
 #include "proto/detail/category.h"
 #include "proto/detail/exception.h"
+#include "proto/detail/python_prop.h"
 
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
-
-// Creates a setters for python API primarily, to chain initialization
-
-// Setter passed by reference
-#define PYTHON_PROP_REF(type__, var_name__)                   \
-    type__ var_name__;                                        \
-    auto Set_##var_name__(const type__&(parameter_value__)) { \
-        this->var_name__ = parameter_value__;                 \
-        return this;                                          \
-    }                                                         \
-    static_assert(true)
-
-// Setter passed by reference with initializer
-#define PYTHON_PROP_REF_I(type__, var_name__, initializer)    \
-    type__ var_name__ = initializer;                          \
-    auto Set_##var_name__(const type__&(parameter_value__)) { \
-        this->var_name__ = parameter_value__;                 \
-        return this;                                          \
-    }                                                         \
-    static_assert(true)
-
-
-// Setter passed by value
-#define PYTHON_PROP(type__, var_name__)                \
-    type__ var_name__;                                 \
-    auto Set_##var_name__(type__(parameter_value__)) { \
-        this->var_name__ = parameter_value__;          \
-        return this;                                   \
-    }                                                  \
-    static_assert(true)
-
-// Setter passed by value with initializer
-#define PYTHON_PROP_I(type__, var_name__, initializer) \
-    type__ var_name__ = initializer;                   \
-    auto Set_##var_name__(type__(parameter_value__)) { \
-        this->var_name__ = parameter_value__;          \
-        return this;                                   \
-    }                                                  \
-    static_assert(true)
 
 // Assertions for PostLoadValidate
 #define J_PROTO_ASSERT(condition__, msg__)                                                   \
@@ -105,6 +67,8 @@ namespace jactorio::proto
         UniqueDataBase& operator=(UniqueDataBase&& other) noexcept = default;
 
 
+        /// Assigned and used for identifying the unique data when serializing/deserializing
+        /// 0 indicates invalid id
         UniqueDataIdT internalId = 0;
 
         CEREAL_SERIALIZE(archive) {
@@ -214,6 +178,9 @@ namespace jactorio::proto
 
         /// Called after the prototype has been validated
         virtual void ValidatedPostLoad() {}
+
+        /// If the prototype manages sprites, it should configure them here
+        virtual void SetupSprite() {}
 
     protected:
         std::string localizedName_;

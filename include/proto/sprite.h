@@ -14,56 +14,85 @@
 
 namespace jactorio::proto
 {
-    /// Unique data: Renderable_data
-    class Sprite final : public FrameworkBase
+    /// Simplifies copy/move constructor for sprite
+    struct ImageContainer
     {
-    public:
-        using SpriteDimension = uint32_t;
+        ImageContainer() = default;
+        /// Loads image from image_path
+        /// \exception ProtoError Failed to load from file
+        explicit ImageContainer(const std::string& image_path);
+        ~ImageContainer();
 
-        PROTOTYPE_CATEGORY(sprite);
+        ImageContainer(const ImageContainer& other);
+        ImageContainer(ImageContainer&& other) noexcept;
 
-        enum class SpriteGroup
-        {
-            terrain = 0,
-            gui,
-            count_
-        };
-
-        Sprite() = default;
-        explicit Sprite(const std::string& sprite_path);
-        Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group);
-
-        ~Sprite() override;
-
-
-        Sprite(const Sprite& other);
-        Sprite(Sprite&& other) noexcept;
-
-        Sprite& operator=(Sprite other) {
+        ImageContainer& operator=(ImageContainer other) {
+            using std::swap;
             swap(*this, other);
             return *this;
         }
 
-        friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
+        friend void swap(ImageContainer& lhs, ImageContainer& rhs) noexcept {
             using std::swap;
-            swap(static_cast<FrameworkBase&>(lhs), static_cast<FrameworkBase&>(rhs));
-            swap(lhs.group, rhs.group);
-            swap(lhs.invertSetFrame, rhs.invertSetFrame);
-            swap(lhs.frames, rhs.frames);
-            swap(lhs.sets, rhs.sets);
-            swap(lhs.trim, rhs.trim);
-            swap(lhs.width_, rhs.width_);
-            swap(lhs.height_, rhs.height_);
-            swap(lhs.bytesPerPixel_, rhs.bytesPerPixel_);
-            swap(lhs.spritePath_, rhs.spritePath_);
-            swap(lhs.spriteBuffer_, rhs.spriteBuffer_);
+            swap(lhs.width, rhs.width);
+            swap(lhs.height, rhs.height);
+            swap(lhs.bytesPerPixel, rhs.bytesPerPixel);
+            swap(lhs.buffer, rhs.buffer);
         }
 
-        // ======================================================================
-        // Sprite (image) properties
+        int width = 0, height = 0, bytesPerPixel = 0;
+        unsigned char* buffer = nullptr;
+    };
 
-        /// Group(s) determines which spritemap(s) this sprite is placed on
-        PYTHON_PROP_REF(std::vector<SpriteGroup>, group);
+    /// Unique data: Renderable_data
+    class Sprite final : public FrameworkBase
+    {
+    public:
+        PROTOTYPE_CATEGORY(sprite);
+
+        using SpriteDimension = uint32_t;
+
+        enum class SpriteGroup
+        {
+            none = 0,
+            terrain,
+            gui,
+            count_
+        };
+
+        /// Frames of sprite that should be included for 1 animation tick of the game
+        /// e.g: Rotations
+        enum class FrameGenStrategy
+        {
+            top_left_frame = 0,
+            top_set,
+            first_frames
+        };
+
+        /// How the animation should be played
+        enum class AnimationStyle
+        {
+            start_to_end = 0,
+            /// Start to end, then end to start, repeat
+            reversing,
+        };
+
+        Sprite() = default;
+        explicit Sprite(const std::string& sprite_path);
+        Sprite(const std::string& sprite_path, SpriteGroup group);
+
+        /// Loads image from image_path
+        /// \remark Do not include ~/data/
+        Sprite* Load(const std::string& image_path);
+
+        J_NODISCARD const ImageContainer& GetImage() const noexcept;
+
+        // Sprite properties
+
+        /// Determines which spritemap this sprite is placed on
+        PYTHON_PROP_REF_I(SpriteGroup, group, SpriteGroup::none);
+        PYTHON_PROP_REF_I(FrameGenStrategy, strategy, FrameGenStrategy::top_left_frame);
+        PYTHON_PROP_REF_I(AnimationStyle, animation, AnimationStyle::start_to_end);
 
         /*
          *     F0 F1 F2 F3 F4
@@ -76,108 +105,27 @@ namespace jactorio::proto
          *    ----------------
          */
 
-        /// If true : X = Set, Y = Frame,
-        ///			  false: Y = Set, X = Frame
-        PYTHON_PROP_REF_I(bool, invertSetFrame, false);
-
         /// Animation frames, X axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteFrameT, frames, 1);
         /// Y axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SpriteSetT, sets, 1);
 
-
-        /// Pixels to remove from the border when GetCoord() is called
-        PYTHON_PROP_REF_I(SpriteTrimT, trim, 0);
-
-
-        /// \return true is Sprite is in specified group
-        J_NODISCARD bool IsInGroup(SpriteGroup group) const;
-
-        /// If group is empty, it is set to the group provided
-        void DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group);
-
-        /// Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the
-        /// border \remark Requires width_ and height_ to be initialized \return UV coordinates for set, frame within
-        /// sprite (0, 0) is top left
-        J_NODISCARD UvPositionT GetCoords(SpriteSetT set, SpriteFrameT frame) const;
-
-        // ======================================================================
-        // Sprite ptr
-
-        J_NODISCARD const unsigned char* GetSpritePtr() const;
-
-        /// Gets size of image on X axis
-        J_NODISCARD SpriteDimension GetWidth() const {
-            return width_;
-        }
-
-        /// Gets size of image on Y axis
-        J_NODISCARD SpriteDimension GetHeight() const {
-            return height_;
-        }
-
-
-        /// Loads a sprite from sprite_path into member sprite
-        /// \remark Do not include ~/data/
-        Sprite* LoadImage(const std::string& image_path);
-
+        /// Pixels to remove from the border per frame at set
+        /// \exception ProtoError Trim too large
+        Sprite* Trim(SpriteTrimT pixels);
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
-#ifdef JACTORIO_BUILD_TEST
-        void SetHeight(const int height) {
-            height_ = height;
-        }
-        void SetWidth(const int width) {
-            width_ = width;
-        }
-#endif
+        SpriteTexCoordIndexT texCoordId = 0;
+
+        /// Tells spritemap generator to divide one frame at a set into
+        /// subdivide.x frames horizontally. subdivide.y frames vertically
+        Dimension subdivide{1, 1};
 
     private:
-        // Image properties
-        int width_ = 0, height_ = 0, bytesPerPixel_ = 0;
-
-        // Path is already resolved
+        ImageContainer image_;
+        /// Full path to sprite
         std::string spritePath_;
-        unsigned char* spriteBuffer_ = nullptr;
-
-        /// Loads image from file
-        /// load_image only sets the sprite_path and calls this
-        /// \exception ProtoError Failed to load from file
-        void LoadImageFromFile();
-
-
-        // ======================================================================
-        // Image extraction
-
-        /*
-         * Actual set used in method is 'input set modulus by total sets',
-         * allowing for sets for different sprites to be referenced
-
-         * e.g:
-         * With 4 different sprites, total of 10 sets per sprite
-         * The following set ranges will correspond to the 4 sprites:
-         * 0  -  9: Sprite 1
-         * 10 - 19: Sprite 2
-         * 20 - 29: Sprite 3
-         * 30 - 39: Sprite 4
-         */
-
-        /// Performs the following adjustments to set and frame
-        /// \tparam InvertSet set is flipped horizontally if true
-        /// \param set Modulus of total number of sets
-        /// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
-        template <bool InvertSet>
-        void AdjustSetFrame(SpriteSetT& set, SpriteFrameT& frame) const {
-            set %= sets;
-            set += frame / frames;
-            frame = frame % frames;
-
-            if constexpr (InvertSet) {
-                // Single opengl flips images horizontally, select sets mirrored
-                set = sets - set - 1;
-            }
-        }
     };
 } // namespace jactorio::proto
 

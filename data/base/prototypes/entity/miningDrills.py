@@ -4,6 +4,8 @@ import jactorioData as j
 def addSprite(spritePath):
     return (j.Sprite()
                 .load(spritePath)
+                .group(j.SpriteGroup.TERRAIN)
+                .animation(j.AnimationStyle.REVERSING)
                 .frames(8)
                 .sets(8)
             )
@@ -19,6 +21,7 @@ def createDrill(name, icon, spriteN, spriteE, spriteS, spriteW):
                 .sprite(
                     j.Sprite()
                         .load(icon)
+                        .group(j.SpriteGroup.GUI)
                 )
         )
         .sprite(addSprite(spriteN))

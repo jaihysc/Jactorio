@@ -11,9 +11,8 @@ using namespace jactorio;
 void proto::ContainerEntity::OnBuild(game::World& world,
                                      game::Logic& /*logic*/,
                                      const WorldCoord& coord,
-                                     const game::TileLayer tlayer,
                                      Orientation /*orientation*/) const {
-    world.GetTile(coord, tlayer)->MakeUniqueData<ContainerEntityData>(inventorySize);
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
 bool proto::ContainerEntity::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
@@ -21,6 +20,6 @@ bool proto::ContainerEntity::OnRShowGui(const gui::Context& context, game::Chunk
     return true;
 }
 
-void proto::ContainerEntity::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+void proto::ContainerEntity::PostLoadValidate(const data::PrototypeManager& proto) const {
+    HealthEntity::PostLoadValidate(proto);
 }

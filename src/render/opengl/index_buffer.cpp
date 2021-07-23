@@ -7,30 +7,38 @@
 
 using namespace jactorio;
 
-render::IndexBuffer::IndexBuffer(const unsigned* data, const unsigned count) {
-    DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
-    Reserve(data, count);
-}
-
 render::IndexBuffer::~IndexBuffer() {
-    Unbind();
     DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
-void render::IndexBuffer::Reserve(const void* data, const uint32_t index_count) {
-    Bind();
-    DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(GLuint), data, GL_STATIC_DRAW));
-    count_ = index_count;
+render::IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept : id_{other.id_} {
+    other.id_ = 0;
 }
 
-void render::IndexBuffer::Bind() const {
+void render::IndexBuffer::Init() noexcept {
+    DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
+}
+
+void render::IndexBuffer::Reserve(const void* data, const uint32_t index_count) noexcept {
+    Bind();
+    DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(GLuint), data, GL_STATIC_DRAW));
+}
+
+void* render::IndexBuffer::Map() const noexcept {
+    assert(id_ != 0);
+    DEBUG_OPENGL_CALL(void* ptr = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+    return ptr;
+}
+
+void render::IndexBuffer::UnMap() const noexcept {
+    assert(id_ != 0);
+    DEBUG_OPENGL_CALL(glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER));
+}
+
+void render::IndexBuffer::Bind() const noexcept {
     DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_));
 }
 
-void render::IndexBuffer::Unbind() {
+void render::IndexBuffer::Unbind() noexcept {
     DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-}
-
-unsigned render::IndexBuffer::Count() const {
-    return count_;
 }

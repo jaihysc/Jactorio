@@ -4,33 +4,52 @@
 #define JACTORIO_INCLUDE_RENDER_OPENGL_INDEX_BUFFER_H
 #pragma once
 
+#include <utility>
+
 #include "jactorio.h"
 
 namespace jactorio::render
 {
+    /// \remark Lifetime of object must be in opengl context
     class IndexBuffer
     {
     public:
-        /// \param count Number of indices
-        IndexBuffer(const unsigned int* data, unsigned int count);
+        IndexBuffer() = default;
         ~IndexBuffer();
 
-        IndexBuffer(const IndexBuffer& other)     = delete;
-        IndexBuffer(IndexBuffer&& other) noexcept = delete;
-        IndexBuffer& operator=(const IndexBuffer& other) = delete;
-        IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
+        IndexBuffer(const IndexBuffer& other) = delete;
+        IndexBuffer(IndexBuffer&& other) noexcept;
+
+        IndexBuffer& operator=(IndexBuffer other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
+
+        friend void swap(IndexBuffer& lhs, IndexBuffer& rhs) noexcept {
+            using std::swap;
+            swap(lhs.id_, rhs.id_);
+        }
+
+        /// Generates buffer
+        void Init() noexcept;
 
         /// Creates a new buffer of provided specifications
-        void Reserve(const void* data, uint32_t index_count);
+        void Reserve(const void* data, uint32_t index_count) noexcept;
 
-        void Bind() const;
-        static void Unbind();
+        /// Gets pointer to begin modifying buffer data
+        /// \remark Ensure buffer is bound
+        J_NODISCARD void* Map() const noexcept;
 
-        J_NODISCARD unsigned int Count() const;
+        /// Call to finish modifying buffer data, provided pointer from Map now invalid
+        /// \remark Ensure buffer is bound
+        void UnMap() const noexcept;
+
+        void Bind() const noexcept;
+        static void Unbind() noexcept;
 
     private:
-        unsigned int id_    = 0;
-        unsigned int count_ = 0;
+        unsigned int id_ = 0;
     };
 } // namespace jactorio::render
 

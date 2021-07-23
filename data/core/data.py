@@ -5,7 +5,7 @@ import jactorioData as j
 def addSprite(name, spritePath):
     return (j.Sprite(name)
                 .load(spritePath)
-                .group([j.spriteGroup.Terrain])
+                .group(j.SpriteGroup.TERRAIN)
     )
 
 #addSprite("menu-background", "core/graphics/menu/background-image.png")
@@ -33,7 +33,7 @@ def addItem(name, path):
     (j.Item(name)
         .sprite(j.Sprite()
             .load(path)
-            .group([j.spriteGroup.Gui])
+            .group(j.SpriteGroup.GUI)
         )
     )
 

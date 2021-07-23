@@ -2,6 +2,8 @@
 
 #include "gui/menus_debug.h"
 
+#include <algorithm>
+#include <fstream>
 #include <imgui.h>
 #include <ostream>
 
@@ -22,26 +24,26 @@
 #include "proto/label.h"
 #include "proto/sprite.h"
 #include "proto/transport_belt.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
-bool show_timings_window      = false;
-bool show_demo_window         = false;
-bool show_item_spawner_window = false;
+static bool show_timings_window          = false;
+static bool show_demo_window             = false;
+static bool show_item_spawner_window     = false;
+static bool show_tex_coord_editor_window = false;
 
 // Game
-bool show_tile_info     = false;
-bool show_conveyor_info = false;
-bool show_inserter_info = false;
-
-bool show_world_info = false;
+static bool show_tile_info     = false;
+static bool show_conveyor_info = false;
+static bool show_inserter_info = false;
+static bool show_world_info    = false;
 
 void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::Logic& logic,
                          game::Player& player,
                          const data::PrototypeManager& proto,
-                         render::Renderer& renderer) {
+                         render::TileRenderer& renderer) {
     if (show_tile_info)
         DebugTileInfo(worlds, player);
 
@@ -59,6 +61,9 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
 
     if (show_item_spawner_window)
         DebugItemSpawner(player, proto);
+
+    if (show_tex_coord_editor_window)
+        DebugTexCoordEditor(worlds, player);
 
     if (show_world_info) {
         DebugWorldInfo(worlds, player);
@@ -93,6 +98,8 @@ void gui::DebugMenu(const Context& context,
         // ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
         ImGui::Text("Layer count | Tile: %d", game::kTileLayerCount);
+
+        ImGui::Checkbox("Tex coord editor", &show_tex_coord_editor_window);
     }
 
     if (ImGui::CollapsingHeader("Data")) {
@@ -115,7 +122,9 @@ void gui::DebugMenu(const Context& context,
         ImGui::Text("Player position %f %f", player.world.GetPosition().x, player.world.GetPosition().y);
 
         ImGui::Text("Game tick: %llu", logic.GameTick());
-        ImGui::Text("Chunk updates: %zu", world.LogicGetChunks().size());
+        for (int i = 0; i < game::kLogicGroupCount; ++i) {
+            ImGui::Text("Logic updates %d: %zu", i, world.LogicGet(static_cast<game::LogicGroup>(i)).size());
+        }
 
         ImGui::Separator();
 
@@ -146,15 +155,23 @@ void gui::DebugTimings() {
     guard.Begin("Timings");
     ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
+    if (ImGui::Button("Write to file")) {
+        std::ofstream ofs("timings_snapshot.txt");
+
+        for (auto& [key, value] : ExecutionTimer::measuredTimes) {
+            ofs << value << " | " << key << "\n";
+        }
+    }
+
     for (auto& [key, value] : ExecutionTimer::measuredTimes) {
         ImGui::Text("%fms (%.1f/s) %s", value, 1000 / value, key.c_str());
     }
 }
 
-int give_amount  = 100;
-int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
-
 void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
+    static int give_amount  = 100;
+    static int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
+
     ImGuard guard;
     guard.Begin("Item spawner");
 
@@ -192,6 +209,57 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
     }
 }
 
+void gui::DebugTexCoordEditor(GameWorlds& worlds, game::Player& player) {
+    static game::TileLayer tile_layer;
+    static int tex_coord_id = 0;
+
+    static bool clear_surrounding = false;
+    static bool offset_write      = true;
+
+    static bool write_mode = false;
+    static int write_x     = 1; // Dimensions to write, increments id while doing so
+    static int write_y     = 1;
+
+    ImGuard guard;
+    guard.Begin("Tex coord editor");
+
+    ImGui::SliderInt("Tile layer", reinterpret_cast<int*>(&tile_layer), 0, game::kTileLayerCount - 1);
+    ImGui::InputInt("Tex coord id", &tex_coord_id);
+
+    ImGui::Checkbox("Clear surrounding", &clear_surrounding);
+    ImGui::Checkbox("Offset write", &offset_write);
+
+    ImGui::Checkbox("Write", &write_mode);
+    ImGui::InputInt("Write x", &write_x);
+    ImGui::InputInt("Write y", &write_y);
+
+    auto& world = worlds[player.world.GetId()];
+    if (!write_mode) {
+        tex_coord_id = static_cast<int>(world.GetTexCoordId(player.world.GetMouseTileCoords(), tile_layer));
+    }
+    else {
+        auto coord = player.world.GetMouseTileCoords();
+        if (offset_write) {
+            coord.x += 30; // Bit right of mouse coord so it is not hidden when clicking the menu buttons
+        }
+
+        if (clear_surrounding) {
+            for (int y = -10; y < write_y + 10; ++y) {
+                for (int x = -10; x < write_x + 10; ++x) {
+                    world.SetTexCoordId({coord.x + x, coord.y + y}, tile_layer, 0);
+                }
+            }
+        }
+
+        for (int y = 0; y < write_y; ++y) {
+            for (int x = 0; x < write_x; ++x) {
+                const auto id = tex_coord_id + x + y * write_x;
+                world.SetTexCoordId({coord.x + x, coord.y + y}, tile_layer, id);
+            }
+        }
+    }
+}
+
 void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
@@ -224,11 +292,9 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     }
 }
 
-WorldCoord last_valid_line_segment{};
-bool use_last_valid_line_segment = true;
-bool show_conveyor_structs       = false;
-
-static void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto, render::Renderer& renderer) {
+static void ShowConveyorSegments(game::World& world,
+                                 const data::PrototypeManager& proto,
+                                 render::TileRenderer& renderer) {
     const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
     const auto* sprite_moving       = proto.Get<proto::Sprite>("__core__/rect-green");
     const auto* sprite_left_moving  = proto.Get<proto::Sprite>("__core__/rect-aqua");
@@ -239,97 +305,81 @@ static void ShowConveyorSegments(game::World& world, const data::PrototypeManage
     const auto* sprite_down  = proto.Get<proto::Sprite>("__core__/arrow-down");
     const auto* sprite_left  = proto.Get<proto::Sprite>("__core__/arrow-left");
 
-    for (auto* chunk : world.LogicGetChunks()) {
-        const auto tl_coord = game::World::ChunkCToWorldC(chunk->GetPosition());
+    for (auto [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::conveyor)) {
+        const auto& line_data    = *SafeCast<const proto::ConveyorData*>(unique_data.Get());
+        const auto& line_segment = *line_data.structure;
 
-        for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
-            auto& tile = chunk->Tiles(game::TileLayer::entity)[i];
-            if (tile.GetPrototype() == nullptr || tile.GetPrototype()->GetCategory() != proto::Category::transport_belt)
-                continue;
+        // Only draw for the head of segments
+        if (line_segment.terminationType == game::ConveyorStruct::TerminationType::straight &&
+            line_data.structIndex != 0)
+            continue;
 
-            auto& line_data    = *tile.GetUniqueData<proto::ConveyorData>();
-            auto& line_segment = *line_data.structure;
+        if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight &&
+            line_data.structIndex != 1)
+            continue;
 
-            // Only draw for the head of segments
-            if (line_segment.terminationType == game::ConveyorStruct::TerminationType::straight &&
-                line_data.structIndex != 0)
-                continue;
+        Dimension segment_len;
+        const proto::Sprite* direction_sprite;
+        switch (line_segment.direction) {
+        case Orientation::up:
+            segment_len.x = 1;
+            segment_len.y = line_segment.length;
 
-            if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight &&
-                line_data.structIndex != 1)
-                continue;
+            direction_sprite = sprite_up;
+            break;
+        case Orientation::right:
+            segment_len.x = line_segment.length;
+            segment_len.y = 1;
 
-            const auto position_x = i % game::Chunk::kChunkWidth;
-            const auto position_y = i / game::Chunk::kChunkWidth;
+            direction_sprite = sprite_right;
+            break;
+        case Orientation::down:
+            segment_len.x = 1;
+            segment_len.y = line_segment.length;
 
-            auto coord = tl_coord;
-            Position2<float> segment_len;
-            const proto::Sprite* direction_sprite;
-            switch (line_segment.direction) {
-            case Orientation::up:
-                coord.x += position_x;
-                coord.y += position_y;
-                segment_len.x = 1;
-                segment_len.y = line_segment.length;
+            direction_sprite = sprite_down;
+            break;
+        case Orientation::left:
+            segment_len.x = line_segment.length;
+            segment_len.y = 1;
 
-                direction_sprite = sprite_up;
-                break;
-            case Orientation::right:
-                coord.x += position_x - line_segment.length + 1;
-                coord.y += position_y;
-                segment_len.x = line_segment.length;
-                segment_len.y = 1;
+            direction_sprite = sprite_left;
+            break;
 
-                direction_sprite = sprite_right;
-                break;
-            case Orientation::down:
-                coord.x += position_x;
-                coord.y += position_y - line_segment.length + 1;
-                segment_len.x = 1;
-                segment_len.y = line_segment.length;
-
-                direction_sprite = sprite_down;
-                break;
-            case Orientation::left:
-                coord.x += position_x;
-                coord.y += position_y;
-                segment_len.x = line_segment.length;
-                segment_len.y = 1;
-
-                direction_sprite = sprite_left;
-                break;
-
-            default:
-                assert(false); // Missing case label
-            }
-
-            // Shift items 1 tile forwards if segment bends
-            if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
-                Position2Increment(line_segment.direction, coord, 1);
-            }
-
-
-            const proto::Sprite* outline_sprite;
-            // Correspond a color of rectangle
-            if (line_segment.left.IsActive() && line_segment.right.IsActive())
-                outline_sprite = sprite_moving; // Both moving
-            else if (line_segment.left.IsActive())
-                outline_sprite = sprite_left_moving; // Only left move
-            else if (line_segment.right.IsActive())
-                outline_sprite = sprite_right_moving; // Only right moving
-            else
-                outline_sprite = sprite_stop; // None moving
-
-            renderer.PrepareSprite(coord, *direction_sprite, 0, segment_len);
-            renderer.PrepareSprite(coord, *outline_sprite, 0, segment_len);
+        default:
+            assert(false); // Missing case label
         }
+
+        // Shift items 1 tile forwards if segment bends
+        if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
+            Position2Increment(line_segment.direction, coord, 1);
+        }
+
+
+        const proto::Sprite* outline_sprite;
+        // Correspond a color of rectangle
+        if (line_segment.left.IsActive() && line_segment.right.IsActive())
+            outline_sprite = sprite_moving; // Both moving
+        else if (line_segment.left.IsActive())
+            outline_sprite = sprite_left_moving; // Only left move
+        else if (line_segment.right.IsActive())
+            outline_sprite = sprite_right_moving; // Only right moving
+        else
+            outline_sprite = sprite_stop; // None moving
+
+        renderer.PrepareSprite(coord, direction_sprite->texCoordId);
+        renderer.PrepareSprite(coord, outline_sprite->texCoordId);
     }
 }
 
 void gui::DebugConveyorInfo(GameWorlds& worlds,
                             game::Player& player,
                             const data::PrototypeManager& proto,
-                            render::Renderer& renderer) {
+                            render::TileRenderer& renderer) {
+    static WorldCoord last_valid_line_segment;
+    static bool use_last_valid_line_segment = true;
+    static bool show_conveyor_structs       = false;
+
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard;
@@ -343,12 +393,13 @@ void gui::DebugConveyorInfo(GameWorlds& worlds,
 
 
     if (ImGui::Button("Make all belt items visible")) {
-        for (auto* chunk : world.LogicGetChunks()) {
-            for (auto* conveyor : chunk->GetLogicGroup(game::LogicGroup::conveyor)) {
-                auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->structure;
-                segment.left.visible  = true;
-                segment.right.visible = true;
-            }
+        for (auto [prototype, unique_data, coord] : world.LogicGet(game::LogicGroup::conveyor)) {
+            auto* conveyor_data = SafeCast<proto::ConveyorData*>(unique_data.Get());
+            assert(conveyor_data != nullptr);
+            auto& segment = *conveyor_data->structure;
+
+            segment.left.visible  = true;
+            segment.right.visible = true;
         }
     }
 
@@ -490,17 +541,37 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
         // Format of data displayed
         ImGui::Text("Registered coordinate > Listener coordinate | Listener prototype");
 
+        // Sort emit coordinates
+        std::vector<std::tuple<WorldCoordAxis, WorldCoordAxis>> emit_coords;
+        emit_coords.reserve(dispatcher_info.storedEntries.size());
+        for (const auto& [emit_coord, callbacks] : dispatcher_info.storedEntries) {
+            emit_coords.push_back(emit_coord);
+        }
+        std::sort(emit_coords.begin(), emit_coords.end(), [](const auto& a, const auto& b) {
+            const auto x1 = std::get<0>(a);
+            const auto y1 = std::get<1>(a);
+
+            const auto x2 = std::get<0>(b);
+            const auto y2 = std::get<1>(b);
+
+            if (x1 == x2) {
+                return y1 < y2;
+            }
+            return x1 < x2;
+        });
+
         size_t id = 0;
-        for (const auto& entry : dispatcher_info.storedEntries) {
+        for (const auto& emit_coord : emit_coords) {
+            auto& callbacks = dispatcher_info.storedEntries.find(emit_coord)->second;
 
-            const auto world_x = std::get<0>(entry.first);
-            const auto world_y = std::get<1>(entry.first);
+            const auto world_x = std::get<0>(emit_coord);
+            const auto world_y = std::get<1>(emit_coord);
 
-            if (ImGui::TreeNode(reinterpret_cast<void*>(id), "%d %d | %lld", world_x, world_y, entry.second.size())) {
+            if (ImGui::TreeNode(reinterpret_cast<void*>(id), "%d %d | %lld", world_x, world_y, callbacks.size())) {
 
                 ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
-                for (const auto& callback : entry.second) {
+                for (const auto& callback : callbacks) {
                     ImGui::Text("%d %d %s",
                                 callback.receiver.x,
                                 callback.receiver.y,
@@ -514,11 +585,6 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
 
     if (ImGui::CollapsingHeader("Chunks")) {
         auto show_chunk_info = [](game::Chunk& chunk) {
-            for (std::size_t i = 0; i < chunk.logicGroups.size(); ++i) {
-                auto& logic_group = chunk.logicGroups[i];
-                ImGui::Text("Logic group %zu | Size: %zu", i, logic_group.size());
-            }
-
             for (std::size_t i = 0; i < chunk.overlays.size(); ++i) {
                 auto& overlay_group = chunk.overlays[i];
                 ImGui::Text("Overlay group %zu | Size: %zu", i, overlay_group.size());

@@ -12,6 +12,9 @@ using namespace jactorio;
 void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
                                               const data::PrototypeManager& proto,
                                               const Recipe* new_recipe) {
+    // The gui menu for assembly machine enables/disables the animations
+    // Asking for world + coordinates to enable/disable animations feels beyond the scope of this method
+
     if (new_recipe != nullptr) {
         ingredientInv.Resize(new_recipe->ingredients.size());
         productInv.Resize(1);
@@ -79,15 +82,6 @@ void proto::AssemblyMachineData::CraftAddProduct() {
 
 // ======================================================================
 
-SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& machine_data = SafeCast<const AssemblyMachineData&>(unique_data);
-
-    if (!machine_data.deferralEntry.Valid())
-        game_tick = 0;
-
-    return AllOfSprite(*sprite, game_tick, 1. / 6);
-}
-
 bool proto::AssemblyMachine::OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const {
     gui::AssemblyMachine(context, this, tile->GetUniqueData());
     return true;
@@ -121,16 +115,13 @@ void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
 void proto::AssemblyMachine::OnBuild(game::World& world,
                                      game::Logic& /*logic*/,
                                      const WorldCoord& coord,
-                                     const game::TileLayer tlayer,
                                      const Orientation /*orientation*/) const {
-    world.GetTile(coord, tlayer)->MakeUniqueData<AssemblyMachineData>();
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<AssemblyMachineData>();
+    world.DisableAnimation(coord, game::TileLayer::entity);
 }
 
-void proto::AssemblyMachine::OnRemove(game::World& world,
-                                      game::Logic& logic,
-                                      const WorldCoord& coord,
-                                      const game::TileLayer tlayer) const {
-    auto& machine_data = *world.GetTile(coord, tlayer)->GetUniqueData<AssemblyMachineData>();
+void proto::AssemblyMachine::OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const {
+    auto& machine_data = *world.GetTile(coord, game::TileLayer::entity)->GetUniqueData<AssemblyMachineData>();
 
     logic.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

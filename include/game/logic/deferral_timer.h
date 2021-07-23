@@ -110,18 +110,9 @@ namespace jactorio::game
             PROTOTYPE_CATEGORY(none);
             void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
 
-            proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-                return nullptr;
-            }
-
-            SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                       World& /*world*/,
-                                       const WorldCoord& /*coord*/) const override {
-                return 0;
-            }
-
-            SpriteFrameT OnRGetSpriteFrame(const proto::UniqueDataBase& /*unique_data*/,
-                                           GameTickT /*game_tick*/) const override {
+            SpriteTexCoordIndexT OnGetTexCoordId(const World& /*world*/,
+                                                 const WorldCoord& /*coord*/,
+                                                 Orientation /*orientation*/) const override {
                 return 0;
             }
 

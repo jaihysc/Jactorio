@@ -6,7 +6,6 @@
 
 #include "proto/framework/world_object.h"
 #include "proto/interface/deferred.h"
-#include "proto/interface/rotatable.h"
 #include "proto/interface/update_listener.h"
 
 namespace jactorio::proto
@@ -18,7 +17,7 @@ namespace jactorio::proto
         }
     };
 
-    class FEntity : public FWorldObject, public IRotatable, public IDeferred, public IUpdateListener
+    class FEntity : public FWorldObject, public IDeferred, public IUpdateListener
     {
     };
 } // namespace jactorio::proto

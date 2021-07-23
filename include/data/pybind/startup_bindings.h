@@ -158,14 +158,25 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
     PYBIND_PROP(Sprite, group)
+    PYBIND_PROP(Sprite, strategy)
+    PYBIND_PROP(Sprite, animation)
     PYBIND_PROP(Sprite, frames)
-    PYBIND_PROP(Sprite, sets)
-    PYBIND_PROP(Sprite, trim)
-    PYBIND_PROP(Sprite, invertSetFrame).def("load", &Sprite::LoadImage);
+    PYBIND_PROP(Sprite, sets) //
+        .def("load", &Sprite::Load)
+        .def("trim", &Sprite::Trim);
 
-    py::enum_<Sprite::SpriteGroup>(m, "spriteGroup")
-        .value("Terrain", Sprite::SpriteGroup::terrain)
-        .value("Gui", Sprite::SpriteGroup::gui);
+    py::enum_<Sprite::SpriteGroup>(m, "SpriteGroup")
+        .value("TERRAIN", Sprite::SpriteGroup::terrain)
+        .value("GUI", Sprite::SpriteGroup::gui);
+
+    py::enum_<Sprite::FrameGenStrategy>(m, "FrameGenStrategy")
+        .value("TOP_LEFT_FRAME", Sprite::FrameGenStrategy::top_left_frame)
+        .value("TOP_SET", Sprite::FrameGenStrategy::top_set)
+        .value("FIRST_FRAMES", Sprite::FrameGenStrategy::first_frames);
+
+    py::enum_<Sprite::AnimationStyle>(m, "AnimationStyle")
+        .value("START_TO_END", Sprite::AnimationStyle::start_to_end)
+        .value("REVERSING", Sprite::AnimationStyle::reversing);
 
     PYBIND_DATA_CLASS(Item, Item, FrameworkBase)
     PYBIND_PROP(Item, sprite)
@@ -173,7 +184,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     PYBIND_DATA_CLASS(Tile, Tile, FrameworkBase)
     PYBIND_PROP(Tile, isWater)
-    PYBIND_PROP(Tile, sprite);
+    PYBIND_PROP(IRenderable, sprite);
 
     PYBIND_DATA_CLASS(NoiseLayer<Tile>, NoiseLayerTile, FrameworkBase)
     // Perlin noise properties
@@ -206,10 +217,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     // Entity
     PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, FrameworkBase)
-    PYBIND_PROP(Entity, sprite)
-    PYBIND_PROP(IRotatable, spriteE)
-    PYBIND_PROP(IRotatable, spriteS)
-    PYBIND_PROP(IRotatable, spriteW)
+    PYBIND_PROP(IRenderable, sprite)
+    PYBIND_PROP(IRenderable, spriteE)
+    PYBIND_PROP(IRenderable, spriteS)
+    PYBIND_PROP(IRenderable, spriteW)
     PYBIND_PROP(Entity, rotatable)
     PYBIND_PROP(Entity, placeable)
     PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)

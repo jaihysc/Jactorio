@@ -38,21 +38,6 @@ namespace jactorio
 
         void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
 
-        J_NODISCARD proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-            return nullptr;
-        }
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const override {
-            return 0;
-        }
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const proto::UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
-            return 0;
-        }
-
         bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
@@ -71,13 +56,9 @@ namespace jactorio
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override {}
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override {}
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override {}
     };
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
@@ -126,7 +107,7 @@ namespace jactorio
         return container_layer;
     }
 
-    /// Creates an inserter at coord
+    /// Creates an inserter at coord using OnBuild (Registers for logic updates)
     inline game::ChunkTile& TestSetupInserter(game::World& world,
                                               game::Logic& logic,
                                               const WorldCoord& coord,
@@ -136,7 +117,7 @@ namespace jactorio
         assert(tile != nullptr);
 
         tile->SetPrototype(orientation, &inserter_proto);
-        inserter_proto.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
+        inserter_proto.OnBuild(world, logic, coord, orientation);
 
         return *tile;
     }
@@ -153,10 +134,9 @@ namespace jactorio
         assert(tile != nullptr);
 
         tile->SetPrototype(con_struct_p->direction, &con_proto);
-
         tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
 
-        chunk->GetLogicGroup(game::LogicGroup::conveyor).emplace_back(tile);
+        world.LogicRegister(game::LogicGroup::conveyor, coord, game::TileLayer::entity);
     }
 
     /// Creates a assembly machine at coordinates
@@ -185,26 +165,23 @@ namespace jactorio
         return *tile;
     }
 
-    /// Creates a drill in the world with orientation, calling OnBuild
+    /// Creates a drill in the world with orientation using OnBuild
+    /// \remark Ensure a resource exists or drill will not get built
     inline game::ChunkTile& TestSetupDrill(game::World& world,
                                            game::Logic& logic,
                                            const WorldCoord& coord,
                                            const Orientation orientation,
-                                           proto::ResourceEntity& resource,
-                                           proto::MiningDrill& drill,
-                                           const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
+                                           proto::MiningDrill& drill) {
         auto* tile = world.GetTile(coord, game::TileLayer::entity);
         assert(tile != nullptr);
 
-        // Resource needed for OnBuild
-        TestSetupResource(world, coord, resource, resource_amount);
-
         tile->SetPrototype(orientation, &drill);
-        drill.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
+        drill.OnBuild(world, logic, coord, orientation);
 
         return *tile;
     }
 
+    // TODO be more consistent in ALWAYS calling on build to create these
     /// Creates conveyor at tile with provided conveyor structure
     inline auto& TestSetupConveyor(game::World& world,
                                    const WorldCoord& coord,
@@ -314,7 +291,7 @@ namespace jactorio
 
         T deserialized_val;
         TestDeserialize<T, TArchiver>(deserialized_val);
-        return deserialized_val;
+        return std::move(deserialized_val); // Force a copy to catch bad copy/move constructors
     }
 
 

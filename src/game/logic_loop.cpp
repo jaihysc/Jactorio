@@ -8,7 +8,6 @@
 
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
-#include "render/renderer.h"
 
 using namespace jactorio;
 

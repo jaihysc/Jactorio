@@ -23,12 +23,11 @@ namespace jactorio::game
         proto::Item containerItemProto_;
 
         void SetUp() override {
-            auto& chunk = world_.EmplaceChunk({0, 0});
-            world_.LogicAddChunk(chunk);
+            world_.EmplaceChunk({0, 0});
         }
 
-        ChunkTile& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
+        ChunkTile& BuildInserter(const WorldCoord& coord, const Orientation orientation) {
+            return TestSetupInserter(world_, logic_, coord, orientation, inserterProto_);
         }
 
         /// Creates chest with, emits OnNeighborUpdate
@@ -135,8 +134,8 @@ namespace jactorio::game
         auto& inserter_layer = BuildInserter({1, 1}, Orientation::up);
         auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
-        // Logic chunk will be unregistered if setup was invalid
-        ASSERT_EQ(world_.LogicGetChunks().size(), 1);
+        EXPECT_EQ(world_.LogicGet(LogicGroup::conveyor).size(), 2);
+        EXPECT_EQ(world_.LogicGet(LogicGroup::inserter).size(), 1);
 
 
         // Will not pickup unless over 90 degrees

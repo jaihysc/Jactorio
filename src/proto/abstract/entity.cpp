@@ -3,6 +3,7 @@
 #include "proto/abstract/entity.h"
 
 #include "proto/item.h"
+#include "proto/sprite.h"
 
 using namespace jactorio;
 
@@ -34,6 +35,21 @@ void proto::Entity::PostLoad() {
         rotateDimensions = false;
 }
 
-void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
-    J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
+void proto::Entity::PostLoadValidate(const data::PrototypeManager& proto) const {
+    FWorldObject::PostLoadValidate(proto);
+}
+
+void proto::Entity::SetupSprite() {
+    assert(sprite != nullptr);
+    sprite->subdivide = GetDimension(Direction::up);
+
+    if (spriteE != nullptr) {
+        spriteE->subdivide = GetDimension(Direction::right);
+    }
+    if (spriteS != nullptr) {
+        spriteS->subdivide = GetDimension(Direction::down);
+    }
+    if (spriteW != nullptr) {
+        spriteW->subdivide = GetDimension(Direction::left);
+    }
 }

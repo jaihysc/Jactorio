@@ -10,7 +10,6 @@
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
 #include "proto/tile.h"
-#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -125,6 +124,13 @@ void game::Player::Placement::CounterRotateOrientation() {
     }
 }
 
+void game::Player::Placement::DeactivateTile() {
+    activatedTile_ = nullptr;
+}
+
+std::pair<game::ChunkTile*, WorldCoord> game::Player::Placement::GetActivatedTile() const {
+    return {activatedTile_, activatedCoord_};
+}
 
 /// \param coord Top left tile x, y
 /// \param orientation Orientation of placed / removed entity
@@ -220,11 +226,11 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
 
     // Call events
 
-    entity->OnBuild(world, logic, coord, TileLayer::entity, orientation);
+    entity->OnBuild(world, logic, coord, orientation);
     UpdateNeighboringEntities(world, logic, coord, orientation, entity);
 
-    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
-        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+    for (DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
             world.UpdateDispatch({coord.x + x_offset, coord.y + y_offset}, proto::UpdateType::place);
         }
     }
@@ -259,7 +265,8 @@ bool game::Player::Placement::TryActivateTile(game::World& world, const WorldCoo
     // else
 
     // Clicking on an existing entity will activate it
-    activatedTile_ = tile->GetTopLeft();
+    activatedTile_  = tile->GetTopLeft();
+    activatedCoord_ = coord;
     return true;
 }
 
@@ -322,7 +329,15 @@ void game::Player::Placement::TryPickup(game::World& world,
         pickupTickTarget_ = LossyCast<uint16_t>(SafeCast<const proto::ResourceEntity*>(chosen_ptr)->pickupTime *
                                                 kGameHertz); // Seconds to ticks
         if (pickupTickCounter_ >= pickupTickTarget_) {
-            PickupResource(resource_tile);
+            auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
+            assert(resource_data != nullptr); // Resource tiles should have valid data
+
+            // Delete resource tile if it is empty after extracting
+            if (--resource_data->resourceAmount == 0) {
+                resource_tile->Clear();
+                world.SetTexCoordId(coord, TileLayer::resource, 0);
+            }
+
             give_item();
         }
     }
@@ -347,7 +362,7 @@ void game::Player::Placement::PickupEntity(
 
 
     // Call events
-    entity->OnRemove(world, logic, tl_coord, TileLayer::entity);
+    entity->OnRemove(world, logic, tl_coord);
 
     const bool result = world.Remove(tl_coord, entity_tile->GetOrientation());
     assert(result); // false indicates failed to remove entity
@@ -356,21 +371,10 @@ void game::Player::Placement::PickupEntity(
 
     world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
 
-    for (proto::FWorldObject::DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
-        for (proto::FWorldObject::DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
+    for (DimensionAxis y_offset = 0; y_offset < entity->GetHeight(orientation); ++y_offset) {
+        for (DimensionAxis x_offset = 0; x_offset < entity->GetWidth(orientation); ++x_offset) {
             world.UpdateDispatch({tl_coord.x + x_offset, tl_coord.y + y_offset}, proto::UpdateType::remove);
         }
-    }
-}
-
-void game::Player::Placement::PickupResource(ChunkTile* resource_tile) {
-    auto* resource_data = resource_tile->GetUniqueData<proto::ResourceEntityData>();
-
-    assert(resource_data != nullptr); // Resource tiles should have valid data
-
-    // Delete resource tile if it is empty after extracting
-    if (--resource_data->resourceAmount == 0) {
-        resource_tile->Clear();
     }
 }
 

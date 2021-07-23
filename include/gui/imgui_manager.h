@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/data_type.h"
+#include "render/imgui_renderer.h"
 
 namespace jactorio::data
 {
@@ -27,6 +28,9 @@ namespace jactorio::render
 {
     class DisplayWindow;
     class RendererSprites;
+    class Spritemap;
+    class Texture;
+    class TileRenderer;
 } // namespace jactorio::render
 
 
@@ -39,28 +43,52 @@ namespace jactorio::gui
     inline bool input_mouse_captured    = false;
     inline bool input_keyboard_captured = false;
 
+    /// Manages imgui context
+    class ImGuiManager
+    {
+    public:
+        explicit ImGuiManager(render::RendererCommon& common) : imRenderer(common) {}
+        ~ImGuiManager();
 
-    /// Initializes the spritemap for rendering the character menus
-    /// \remark Requires Sprite::sprite_group::gui to be initialized
-    void SetupCharacterData(render::RendererSprites& renderer_sprites);
+        ImGuiManager(const ImGuiManager& other)     = delete;
+        ImGuiManager(ImGuiManager&& other) noexcept = delete;
 
-    void Setup(const render::DisplayWindow& display_window);
+        /// Sets up ImGui context
+        void Init(const render::DisplayWindow& display_window);
+        /// Initializes the spritemap for rendering the world and character menus
+        /// \remark spritemap and texture must be kept alive for lifetime of ImGuiManager
+        void InitData(const render::Spritemap& spritemap, const render::Texture& texture);
 
-    /// Loads glyphs from provided localization's font
-    /// \exception std::runtime_error if load failed
-    void LoadFont(const proto::Localization& localization);
+        /// Loads glyphs from provided localization's font and builds font
+        /// As a result, only 1 font may be active at once
+        /// \exception std::runtime_error if load failed
+        J_NODISCARD bool LoadFont(const proto::Localization& localization) const;
 
-    void ImguiBeginFrame(const render::DisplayWindow& display_window);
-    void ImguiRenderFrame();
+        /// \remark Ensure imgui renderer is bound
+        void BeginFrame(const render::DisplayWindow& display_window) const;
+        /// \remark Ensure imgui renderer is bound
+        void RenderFrame() const;
 
-    void ImguiDraw(const render::DisplayWindow& display_window,
-                   GameWorlds& worlds,
-                   game::Logic& logic,
-                   game::Player& player,
-                   const data::PrototypeManager& proto,
-                   game::EventData& event);
+        /// Prepares objects that are drawn as part of the world
+        /// Renderer is needed to convert world coord to coordinates for rendering
+        void PrepareWorld(const game::World& world, const render::TileRenderer& renderer) const;
+        /// Prepares objects that are drawn as part of the gui
+        void PrepareGui(GameWorlds& worlds,
+                        game::Logic& logic,
+                        game::Player& player,
+                        const data::PrototypeManager& proto,
+                        game::EventData& event) const;
 
-    void ImguiTerminate();
+        render::ImGuiRenderer imRenderer;
+
+    private:
+        bool hasImGuiContext_ = false;
+        bool hasInitRenderer_ = false;
+
+        const SpriteTexCoords* spritePositions_ = nullptr;
+        unsigned int texId_                     = 0; // Assigned by openGL
+    };
+
 } // namespace jactorio::gui
 
 #endif // JACTORIO_INCLUDE_GUI_IMGUI_MANAGER_H

@@ -6,7 +6,6 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <string>
 #include <vector>
 
@@ -20,28 +19,50 @@ namespace jactorio::render
         GLenum shaderType;
     };
 
+    struct ShaderSymbol
+    {
+        /// Looks for this value
+        std::string name;
+        /// Replaced with this
+        std::string value;
+    };
+
     class Shader
     {
-        unsigned int id_;
-
-        static unsigned int CompileShader(const std::string& filepath, GLenum shader_type);
-
     public:
-        explicit Shader(const std::vector<ShaderCreationInput>& inputs);
+        Shader() = default;
         ~Shader();
 
         Shader(const Shader& other)     = delete;
         Shader(Shader&& other) noexcept = delete;
         Shader& operator=(const Shader& other) = delete;
         Shader& operator=(Shader&& other) noexcept = delete;
-        void Bind() const;
-        static void Unbind();
 
-        J_NODISCARD int GetUniformLocation(const std::string& name) const;
-        static void SetUniform1I(const int& location, int v);
-        static void SetUniform4F(
-            const int& location, const float& v0, const float& v1, const float& v2, const float& v3);
-        static void SetUniformMat4F(const int& get_uniform_location, glm::mat4& mat);
+        /// \param symbols Defines symbol for shader compilation, the symbol in shader programs will be replaced with
+        /// value
+        /// \exception RendererException Shader program is invalid for use
+        void Init(const std::vector<ShaderCreationInput>& inputs, const std::vector<ShaderSymbol>& symbols = {});
+
+        void Bind() const noexcept;
+        static void Unbind() noexcept;
+
+        J_NODISCARD int GetUniformLocation(const char* name) const noexcept;
+        J_NODISCARD int GetAttribLocation(const char* name) const noexcept;
+
+    private:
+        static GLuint CompileShader(const std::string& filepath,
+                                    GLenum shader_type,
+                                    const std::vector<ShaderSymbol>& symbols) noexcept;
+        void LinkProgram() const noexcept;
+        /// \exception RendererException Validation failed
+        void ValidateProgram() const;
+
+        /// Retrieves log from opengl, null terminator included
+        static std::vector<char> GetShaderInfoLog(GLuint shader_id);
+        /// Retrieves log from opengl, null terminator included
+        static std::vector<char> GetProgramInfoLog(GLuint program);
+
+        unsigned int id_ = 0;
     };
 } // namespace jactorio::render
 

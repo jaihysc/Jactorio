@@ -3,6 +3,8 @@
 #include "gui/menus.h"
 
 #include <functional>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include <sstream>
 
 #include "core/utility.h"
@@ -10,6 +12,7 @@
 #include "game/logic/logic.h"
 #include "game/logistic/inventory.h"
 #include "game/player/player.h"
+#include "game/world/world.h"
 #include "gui/components.h"
 #include "gui/context.h"
 #include "gui/menu_data.h"
@@ -20,7 +23,7 @@
 #include "proto/recipe_category.h"
 #include "proto/recipe_group.h"
 #include "proto/sprite.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -171,7 +174,7 @@ void RecipeMenu(const gui::Context context,
         if (index == player.crafting.RecipeGroupGetSelected())
             recipe_group_guard.PushStyleColor(ImGuiCol_Button, gui::kGuiColButtonHover);
 
-        group_slots.DrawSlot(recipe_group->sprite->internalId, [&]() {
+        group_slots.DrawSlot(recipe_group->sprite->texCoordId, [&]() {
             if (ImGui::IsItemClicked())
                 player.crafting.RecipeGroupSelect(index);
 
@@ -201,7 +204,7 @@ void RecipeMenu(const gui::Context context,
             if (!matches_search_str(product->GetLocalizedName(), player.crafting.recipeSearchText))
                 return;
 
-            recipe_row.DrawSlot(product->sprite->internalId, [&]() { item_slot_draw(*recipe); });
+            recipe_row.DrawSlot(product->sprite->texCoordId, [&]() { item_slot_draw(*recipe); });
         });
     }
 }
@@ -230,7 +233,7 @@ void RecipeHoverTooltip(const gui::Context& context, const proto::Recipe& recipe
             const auto* item = proto.Get<proto::Item>(ingredient_name);
 
             gui::GuiItemSlots ingredient_row(context);
-            ingredient_row.DrawSlot(item->sprite->internalId);
+            ingredient_row.DrawSlot(item->sprite->texCoordId);
 
             ImGui::SameLine(gui::kInventorySlotWidth * 1.5);
 
@@ -281,7 +284,7 @@ void RecipeHoverTooltip(const gui::Context& context, const proto::Recipe& recipe
             // else
             // 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
 
-            raw_item_slots.DrawSlot(item->sprite->internalId, item_count_required);
+            raw_item_slots.DrawSlot(item->sprite->texCoordId, item_count_required);
         });
     });
 }
@@ -335,13 +338,12 @@ void gui::CursorWindow(const Context& context,
         // Slightly off center so that user can still click
         ImGui::SetNextWindowPos({LossyCast<float>(game::MouseSelection::GetCursor().x),
                                  LossyCast<float>(game::MouseSelection::GetCursor().y) + 2.f});
-        ImGui::SetNextWindowFocus();
 
         GuiMenu menu;
-        menu.AppendFlags(ImGuiWindowFlags_NoBackground);
+        menu.AppendFlags(ImGuiWindowFlags_NoBackground, ImGuiWindowFlags_NoFocusOnAppearing);
         menu.Begin("_selected_item");
 
-        const auto& positions = context.menuData.spritePositions.at(selected_stack->item->sprite->internalId);
+        const auto& positions = context.menuData.spritePositions.at(selected_stack->item->sprite->texCoordId);
 
         ImGui::SameLine(10.f);
         ImGui::Image(reinterpret_cast<void*>(context.menuData.texId),
@@ -351,6 +353,10 @@ void gui::CursorWindow(const Context& context,
 
         ImGui::SameLine(10.f);
         ImGui::Text("%d", selected_stack->count);
+
+        // The window cannot take focus to allow clicking buttons, but it must also be at the very front
+        // A bit of a hack using internal functions, but this is the best idea I have
+        ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
     }
 }
 
@@ -366,7 +372,7 @@ void gui::CraftingQueue(const Context& context,
         auto window_height = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
         window_height += kGuiStyleWindowPaddingY;
 
-        const auto max_window_height = render::Renderer::GetWindowHeight() / 2; // Pixels
+        const auto max_window_height = render::TileRenderer::GetWindowHeight() / 2; // Pixels
         if (window_height > max_window_height)
             window_height = max_window_height;
 
@@ -377,7 +383,7 @@ void gui::CraftingQueue(const Context& context,
     const auto& recipe_queue = context.player.crafting.GetRecipeQueue();
     const auto window_height = get_window_height(recipe_queue.size());
 
-    ImGui::SetNextWindowPos({0, SafeCast<float>(render::Renderer::GetWindowHeight() - window_height)});
+    ImGui::SetNextWindowPos({0, SafeCast<float>(render::TileRenderer::GetWindowHeight() - window_height)});
     ImGui::SetNextWindowSize({GetTotalItemSlotWidth(slot_span) + GetTotalWindowPaddingX() + kGuiStyleScrollBarSize,
                               SafeCast<float>(window_height)});
 
@@ -397,7 +403,7 @@ void gui::CraftingQueue(const Context& context,
         assert(recipe != nullptr);
 
         const auto* item = context.proto.Get<proto::Item>(recipe->product.first);
-        queued_item_row.DrawSlot(item->sprite->internalId, recipe->product.second);
+        queued_item_row.DrawSlot(item->sprite->texCoordId, recipe->product.second);
     });
 }
 
@@ -418,8 +424,8 @@ void gui::PickupProgressbar(const Context& context,
 
     ImGui::SetNextWindowSize({progress_bar_width, progress_bar_height});
     ImGui::SetNextWindowPos(
-        {SafeCast<float>(render::Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
-         SafeCast<float>(render::Renderer::GetWindowHeight()) - progress_bar_height});
+        {SafeCast<float>(render::TileRenderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
+         SafeCast<float>(render::TileRenderer::GetWindowHeight()) - progress_bar_height});
 
     // Window
     GuiMenu menu;
@@ -492,8 +498,9 @@ void gui::AssemblyMachine(const Context& context,
     assert(prototype != nullptr);
     assert(unique_data != nullptr);
 
-    auto& logic       = context.logic;
-    const auto& proto = context.proto;
+    auto& player_world = context.worlds[context.player.world.GetId()];
+    auto& logic        = context.logic;
+    const auto& proto  = context.proto;
 
     const auto& machine_proto = *SafeCast<const proto::AssemblyMachine*>(prototype);
     auto& machine_data        = *SafeCast<proto::AssemblyMachineData*>(unique_data);
@@ -521,9 +528,10 @@ void gui::AssemblyMachine(const Context& context,
                 auto* reset_icon = proto.Get<proto::Item>(proto::Item::kResetIname);
                 assert(reset_icon != nullptr);
 
-                ingredient_slots.DrawSlot(reset_icon->sprite->internalId, [&]() {
+                ingredient_slots.DrawSlot(reset_icon->sprite->texCoordId, [&]() {
                     if (ImGui::IsItemClicked()) {
                         machine_data.ChangeRecipe(logic, proto, nullptr);
+                        player_world.DisableAnimation(context.coord, game::TileLayer::entity);
                     }
                 });
                 return;
@@ -536,7 +544,7 @@ void gui::AssemblyMachine(const Context& context,
             // Amount of item possessed
 
             ingredient_slots.DrawSlot(
-                ingredient_item->sprite->internalId, machine_data.ingredientInv[index].count, [&]() {
+                ingredient_item->sprite->texCoordId, machine_data.ingredientInv[index].count, [&]() {
                     HandleInvClicked(context, machine_data.ingredientInv, index, [&]() {
                         machine_proto.TryBeginCrafting(logic, machine_data);
                     });
@@ -574,7 +582,7 @@ void gui::AssemblyMachine(const Context& context,
             auto* product_item = proto.Get<proto::Item>(machine_data.GetRecipe()->product.first);
 
             assert(product_item != nullptr);
-            product_slots.DrawSlot(product_item->sprite->internalId, machine_data.productInv[0].count, [&]() {
+            product_slots.DrawSlot(product_item->sprite->texCoordId, machine_data.productInv[0].count, [&]() {
                 HandleInvClicked(context, machine_data.productInv, 0, [&]() {
                     machine_proto.TryBeginCrafting(logic, machine_data);
                 });
@@ -594,6 +602,7 @@ void gui::AssemblyMachine(const Context& context,
         RecipeMenu(context, prototype->GetLocalizedName(), [&](auto& recipe) {
             if (ImGui::IsItemClicked()) {
                 machine_data.ChangeRecipe(logic, proto, &recipe);
+                player_world.EnableAnimation(context.coord, game::TileLayer::entity);
             }
 
             if (ImGui::IsItemHovered())

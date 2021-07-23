@@ -6,7 +6,7 @@
 #include "game/world/world.h"
 #include "proto/abstract/entity.h"
 #include "proto/sprite.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -21,15 +21,11 @@ Position2<int32_t> game::MouseSelection::GetCursor() noexcept {
 }
 
 
-void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
+void game::MouseSelection::DrawCursorOverlay(render::TileRenderer& renderer,
                                              GameWorlds& worlds,
                                              Player& player,
                                              const data::PrototypeManager& proto) {
-    const auto* stack  = player.inventory.GetSelectedItem();
-    const auto* sprite = proto.Get<proto::Sprite>(player.world.MouseSelectedTileInRange() ? "__core__/cursor-select"
-                                                                                          : "__core__/cursor-invalid");
-    assert(sprite != nullptr);
-
+    const auto* stack = player.inventory.GetSelectedItem();
 
     const auto cursor_coord = player.world.GetMouseTileCoords();
     auto& world             = worlds[player.world.GetId()];
@@ -43,10 +39,8 @@ void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
         if (selected_entity != nullptr && selected_entity->placeable) {
             // Has item selected
             renderer.PrepareSprite(cursor_coord,
-                                   *selected_entity->sprite,
-                                   selected_entity->OnRGetSpriteSet(orientation, world, cursor_coord),
-                                   {SafeCast<float>(selected_entity->GetWidth(orientation)),
-                                    SafeCast<float>(selected_entity->GetHeight(orientation))});
+                                   selected_entity->OnGetTexCoordId(world, cursor_coord, orientation),
+                                   selected_entity->GetDimension(orientation));
         }
     }
     else {
@@ -58,7 +52,11 @@ void game::MouseSelection::DrawCursorOverlay(render::Renderer& renderer,
 
         if (entity_tile->GetPrototype() != nullptr || resource_tile->GetPrototype() != nullptr) {
             // No item selected, over entity
-            renderer.PrepareSprite(cursor_coord, *sprite);
+            const auto* cursor_sprite = proto.Get<proto::Sprite>(
+                player.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
+            assert(cursor_sprite != nullptr);
+
+            renderer.PrepareSprite(cursor_coord, cursor_sprite->texCoordId);
         }
     }
 }

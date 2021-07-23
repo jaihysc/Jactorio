@@ -6,7 +6,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG            ${CMAKE_RUNTIME_OUTPUT_DIREC
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-jactorio_copy_runtime_files()
+jactorio_copy_runtime_files(false) # false, not a test build
 
 
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -69,7 +69,6 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/proto/assembly_machine.cpp
         ${JACTORIO_DIR}/proto/container_entity.cpp
         ${JACTORIO_DIR}/proto/inserter.cpp
-        ${JACTORIO_DIR}/proto/item.cpp
         ${JACTORIO_DIR}/proto/mining_drill.cpp
         ${JACTORIO_DIR}/proto/recipe.cpp
         ${JACTORIO_DIR}/proto/recipe_group.cpp
@@ -79,7 +78,7 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/proto/abstract/conveyor.cpp
         ${JACTORIO_DIR}/proto/abstract/entity.cpp
 
-        ${JACTORIO_DIR}/proto/interface/renderable.cpp
+        ${JACTORIO_DIR}/proto/framework/world_object.cpp
 
 
         ${JACTORIO_DIR}/render/opengl/error.cpp
@@ -91,12 +90,14 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/render/opengl/vertex_buffer.cpp
 
         ${JACTORIO_DIR}/render/display_window.cpp
-        ${JACTORIO_DIR}/render/render_loop.cpp
-
+        ${JACTORIO_DIR}/render/imgui_renderer.cpp
+        ${JACTORIO_DIR}/render/irender_buffer.cpp
         ${JACTORIO_DIR}/render/proto_renderer.cpp
-        ${JACTORIO_DIR}/render/renderer.cpp
-        ${JACTORIO_DIR}/render/renderer_layer.cpp
+        ${JACTORIO_DIR}/render/render_controller.cpp
+        ${JACTORIO_DIR}/render/render_loop.cpp
         ${JACTORIO_DIR}/render/spritemap_generator.cpp
+        ${JACTORIO_DIR}/render/tile_renderer.cpp
+        ${JACTORIO_DIR}/render/trender_buffer.cpp
         )
 # ======================================== END Source files .cpp
 
@@ -106,9 +107,10 @@ set(JACTORIO_LIB_BUILD_FILES
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui.cpp
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_demo.cpp
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_draw.cpp
+        ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_tables.cpp
         ${PROJECT_SOURCE_DIR}/lib/imgui/imgui_widgets.cpp
-        ${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_opengl3.cpp
-        ${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_sdl.cpp
+        ${PROJECT_SOURCE_DIR}/lib/imgui/backends/imgui_impl_sdl.cpp
+        ${PROJECT_SOURCE_DIR}/lib/imgui/misc/freetype/imgui_freetype.cpp
         )
 
 IF (CMAKE_SYSTEM_NAME MATCHES Windows)

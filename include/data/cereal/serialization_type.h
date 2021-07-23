@@ -23,29 +23,31 @@ namespace jactorio::data
                       "TProto must inherit FrameworkBase for internal id");
 
         using ValueT                       = typename PointerWrapper<TProto>::ValueT;
-        static constexpr auto kArchiveSize = sizeof(ValueT);
+        static constexpr auto kArchiveSize = sizeof(PrototypeIdT);
 
     public:
         using PointerWrapper<TProto>::PointerWrapper;
 
         CEREAL_LOAD(archive) {
-            CerealArchive<kArchiveSize>(archive, this->value_); // Deserialized as internal id
+            PrototypeIdT id;
+            CerealArchive<kArchiveSize>(archive, id);
 
-            if (this->value_ == 0) // nullptr
+            if (id == 0) // Was originally nullptr
                 return;
 
             assert(active_prototype_manager != nullptr);
-            auto* proto_ptr = &active_prototype_manager->RelocationTableGet<TProto>( // Converted to prototype*
-                SafeCast<PrototypeIdT>(this->value_));
+            auto* proto_ptr = &active_prototype_manager->RelocationTableGet<TProto>(id);
             this->SetPtr(proto_ptr);
         }
 
         CEREAL_SAVE(archive) {
-            ValueT save_val = 0;
-            if (this->value_ != 0)
-                save_val = static_cast<ValueT>(this->Get()->internalId);
+            const auto* prototype = this->Get();
 
-            CerealArchive<kArchiveSize>(archive, save_val);
+            PrototypeIdT id = 0;
+            if (prototype != nullptr)
+                id = prototype->internalId;
+
+            CerealArchive<kArchiveSize>(archive, id);
         }
     };
 
@@ -71,7 +73,7 @@ namespace jactorio::data
             UniqueDataIdT id;
             data::CerealArchive<kArchiveSize>(archive, id);
 
-            if (id == 0) // nullptr
+            if (id == 0) // Was originally nullptr
                 return;
 
             assert(data::active_unique_data_manager != nullptr);

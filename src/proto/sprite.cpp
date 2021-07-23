@@ -4,141 +4,143 @@
 
 #include "proto/sprite.h"
 
+#include <cstdlib>
 #include <sstream>
 #include <stb/stb_image.h>
 #include <type_traits>
 #include <utility>
 
 #include "core/convert.h"
-#include "core/coordinate_tuple.h"
 #include "data/prototype_manager.h"
 
 using namespace jactorio;
 
-proto::Sprite::Sprite(const std::string& sprite_path) {
-    LoadImage(sprite_path);
-}
-
-proto::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group) : group(std::move(group)) {
-    LoadImage(sprite_path);
-}
-
-proto::Sprite::~Sprite() {
-    stbi_image_free(spriteBuffer_);
-}
-
-proto::Sprite::Sprite(const Sprite& other)
-    : FrameworkBase{other},
-      group{other.group},
-      invertSetFrame{other.invertSetFrame},
-      frames{other.frames},
-      sets{other.sets},
-      trim{other.trim},
-      width_{other.width_},
-      height_{other.height_},
-      bytesPerPixel_{other.bytesPerPixel_},
-      spritePath_{other.spritePath_},
-      spriteBuffer_{other.spriteBuffer_} {
-
-    const auto size = SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
-    spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_))); // NOLINT: stbi uses malloc
-    for (std::size_t i = 0; i < size; ++i) {
-        spriteBuffer_[i] = other.spriteBuffer_[i];
-    }
-}
-
-proto::Sprite::Sprite(Sprite&& other) noexcept
-    : FrameworkBase{std::move(other)},
-      group{std::move(other.group)},
-      frames{other.frames},
-      sets{other.sets},
-      trim{other.trim},
-      width_{other.width_},
-      height_{other.height_},
-      bytesPerPixel_{other.bytesPerPixel_},
-      spritePath_{std::move(other.spritePath_)},
-      spriteBuffer_{other.spriteBuffer_} {
-    other.spriteBuffer_ = nullptr;
-}
-
-// ======================================================================
-
-bool proto::Sprite::IsInGroup(const SpriteGroup group) const {
-    for (const auto& i : this->group) {
-        if (i == group)
-            return true;
-    }
-
-    return false;
-}
-
-void proto::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
-    LOG_MESSAGE(debug, "Using default sprite group:");
-    for (const auto& group : new_group) {
-        LOG_MESSAGE_F(debug, "    %d", static_cast<int>(group));
-    }
-
-
-    if (group.empty()) {
-        group = new_group;
-    }
-}
-
-void proto::Sprite::LoadImageFromFile() {
-    spriteBuffer_ = stbi_load(spritePath_.c_str(),
-                              &width_,
-                              &height_,
-                              &bytesPerPixel_,
-                              4 // 4 desired channels for RGBA
+proto::ImageContainer::ImageContainer(const std::string& image_path) {
+    buffer = stbi_load(image_path.c_str(),
+                       &width,
+                       &height,
+                       &bytesPerPixel,
+                       4 // 4 desired channels for RGBA
     );
 
-    if (spriteBuffer_ == nullptr) {
-        LOG_MESSAGE_F(error, "Failed to read sprite at: %s", spritePath_.c_str());
+    if (buffer == nullptr) {
+        LOG_MESSAGE_F(error, "Failed to read sprite at: %s", image_path.c_str());
 
         std::ostringstream sstr;
-        sstr << "Failed to read sprite at: " << spritePath_;
+        sstr << "Failed to read sprite at: " << image_path;
 
         throw ProtoError(sstr.str());
     }
 }
 
-
-UvPositionT proto::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
-    float width_base  = SafeCast<float>(width_) / SafeCast<float>(frames);
-    float height_base = SafeCast<float>(height_) / SafeCast<float>(sets);
-
-    // If inverted:
-    // Set   = X axis
-    // Frame = Y axis
-    if (invertSetFrame) {
-        width_base  = SafeCast<float>(width_) / SafeCast<float>(sets);
-        height_base = SafeCast<float>(height_) / SafeCast<float>(frames);
-
-        AdjustSetFrame<false>(frame, set);
-
-        assert(set < frames); // Out of range
-        assert(frame < sets);
-    }
-    else {
-        AdjustSetFrame<true>(set, frame);
-
-        assert(set < sets); // Out of range
-        assert(frame < frames);
-    }
-
-    return {{(width_base * SafeCast<float>(frame) + SafeCast<float>(trim)) / SafeCast<float>(width_),
-             (height_base * SafeCast<float>(set) + SafeCast<float>(trim)) / SafeCast<float>(height_)},
-            {(width_base * SafeCast<float>(frame + 1) - SafeCast<float>(trim)) / SafeCast<float>(width_),
-             (height_base * SafeCast<float>(set + 1) - SafeCast<float>(trim)) / SafeCast<float>(height_)}};
+proto::ImageContainer::~ImageContainer() {
+    stbi_image_free(buffer);
 }
 
-const unsigned char* proto::Sprite::GetSpritePtr() const {
-    return spriteBuffer_;
+proto::ImageContainer::ImageContainer(const ImageContainer& other)
+    : width{other.width}, height{other.height}, bytesPerPixel{other.bytesPerPixel} {
+
+    const auto size = SafeCast<std::size_t>(other.width) * other.height * other.bytesPerPixel;
+    buffer          = static_cast<unsigned char*>(malloc(size * sizeof(*buffer))); // NOLINT: stbi uses malloc
+
+    if (buffer == nullptr) {
+        throw std::bad_alloc();
+    }
+
+    for (std::size_t i = 0; i < size; ++i) {
+        buffer[i] = other.buffer[i];
+    }
 }
 
-proto::Sprite* proto::Sprite::LoadImage(const std::string& image_path) {
+proto::ImageContainer::ImageContainer(ImageContainer&& other) noexcept
+    : width{other.width}, height{other.height}, bytesPerPixel{other.bytesPerPixel}, buffer{other.buffer} {
+    other.buffer = nullptr;
+}
+
+// ======================================================================
+
+proto::Sprite::Sprite(const std::string& sprite_path) {
+    Load(sprite_path);
+}
+
+proto::Sprite::Sprite(const std::string& sprite_path, const SpriteGroup group) : group(group) {
+    Load(sprite_path);
+}
+
+proto::Sprite* proto::Sprite::Load(const std::string& image_path) {
     spritePath_ = std::string(data::PrototypeManager::kDataFolder) + "/" + image_path;
-    LoadImageFromFile();
+    image_      = ImageContainer(spritePath_);
+
+    return this;
+}
+
+const proto::ImageContainer& proto::Sprite::GetImage() const noexcept {
+    return image_;
+}
+
+proto::Sprite* proto::Sprite::Trim(const SpriteTrimT pixels) {
+    // Divide first to truncate, as extra pixels on right, bottom are cut when divided per set/frame
+    const auto new_width  = (image_.width / frames - 2 * pixels) * frames;
+    const auto new_height = (image_.height / sets - 2 * pixels) * sets;
+
+    if (new_width < 0 || new_height < 0) {
+        throw ProtoError("Trim too large");
+    }
+
+    const auto size        = SafeCast<std::size_t>(new_width) * new_height * image_.bytesPerPixel;
+    auto* const new_buffer = static_cast<unsigned char*>(malloc(size * sizeof(*image_.buffer)));
+
+    // Trimming certain sprites produces artifacts if it is done in place
+    // As it writes to certain memory locations which have yet been read
+    if (new_buffer == nullptr) {
+        throw std::bad_alloc();
+    }
+
+    /// Pixels per frame
+    const auto x_pixels = image_.width / frames - 2 * pixels;
+    const auto y_pixels = image_.height / sets - 2 * pixels;
+
+    /// Reads trimmed frame from read_ptr, writes it starting at write_ptr
+    auto output_frame = [this, x_pixels, y_pixels, new_width](unsigned char* write_ptr, const unsigned char* read_ptr) {
+        for (int y = 0; y < y_pixels; ++y) {
+            for (int x = 0; x < x_pixels; ++x) {
+                for (int c = 0; c < image_.bytesPerPixel; ++c) {
+                    write_ptr[c] = read_ptr[c];
+                }
+                write_ptr += image_.bytesPerPixel;
+                read_ptr += image_.bytesPerPixel;
+            }
+            // Skip right + left to next start of row for frame
+            write_ptr += (new_width - x_pixels) * image_.bytesPerPixel;
+            read_ptr += (image_.width - x_pixels) * image_.bytesPerPixel;
+        }
+    };
+
+    auto* write_ptr = new_buffer;
+    auto* read_ptr  = image_.buffer;
+    read_ptr += pixels * image_.width * image_.bytesPerPixel; // Skip top
+
+    for (int set = 0; set < sets; ++set) {
+        for (int frame = 0; frame < frames; ++frame) {
+            read_ptr += pixels * image_.bytesPerPixel;
+            output_frame(write_ptr, read_ptr);
+
+            // To next frame
+            write_ptr += x_pixels * image_.bytesPerPixel;
+            read_ptr += x_pixels * image_.bytesPerPixel;
+            read_ptr += pixels * image_.bytesPerPixel;
+        }
+        read_ptr += (image_.width % frames) * image_.bytesPerPixel; // In case image does not divide perfectly
+
+        write_ptr += (y_pixels - 1) * new_width * image_.bytesPerPixel; // To start of next frame at next set
+        read_ptr += (y_pixels + 2 * pixels - 1) * image_.width * image_.bytesPerPixel;
+    }
+
+    free(image_.buffer);
+    image_.buffer = new_buffer;
+
+    image_.width  = new_width;
+    image_.height = new_height;
 
     return this;
 }
@@ -146,4 +148,6 @@ proto::Sprite* proto::Sprite::LoadImage(const std::string& image_path) {
 void proto::Sprite::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
     J_PROTO_ASSERT(frames > 0, "Frames must be at least 1");
     J_PROTO_ASSERT(sets > 0, "Sets must be at least 1");
+
+    J_PROTO_ASSERT(group != SpriteGroup::none, "Sprite must be in a group");
 }

@@ -22,9 +22,14 @@ namespace jactorio::game
 
         World world_;
         proto::TransportBelt transBelt_;
+        proto::Sprite sprite_;
 
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
+
+            // Conveyor utility requires tex coord id when setting up conveyor
+            transBelt_.sprite  = &sprite_;
+            sprite_.texCoordId = 1234;
         }
     };
 
@@ -343,7 +348,7 @@ namespace jactorio::game
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupBehind) {
         auto compare_func =
             [](const World& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
-                EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(kLogicGroup_).size(), 1);
+                EXPECT_EQ(world.LogicGet(kLogicGroup_).size(), 1);
 
                 EXPECT_EQ(current.structure->length, 2);
 
@@ -372,7 +377,7 @@ namespace jactorio::game
     //
 
     /// Destroy head should unregister the head from logic updates
-    TEST_F(ConveyorUtilityTest, DestroyHead) {
+    TEST_F(ConveyorUtilityTest, DestroyHeadUnregisterLogic) {
         //
         // >
         //
@@ -389,7 +394,7 @@ namespace jactorio::game
         ASSERT_NE(con_data, nullptr);
         EXPECT_EQ(con_data->structure, nullptr);
 
-        EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 0);
+        EXPECT_TRUE(world_.LogicGet(kLogicGroup_).empty());
     }
 
     /// Removing beginning of grouped conveyor segment with bending termination
@@ -423,7 +428,10 @@ namespace jactorio::game
         EXPECT_EQ(behind_con_data->structure->length, 1);
         EXPECT_EQ(behind_con_data->structure->terminationType, ConveyorStruct::TerminationType::straight);
 
-        EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 2);
+        EXPECT_EQ(world_.LogicGet(kLogicGroup_).size(), 2);
+        // Ensure not unregister the wrong one
+        EXPECT_EQ(world_.LogicGet(kLogicGroup_)[0].coord, WorldCoord(2, 0)); // Oldest
+        EXPECT_EQ(world_.LogicGet(kLogicGroup_)[1].coord, WorldCoord(0, 0));
     }
 
     /// Removing middle of grouped conveyor segment
@@ -467,9 +475,8 @@ namespace jactorio::game
         EXPECT_EQ(behind_con_data->structure->length, 2);
         EXPECT_EQ(behind_con_data->structure->headOffset, 27);
 
-
         // The newly created segment was registered for logic updates
-        EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 1);
+        EXPECT_EQ(world_.LogicGet(kLogicGroup_).size(), 1);
     }
 
     //
@@ -555,18 +562,6 @@ namespace jactorio::game
         EXPECT_EQ(d_con_data_2.structure->target, new_con_struct.get());
         EXPECT_EQ(d_con_data_3.structure->target, new_con_struct.get());
         EXPECT_EQ(d_con_data_4.structure->target, new_con_struct.get());
-    }
-
-    /// Ensures the function ConveyorLogicRemove also functions for splitters
-    TEST_F(ConveyorUtilityTest, LogicRemoveSplitter) {
-        const proto::Splitter splitter;
-
-        auto& splitter_data = TestSetupSplitter(world_, {0, 0}, Orientation::up, splitter);
-        world_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
-
-        ConveyorLogicRemove(world_, {0, 0}, *splitter_data.left.structure, kLogicGroup_);
-
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
     //
@@ -883,6 +878,9 @@ namespace jactorio::game
 
         ConveyorUpdateNeighborLineOrien(world_, {0, 0});
 
-        EXPECT_EQ(con_data_r_end.lOrien, proto::LineOrientation::up_right);
+        // int value of line orientation is offset applied to Sprite tex coord id to get the right
+        // line orientation rendered
+        EXPECT_EQ(world_.GetTexCoordId({1, 0}, TileLayer::entity),
+                  1234 + static_cast<int>(proto::LineOrientation::up_right));
     }
 } // namespace jactorio::game

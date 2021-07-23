@@ -14,7 +14,7 @@ namespace jactorio::proto
         game::World world_;
         game::Logic logic_;
 
-        MiningDrill drillProto_;
+        MiningDrill drill_;
 
         Item resourceItem_;
         ResourceEntity resource_;
@@ -23,9 +23,9 @@ namespace jactorio::proto
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
 
-            drillProto_.SetWidth(3);
-            drillProto_.SetHeight(3);
-            drillProto_.miningRadius = 1;
+            drill_.SetWidth(3);
+            drill_.SetHeight(3);
+            drill_.miningRadius = 1;
 
             resource_.pickupTime = 1.f;
             resource_.SetItem(&resourceItem_);
@@ -82,20 +82,20 @@ namespace jactorio::proto
 
     TEST_F(MiningDrillTest, FindOutputItem) {
 
-        EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources
+        EXPECT_EQ(drill_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources
 
 
         world_.GetTile({0, 0}, game::TileLayer::resource)->SetPrototype(Orientation::up, &resource_);
-        EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources in range
+        EXPECT_EQ(drill_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources in range
 
 
         world_.GetTile({6, 5}, game::TileLayer::resource)->SetPrototype(Orientation::up, &resource_);
-        EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources in range
+        EXPECT_EQ(drill_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources in range
 
         // ======================================================================
 
         world_.GetTile({5, 5}, game::TileLayer::resource)->SetPrototype(Orientation::up, &resource_);
-        EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), &resourceItem_);
+        EXPECT_EQ(drill_.FindOutputItem(world_, {2, 2}, Orientation::up), &resourceItem_);
 
         // Closer to the top left
         {
@@ -104,7 +104,7 @@ namespace jactorio::proto
             resource2.SetItem(&item2);
 
             world_.GetTile({1, 1}, game::TileLayer::resource)->SetPrototype(Orientation::up, &resource2);
-            EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), &item2);
+            EXPECT_EQ(drill_.FindOutputItem(world_, {2, 2}, Orientation::up), &item2);
         }
     }
 
@@ -112,12 +112,13 @@ namespace jactorio::proto
     TEST_F(MiningDrillTest, BuildAndExtractResource) {
         // Mining drill is built with an item output chest
 
-        drillProto_.miningSpeed          = 2; // Halves mining time
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.miningSpeed          = 2; // Halves mining time
+        drill_.resourceOutput.right = {3, 1};
 
 
         auto& container_tile = TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
-        auto& drill_tile     = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_, 100);
+        auto& resource_tile  = TestSetupResource(world_, {1, 1}, resource_, 100);
+        auto& drill_tile     = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
 
         auto* data = drill_tile.GetUniqueData<MiningDrillData>();
 
@@ -125,15 +126,10 @@ namespace jactorio::proto
         EXPECT_EQ(data->resourceCoord.y, 0);
         EXPECT_EQ(data->resourceOffset, 6);
 
-        // ======================================================================
         // Resource taken from ground
-        auto* resource_tile = world_.GetTile({1, 1}, game::TileLayer::resource);
+        EXPECT_EQ(resource_tile.GetUniqueData<ResourceEntityData>()->resourceAmount, 99);
 
-        EXPECT_EQ(resource_tile->GetUniqueData<ResourceEntityData>()->resourceAmount, 99);
-
-        // ======================================================================
         // Ensure it inserts into the correct entity
-
         Item item;
         data->output.DropOff(logic_, {&item, 1});
 
@@ -146,16 +142,21 @@ namespace jactorio::proto
         EXPECT_EQ(container_tile.GetUniqueData<ContainerEntityData>()->inventory[1].count, 1);
 
         // Another resource taken for next output
-        EXPECT_EQ(resource_tile->GetUniqueData<ResourceEntityData>()->resourceAmount, 98);
+        EXPECT_EQ(resource_tile.GetUniqueData<ResourceEntityData>()->resourceAmount, 98);
     }
 
     TEST_F(MiningDrillTest, ExtractRemoveResourceEntity) {
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.resourceOutput.right = {3, 1};
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
 
-        auto& drill_tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_, 1);
+        // The moment the drill is created, it has an output
+        // thus, it immediately deducts a resource and registers the callback for outputting
+        world_.SetTexCoordId({1, 1}, game::TileLayer::resource, 1234);
+
+        TestSetupResource(world_, {1, 1}, resource_, 1);
+        auto& drill_tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
         auto& r_tile1    = *world_.GetTile({1, 1}, game::TileLayer::resource);
 
         auto& r_tile2 = TestSetupResource(world_, {3, 4}, resource_, 1);
@@ -168,6 +169,7 @@ namespace jactorio::proto
         logic_.DeferralUpdate(world_, 60);
         EXPECT_EQ(r_tile1.GetPrototype(), nullptr);
         EXPECT_EQ(r_tile1.GetUniqueData(), nullptr);
+        EXPECT_EQ(world_.GetTexCoordId({1, 1}, game::TileLayer::resource), 0);
 
         // Found another resource (resource3)
         logic_.DeferralUpdate(world_, 120);
@@ -183,13 +185,12 @@ namespace jactorio::proto
     TEST_F(MiningDrillTest, ExtractResourceOutputBlocked) {
         // If output is blocked, drill attempts to output at next game tick
 
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.resourceOutput.right = {3, 1};
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_, 1);
-        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
-
-        // ======================================================================
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
 
         auto* container_data = world_.GetTile({4, 2}, game::TileLayer::entity)->GetUniqueData<ContainerEntityData>();
 
@@ -210,13 +211,14 @@ namespace jactorio::proto
 
     TEST_F(MiningDrillTest, BuildMultiTileOutput) {
 
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.resourceOutput.right = {3, 1};
 
         AssemblyMachine asm_machine;
         asm_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {4, 1}, Orientation::up, asm_machine);
 
-        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
         auto* data = tile.GetUniqueData<MiningDrillData>();
 
         EXPECT_TRUE(data->output.IsInitialized());
@@ -226,17 +228,15 @@ namespace jactorio::proto
         // Mining drill is built without anywhere to output items
         // Should do nothing until an output is built
 
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.resourceOutput.right = {3, 1};
 
 
-        auto& drill_tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        auto& drill_tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
 
-        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
-
-        // ======================================================================
-        // Should now insert as it has an entity to output to
-
+        // Detects it has an entity to output to
+        drill_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
         auto* data = drill_tile.GetUniqueData<MiningDrillData>();
 
         // Ensure it inserts into the correct entity
@@ -251,13 +251,14 @@ namespace jactorio::proto
         // When the mining drill is removed, it needs to unregister the defer update
         // callback to the unique_data which now no longer exists
 
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.resourceOutput.right = {3, 1};
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
-        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
 
-        drillProto_.OnRemove(world_, logic_, {1, 1}, game::TileLayer::entity);
+        drill_.OnRemove(world_, logic_, {1, 1});
 
         tile.Clear(); // Deletes drill data
 
@@ -268,19 +269,20 @@ namespace jactorio::proto
     TEST_F(MiningDrillTest, RemoveOutputEntity) {
         // When the mining drill's output entity is removed, it needs to unregister the defer update
 
-        drillProto_.resourceOutput.right = {3, 1};
+        drill_.resourceOutput.right = {3, 1};
 
 
         auto& container_tile = TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
-        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
 
         // Remove chest
         container_tile.Clear();
 
         // Should only remove the callback once
-        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
-        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
-        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
+        drill_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
+        drill_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
+        drill_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
 
         // Should no longer be valid
         logic_.DeferralUpdate(world_, 60);
@@ -289,17 +291,18 @@ namespace jactorio::proto
     TEST_F(MiningDrillTest, UpdateNonOutput) {
         // Mining drill should ignore on_neighbor_update from tiles other than the item output tile
 
-        drillProto_.resourceOutput.up    = {1, -1};
-        drillProto_.resourceOutput.right = {3, 1};
-        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
+        drill_.resourceOutput.up    = {1, -1};
+        drill_.resourceOutput.right = {3, 1};
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
 
         // ======================================================================
 
         TestSetupContainer(world_, {2, 0}, Orientation::up, container_);
         TestSetupContainer(world_, {4, 1}, Orientation::up, container_);
 
-        drillProto_.OnNeighborUpdate(world_, logic_, {2, 0}, {1, 1}, Orientation::up);
-        drillProto_.OnNeighborUpdate(world_, logic_, {4, 1}, {1, 1}, Orientation::right);
+        drill_.OnNeighborUpdate(world_, logic_, {2, 0}, {1, 1}, Orientation::up);
+        drill_.OnNeighborUpdate(world_, logic_, {4, 1}, {1, 1}, Orientation::right);
 
         logic_.DeferralUpdate(world_, 60);
 
@@ -314,6 +317,22 @@ namespace jactorio::proto
 
             EXPECT_EQ(container_tile->GetUniqueData<ContainerEntityData>()->inventory[0].count, 0);
         }
+    }
+
+    TEST_F(MiningDrillTest, UpdateNoResource) {
+        // Mining drill has an output built, but has no resources
+        // Should do nothing
+
+        drill_.resourceOutput.right = {3, 1};
+
+        auto& resource_tile = TestSetupResource(world_, {1, 1}, resource_, 1); // A resource so drill gets built
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, drill_);
+
+        resource_tile.Clear();
+        TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
+        drill_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
+
+        EXPECT_EQ(logic_.deferralTimer.GetDebugInfo().callbacks.size(), 0);
     }
 
     TEST_F(MiningDrillTest, Serialize) {
@@ -331,9 +350,10 @@ namespace jactorio::proto
     }
 
     TEST_F(MiningDrillTest, OnDeserialize) {
-        drillProto_.resourceOutput.down = {1, 3};
+        drill_.resourceOutput.down = {1, 3};
 
-        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::down, resource_, drillProto_);
+        TestSetupResource(world_, {1, 1}, resource_, 100);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::down, drill_);
 
         // Drill's output is current uninitialized
 

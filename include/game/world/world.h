@@ -11,7 +11,9 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
+#include "core/dvector.h"
 #include "game/world/chunk.h"
+#include "game/world/logic_group.h"
 #include "game/world/update_dispatcher.h"
 
 namespace jactorio::proto
@@ -25,15 +27,40 @@ namespace jactorio::proto
 
 namespace jactorio::game
 {
+    /// Represents entity registered for logic updates
+    struct LogicObject
+    {
+        data::SerialProtoPtr<const proto::FrameworkBase> prototype  = nullptr;
+        data::SerialUniqueDataPtr<proto::UniqueDataBase> uniqueData = nullptr;
+        WorldCoord coord;
+
+        CEREAL_SERIALIZE(archive) {
+            archive(prototype, uniqueData, coord);
+        }
+
+        friend bool operator==(const LogicObject& lhs, const LogicObject& rhs) {
+            return std::tie(lhs.prototype, lhs.uniqueData, lhs.coord) ==
+                std::tie(rhs.prototype, rhs.uniqueData, rhs.coord);
+        }
+
+        friend bool operator!=(const LogicObject& lhs, const LogicObject& rhs) {
+            return !(lhs == rhs);
+        }
+    };
+
     /// Stores all data for a world
     class World
     {
-        using LogicChunkContainerT       = std::vector<Chunk*>;
+        using LogicListT                 = std::vector<LogicObject>;
         using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
 
-    public:
-        static constexpr auto kChunkWidth = Chunk::kChunkWidth;
+        /// Format: | 0 1 2 | 0 1 2 |
+        ///         <1 tile >
+        /// 0 1 2 are the different layers, layer 0 first
+        /// Kept contiguous for rendering cache locality
+        using TexCoordIdArrayT = std::array<SpriteTexCoordIndexT, Chunk::kChunkArea * kTileLayerCount>;
 
+    public:
         static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis coord);
         static ChunkCoord WorldCToChunkC(const WorldCoord& coord);
         /// Chunk coord -> World coord at first tile of chunk
@@ -46,27 +73,6 @@ namespace jactorio::game
 
         // World access
 
-        World()  = default;
-        ~World() = default;
-
-        World(const World& other);
-        World(World&& other) noexcept = default;
-
-        World& operator=(World other) {
-            swap(*this, other);
-            return *this;
-        }
-
-        friend void swap(World& lhs, World& rhs) noexcept {
-            using std::swap;
-            swap(lhs.updateDispatcher, rhs.updateDispatcher);
-            swap(lhs.worldChunks_, rhs.worldChunks_);
-            swap(lhs.logicChunks_, rhs.logicChunks_);
-            swap(lhs.worldGenSeed_, rhs.worldGenSeed_);
-            swap(lhs.worldGenChunks_, rhs.worldGenChunks_);
-        }
-
-
         /// Creates chunk
         /// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
         /// \return Added chunk
@@ -75,6 +81,25 @@ namespace jactorio::game
             const auto& [it, success] = worldChunks_.emplace(
                 std::piecewise_construct, std::make_tuple(c_coord.x, c_coord.y), std::make_tuple(c_coord, args...));
             assert(success); // Attempted to insert at already existent location
+
+            /// Ensures there is an element available for provided coordinate axis
+            auto fill_to_axis = [](auto& dvector, const ChunkCoordAxis coord_axis) {
+                if (coord_axis < 0) {
+                    dvector.reserve(-coord_axis * 2); // Avoid unnecessary resize if short on capacity
+                    while (dvector.size_front() < -coord_axis) {
+                        dvector.emplace_front();
+                    }
+                }
+                else {
+                    dvector.reserve((coord_axis + 1) * 2); // index 0 counts as element
+                    while (dvector.size_back() < coord_axis + 1) {
+                        dvector.emplace_back();
+                    }
+                }
+            };
+
+            fill_to_axis(chunkTexCoordIds_, c_coord.y);
+            fill_to_axis(chunkTexCoordIds_[c_coord.y], c_coord.x);
 
             return it->second;
         }
@@ -113,7 +138,49 @@ namespace jactorio::game
 
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(WorldCoord coord, TileLayer tlayer) const;
+        J_NODISCARD const ChunkTile* GetTile(const WorldCoord& coord, TileLayer tlayer) const;
+
+
+        // Rendering methods
+
+
+        /// \return First: Pointer to contiguous tex coord ids, starting at first tile of requested chunk,
+        /// increments per tile right then down, then next chunk first tile
+        /// \return Second: Number of chunks that can be read from the pointer
+        J_NODISCARD std::pair<SpriteTexCoordIndexT*, int> GetChunkTexCoordIds(const ChunkCoord& c_coord) noexcept;
+
+        /// \return First: Pointer to contiguous tex coord ids, starting at first tile of requested chunk,
+        /// increments per tile right then down, then next chunk first tile
+        /// \return Second: Number of chunks that can be read from the pointer
+        J_NODISCARD std::pair<const SpriteTexCoordIndexT*, int> GetChunkTexCoordIds(
+            const ChunkCoord& c_coord) const noexcept;
+
+
+        /// \return tex coord id at given coord and layer
+        J_NODISCARD SpriteTexCoordIndexT GetTexCoordId(const WorldCoord& coord, TileLayer layer) const noexcept;
+
+        /// Sets tex coord id for given world coord at layer
+        void SetTexCoordId(const WorldCoord& coord, TileLayer layer, SpriteTexCoordIndexT id) noexcept;
+
+        /// Sets tex coord id for given chunk coord, chunk tile coord at layer
+        void SetTexCoordId(const ChunkCoord& c_coord,
+                           const ChunkTileCoord& ct_coord,
+                           TileLayer layer,
+                           SpriteTexCoordIndexT id) noexcept;
+
+        /// Enables animation for multi-tile(if exists) at tile layer at coord
+        /// - Uses animation offset from TileRenderer
+        /// - All animations are enabled by default
+        void EnableAnimation(const WorldCoord& coord, TileLayer tlayer) noexcept;
+        /// Enables animation for multi-tile(if exists) at tile layer at coord
+        /// - All animations are enabled by default
+        void EnableAnimation(WorldCoord coord, TileLayer tlayer, SpriteTexCoordIndexT animation_offset) noexcept;
+
+        /// Disables animation for multi-tile(if exists) at tile layer at coord
+        /// - Uses animation offset from TileRenderer
+        void DisableAnimation(const WorldCoord& coord, TileLayer tlayer) noexcept;
+        /// Disables animation for multi-tile(if exists) at tile layer at coord
+        void DisableAnimation(WorldCoord coord, TileLayer tlayer, SpriteTexCoordIndexT animation_offset) noexcept;
 
 
         // ======================================================================
@@ -121,7 +188,7 @@ namespace jactorio::game
 
         /// Determines if entity of given dimensions can be placed at specified coord
         /// \return true if a entity with the specified dimensions can be placed at coord
-        J_NODISCARD bool PlaceLocationValid(const WorldCoord& coord, proto::FWorldObject::Dimension dimensions) const;
+        J_NODISCARD bool PlaceLocationValid(const WorldCoord& coord, Dimension dimensions) const;
 
         /// Places entity at coord
         /// \return true if placed successfully
@@ -133,27 +200,16 @@ namespace jactorio::game
 
 
         // ==============================================================
-        // Logic chunk
+        // Logic updates
 
-        /// Adds a tile at coordinates to be considered for logic updates
+        /// Adds a tile layer at tlayer at coord to group to be considered for logic updates
         void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
-        /// Removes a tile at coordinates to be considered for logic updates
-        /// w/ custom comparison func to remove
-        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTile*)>& pred);
-
-        /// Removes a tile at coordinates to be considered for logic updates
+        /// Removes a group at tlayer at coord from being considered for logic updates
         void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
-
-        /// Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
-        /// a reference to the existing one will be returned
-        /// \param chunk The chunk this logic chunk is associated with
-        void LogicAddChunk(Chunk& chunk);
-
-        /// Returns all the chunks which require logic updates
-        J_NODISCARD LogicChunkContainerT& LogicGetChunks();
-        J_NODISCARD const LogicChunkContainerT& LogicGetChunks() const;
+        J_NODISCARD LogicListT& LogicGet(LogicGroup group);
+        J_NODISCARD const LogicListT& LogicGet(LogicGroup group) const;
 
         // ======================================================================
         // World generation
@@ -198,20 +254,10 @@ namespace jactorio::game
         void DeserializePostProcess();
 
 
-        CEREAL_LOAD(archive) {
-            SerialLogicChunkContainerT logic_chunks;
-            archive(updateDispatcher, worldChunks_, worldGenSeed_, logic_chunks);
-
-            logicChunks_.clear();
-
-            FromSerializeLogicChunkContainer(logic_chunks);
+        CEREAL_SERIALIZE(archive) {
+            // NOTE: Unique data is only available after deserializing worldChunks_
+            archive(updateDispatcher, chunkTexCoordIds_, worldChunks_, logicLists_, worldGenSeed_);
         }
-
-        CEREAL_SAVE(archive) {
-            auto logic_chunks = ToSerializeLogicChunkContainer();
-            archive(updateDispatcher, worldChunks_, worldGenSeed_, logic_chunks);
-        }
-
 
         UpdateDispatcher updateDispatcher;
 
@@ -219,17 +265,16 @@ namespace jactorio::game
         using ChunkKey    = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
         using ChunkHasher = hash<ChunkKey>;
 
+        DVector<DVector<TexCoordIdArrayT>> chunkTexCoordIds_;
+
         /// Chunks increment heading right and down
         std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
-        LogicChunkContainerT logicChunks_;
+        std::array<LogicListT, kLogicGroupCount> logicLists_;
 
 
         int worldGenSeed_ = 1001;
         /// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
         mutable std::set<ChunkKey> worldGenChunks_;
-
-        J_NODISCARD SerialLogicChunkContainerT ToSerializeLogicChunkContainer() const;
-        void FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic);
     };
 } // namespace jactorio::game
 

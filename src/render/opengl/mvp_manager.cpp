@@ -2,8 +2,11 @@
 
 #include "render/opengl/mvp_manager.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "core/convert.h"
 #include "core/logger.h"
+#include "render/opengl/error.h"
 #include "render/opengl/shader.h"
 
 using namespace jactorio;
@@ -16,7 +19,7 @@ void render::MvpManager::SetMvpUniformLocation(const int location) {
 
 void render::MvpManager::UpdateShaderMvp() {
     CalculateMvpMatrix();
-    Shader::SetUniformMat4F(mvpUniformLocation_, mvpMatrix_);
+    DEBUG_OPENGL_CALL(glUniformMatrix4fv(mvpUniformLocation_, 1, GL_FALSE, &mvpMatrix_[0][0]));
 }
 
 const glm::mat4& render::MvpManager::GetMvpMatrix() const {
@@ -69,23 +72,23 @@ void render::MvpManager::UpdateViewTransform() {
 
 glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
                                            const unsigned window_height,
-                                           const float offset) {
-    // Calculate aspect ratio scale based on "larger / smaller"
-    float x_zoom_ratio = 1.f;
-    float y_zoom_ratio = 1.f;
+                                           const float pixel_zoom) {
+    auto x_scale = 1.f;
+    auto y_scale = 1.f;
     if (window_width > window_height) {
-        x_zoom_ratio = SafeCast<float>(window_width) / SafeCast<float>(window_height);
+        x_scale = SafeCast<float>(window_width) / SafeCast<float>(window_height);
     }
     else {
-        y_zoom_ratio = SafeCast<float>(window_height) / SafeCast<float>(window_width);
+        y_scale = SafeCast<float>(window_height) / SafeCast<float>(window_width);
     }
 
-    return glm::ortho(offset * x_zoom_ratio,
-                      SafeCast<float>(window_width) - offset * x_zoom_ratio,
+    const auto left  = pixel_zoom * x_scale;
+    const auto right = SafeCast<float>(window_width) - pixel_zoom * x_scale;
+    assert(left < right); // Space was flipped horizontally
 
-                      SafeCast<float>(window_height) - offset * y_zoom_ratio,
-                      offset * y_zoom_ratio,
+    const auto top    = pixel_zoom * y_scale;
+    const auto bottom = SafeCast<float>(window_height) - pixel_zoom * y_scale;
+    assert(top < bottom); // Space was flipped vertically
 
-                      -1.f,
-                      1.f);
+    return glm::ortho(left, right, bottom, top, -1.f, 1.f);
 }

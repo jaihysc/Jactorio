@@ -19,7 +19,13 @@ namespace jactorio::render
     /// Manages a window in which the user sees
     class DisplayWindow
     {
+        static constexpr int kRequiredGlMajor = 4;
+        static constexpr int kRequiredGlMinor = 1;
+
     public:
+        DisplayWindow() = default;
+        ~DisplayWindow();
+
         /// Creates openGL context and window
         /// \exception Data_exception if logo cannot be found
         /// \return Non 0 if error occurred

@@ -126,10 +126,6 @@ namespace jactorio::game
     /// Conveyor shrinks 1 tile shorter, the tile after the current head becomes the head
     void ConveyorShortenFront(ConveyorStruct& con_struct);
 
-    /// Removes conveyor at coord to be considered for logic updates
-    /// \param logic_group Logic group of conveyor
-    void ConveyorLogicRemove(World& world, const WorldCoord& coord, ConveyorStruct& con_struct, LogicGroup logic_group);
-
     /// Renumbers structIndex for tiles along a conveyor segment at provided coord
     /// \param start_index Index to start renumbering at, renumber stops when index >= con_struct length
     void ConveyorRenumber(World& world, WorldCoord coord, int start_index = 0);
@@ -140,9 +136,8 @@ namespace jactorio::game
     /// \param con_struct_p Structure to change to
     void ConveyorChangeStructure(World& world, WorldCoord coord, const std::shared_ptr<ConveyorStruct>& con_struct_p);
 
-    /// Calculates line orientation for conveyor data at coord with provided direction
-    /// Direction is provided separately to allow use when there is no conveyor data at coord
-    /// A tile is deemed to not have a conveyor if its structure is nullptr
+    /// Calculates line orientation a conveyor should have a at coord by looking at 4 neighbors
+    /// A neighboring tile is deemed to not have a conveyor if its structure is nullptr
     J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const World& world,
                                                              const WorldCoord& coord,
                                                              Orientation direction);

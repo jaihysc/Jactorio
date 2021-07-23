@@ -68,7 +68,7 @@ void gui::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + kInventorySlotPadding); // Allows consecutive begins to line up
 }
 
-void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
+void gui::GuiItemSlots::DrawSlot(const SpriteTexCoordIndexT tex_coord_id,
                                  const uint16_t item_count,
                                  const DrawSlotCallbackT& callback) const {
     const float original_x_offset = ImGui::GetCursorPosX();
@@ -94,7 +94,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
 
     ImGui::SetCursorPos({original_x_offset, original_y_offset});
 
-    if (sprite_id == 0) {
+    if (tex_coord_id == 0) {
         // Blank button
         const auto button_width  = SafeCast<float>(kInventorySlotWidth * scale);
         const auto padding_width = kInventorySlotPadding * (scale - 1);
@@ -111,7 +111,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
 
         const auto& menu_data = context_->menuData;
 
-        const auto& uv = menu_data.spritePositions.at(sprite_id);
+        const auto& uv = menu_data.spritePositions[tex_coord_id];
         ImGui::ImageButton(reinterpret_cast<void*>(menu_data.texId),
                            {SafeCast<float>(button_size), SafeCast<float>(button_size)},
                            {uv.topLeft.x, uv.topLeft.y},
@@ -128,12 +128,12 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
     }
 }
 
-void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id, const DrawSlotCallbackT& callback) const {
-    DrawSlot(sprite_id, 0, callback);
+void gui::GuiItemSlots::DrawSlot(const SpriteTexCoordIndexT tex_coord_id, const DrawSlotCallbackT& callback) const {
+    DrawSlot(tex_coord_id, 0, callback);
 }
 
 void gui::GuiItemSlots::DrawSlot(const game::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
-    DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
+    DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->texCoordId, item_stack.count, callback);
 }
 
 void gui::GuiItemSlots::DrawBackingButton() const {

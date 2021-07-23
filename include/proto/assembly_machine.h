@@ -63,11 +63,6 @@ namespace jactorio::proto
         /// Original crafting time / assemblySpeed = new crafting time
         PYTHON_PROP_REF_I(ProtoFloatT, assemblySpeed, 1.);
 
-        // ======================================================================
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                   GameTickT game_tick) const override;
-
 
         bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
 
@@ -83,15 +78,13 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override;
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override;
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& proto) const override {
+            HealthEntity::PostLoadValidate(proto);
+
             J_PROTO_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };

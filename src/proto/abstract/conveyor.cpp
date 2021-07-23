@@ -14,80 +14,20 @@ using namespace jactorio;
 
 static constexpr game::LogicGroup kConveyorLogicGroup = game::LogicGroup::conveyor;
 
-Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orientation) {
-    switch (line_orientation) {
-    case LineOrientation::up:
-    case LineOrientation::right_up:
-    case LineOrientation::left_up:
-        return Orientation::up;
-
-    case LineOrientation::right:
-    case LineOrientation::up_right:
-    case LineOrientation::down_right:
-        return Orientation::right;
-
-    case LineOrientation::down:
-    case LineOrientation::right_down:
-    case LineOrientation::left_down:
-        return Orientation::down;
-
-    case LineOrientation::left:
-    case LineOrientation::up_left:
-    case LineOrientation::down_left:
-        return Orientation::left;
-    }
-
-    assert(false); // Missing switch case
-    return Orientation::up;
+SpriteTexCoordIndexT proto::Conveyor::OnGetTexCoordId(const game::World& world,
+                                                      const WorldCoord& coord,
+                                                      const Orientation orientation) const {
+    return sprite->texCoordId + static_cast<int>(ConveyorCalcLineOrien(world, coord, orientation));
 }
 
-// ======================================================================
-// Game events
-
-
-void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
-                                        const SpriteUvCoordsT& uv_coords,
-                                        const Position2<float>& pixel_offset,
-                                        const UniqueDataBase* unique_data) const {
-    const auto& line_data = *SafeCast<const ConveyorData*>(unique_data);
-
-    // Only draw for the head of segments
-    if (line_data.structure->terminationType == game::ConveyorStruct::TerminationType::straight &&
-        line_data.structIndex != 0)
-        return;
-
-    if (line_data.structure->terminationType != game::ConveyorStruct::TerminationType::straight &&
-        line_data.structIndex != 1)
-        return;
-
-    DrawConveyorSegmentItems(layer, uv_coords, pixel_offset, *line_data.structure);
-}
-
-SpriteSetT proto::Conveyor::OnRGetSpriteSet(const Orientation orientation,
-                                            game::World& world,
-                                            const WorldCoord& coord) const {
-    return static_cast<uint16_t>(ConveyorCalcLineOrien(world, coord, orientation));
-}
-
-SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                const GameTickT game_tick) const {
-    return AllOfSet(*sprite, game_tick);
-}
-
-
-// ======================================================================
 // Build / Remove / Neighbor update
 
 void proto::Conveyor::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              const game::TileLayer tlayer,
                               const Orientation orientation) const {
-
-    auto& con_data = world.GetTile(coord, tlayer)->MakeUniqueData<ConveyorData>();
+    auto& con_data = world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<ConveyorData>();
     BuildConveyor(world, coord, con_data, orientation, kConveyorLogicGroup);
-
-    con_data.set = static_cast<uint16_t>(con_data.lOrien);
 }
 
 void proto::Conveyor::OnNeighborUpdate(game::World& world,
@@ -108,10 +48,7 @@ void proto::Conveyor::OnNeighborUpdate(game::World& world,
     ConveyorUpdateNeighborTermination(world, receive_coord);
 }
 
-void proto::Conveyor::OnRemove(game::World& world,
-                               game::Logic& /*logic*/,
-                               const WorldCoord& coord,
-                               game::TileLayer /*tlayer*/) const {
+void proto::Conveyor::OnRemove(game::World& world, game::Logic& /*logic*/, const WorldCoord& coord) const {
     RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 
@@ -127,12 +64,10 @@ void proto::Conveyor::PostLoad() {
     speed = LineDistT(speedFloat);
 }
 
-void proto::Conveyor::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
+void proto::Conveyor::PostLoadValidate(const data::PrototypeManager& proto) const {
+    HealthEntity::PostLoadValidate(proto);
+
     J_PROTO_ASSERT(speedFloat >= 0.001, "Conveyor speed below minimum 0.001");
     // Cannot exceed item_width because of limitations in the logic
     J_PROTO_ASSERT(speedFloat < 0.25, "Conveyor speed equal or above maximum of 0.25");
-}
-
-void proto::Conveyor::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 }

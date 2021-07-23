@@ -11,19 +11,16 @@
 
 namespace jactorio::proto
 {
-    struct FWorldObjectData : UniqueDataBase, IRenderableData
+    struct FWorldObjectData : UniqueDataBase
     {
         CEREAL_SERIALIZE(archive) {
-            archive(cereal::base_class<UniqueDataBase>(this), cereal::base_class<IRenderableData>(this));
+            archive(cereal::base_class<UniqueDataBase>(this));
         }
     };
 
     class FWorldObject : public FrameworkBase, public IRenderable, public ISerializable
     {
     public:
-        using DimensionAxis = uint8_t;
-        using Dimension     = Position2<DimensionAxis>;
-
         /// If true, swaps width and height when orientation is left or right in Getters
         PYTHON_PROP_REF_I(bool, rotateDimensions, true);
 
@@ -58,6 +55,12 @@ namespace jactorio::proto
             SetHeight(dimension.y);
             return this;
         }
+
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
+
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
     private:
         /// Number of tiles which object occupies

@@ -5,9 +5,14 @@
 #pragma once
 
 #include <array>
+#include <functional>
 
 #include "jactorio.h"
 
+namespace jactorio::render
+{
+    class RenderController;
+}
 namespace jactorio::game
 {
     class GameController;
@@ -37,7 +42,24 @@ namespace jactorio::game
 
     struct PlayerAction
     {
-        using Executor = void (*)(GameController& game_controller);
+        struct Context
+        {
+            std::reference_wrapper<GameController> gameController;
+            /// Handle to renderer, since initialization of the renderer is delayed
+            render::RenderController** hRenderController = nullptr;
+
+            // Hide implementation details on how the members are obtained
+            // Cannot be called GameController on GCC since that is already a class name
+            J_NODISCARD GameController& GController() const noexcept {
+                return gameController.get();
+            }
+            J_NODISCARD render::RenderController& RController() const noexcept {
+                assert(hRenderController != nullptr);
+                assert(*hRenderController != nullptr);
+                return **hRenderController;
+            }
+        };
+        using Executor = void (*)(const Context& c);
 
 #define J_CREATE_ACTION(enum_name__, executor__) enum_name__,
         enum class Type
@@ -56,26 +78,26 @@ namespace jactorio::game
     private:
         // Executors for the actions
 
-        static void PlayerMoveUp(GameController& game_controller);
-        static void PlayerMoveRight(GameController& game_controller);
-        static void PlayerMoveDown(GameController& game_controller);
-        static void PlayerMoveLeft(GameController& game_controller);
+        static void PlayerMoveUp(const Context& c);
+        static void PlayerMoveRight(const Context& c);
+        static void PlayerMoveDown(const Context& c);
+        static void PlayerMoveLeft(const Context& c);
 
-        static void DeselectHeldItem(GameController& game_controller);
+        static void DeselectHeldItem(const Context& c);
 
-        static void PlaceEntity(GameController& game_controller);
-        static void ActivateTile(GameController& game_controller);
-        static void PickupOrMineEntity(GameController& game_controller);
+        static void PlaceEntity(const Context& c);
+        static void ActivateTile(const Context& c);
+        static void PickupOrMineEntity(const Context& c);
 
-        static void RotateEntityClockwise(GameController& game_controller);
-        static void RotateEntityCounterClockwise(GameController& game_controller);
+        static void RotateEntityClockwise(const Context& c);
+        static void RotateEntityCounterClockwise(const Context& c);
 
-        static void ToggleMainMenu(GameController& game_controller);
-        static void ToggleDebugMenu(GameController& game_controller);
-        static void ToggleCharacterMenu(GameController& game_controller);
+        static void ToggleMainMenu(const Context& c);
+        static void ToggleDebugMenu(const Context& c);
+        static void ToggleCharacterMenu(const Context& c);
 
         /// For test use only, sets player position to -100, 120
-        static void ActionTest(GameController& game_controller);
+        static void ActionTest(const Context& c);
 
 
 #define J_CREATE_ACTION(enum_name__, executor__) [](auto& game_controller) { executor__(game_controller); },

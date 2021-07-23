@@ -16,9 +16,9 @@ namespace jactorio
 
 namespace jactorio::render
 {
-    class Renderer;
+    class TileRenderer;
 
-    void ChangeWindowSize(Renderer& renderer,
+    void ChangeWindowSize(TileRenderer& renderer,
                           game::EventData& event,
                           unsigned int window_size_x,
                           unsigned int window_size_y);

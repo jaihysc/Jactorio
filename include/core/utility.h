@@ -25,6 +25,9 @@ namespace jactorio
 
     /// If str is less than target_len, it is padded to target_len with char padding
     J_NODISCARD std::string StrMatchLen(std::string str, std::size_t target_len, char padding = ' ');
+
+    /// Given subject, searched for search, replaces it with replace
+    void StrReplaceInPlace(std::string& subject, const std::string& search, const std::string& replace);
 } // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_UTILITY_H

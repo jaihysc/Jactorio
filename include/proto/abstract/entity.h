@@ -37,11 +37,6 @@ namespace jactorio::proto
         Entity& operator=(Entity&& other) noexcept = default;
 
 
-        /// Sprite drawn when placed in the world
-        /// \remark For rotatable entities, this serves as the north sprite if multiple sprites are used
-        PYTHON_PROP_I(Sprite*, sprite, nullptr);
-
-
         /// Can be rotated by player?
         /// If false, also sets rotateDimensions to false
         PYTHON_PROP_REF_I(bool, rotatable, false);
@@ -64,36 +59,18 @@ namespace jactorio::proto
         void SetLocalizedDescription(const std::string& localized_description) override;
 
 
-        // ======================================================================
         // Renderer events
-
-        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-            return sprite;
-        }
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const override {
-            return 0;
-        }
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
-            return 0;
-        }
 
         bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
-        // ======================================================================
         // Game events
 
         /// Entity was build in the world
         virtual void OnBuild(game::World& world,
                              game::Logic& logic,
                              const WorldCoord& coord,
-                             game::TileLayer tlayer,
                              Orientation orientation) const = 0;
 
         /// Determines if prototype can be built at coord
@@ -108,10 +85,7 @@ namespace jactorio::proto
 
 
         /// Entity was picked up from a built state, called BEFORE the entity has been removed
-        virtual void OnRemove(game::World& world,
-                              game::Logic& logic,
-                              const WorldCoord& coord,
-                              game::TileLayer tlayer) const = 0;
+        virtual void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const = 0;
 
         /// A neighbor of this prototype in the world was updated
         /// \param emit_coords Coordinates of the prototype which is EMITTING the update
@@ -137,12 +111,16 @@ namespace jactorio::proto
             assert(false); // Unimplemented
         }
 
+        /// \param coord Top left coordinate
+        /// \param tile Tile in world at coord
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}
 
 
         void PostLoad() override;
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
+
+        void SetupSprite() override;
 
     private:
         /// Item when entity is picked up

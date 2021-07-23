@@ -19,7 +19,7 @@
 #include "gui/menus.h"
 #include "proto/label.h"
 #include "proto/localization.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -27,7 +27,7 @@ using namespace jactorio;
 J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
     constexpr auto min_width = 150;
 
-    const auto calculated_width = SafeCast<float>(render::Renderer::GetWindowWidth()) * fraction;
+    const auto calculated_width = SafeCast<float>(render::TileRenderer::GetWindowWidth()) * fraction;
     if (calculated_width < min_width)
         return min_width;
 
@@ -38,7 +38,7 @@ J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
 J_NODISCARD static float GetMainMenuHeight(const float fraction = 1.f / 2) {
     constexpr auto min_height = 200;
 
-    const auto calculated_height = SafeCast<float>(render::Renderer::GetWindowHeight()) * fraction;
+    const auto calculated_height = SafeCast<float>(render::TileRenderer::GetWindowHeight()) * fraction;
     if (calculated_height < min_height)
         return min_height;
 

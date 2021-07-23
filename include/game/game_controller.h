@@ -24,6 +24,10 @@ namespace jactorio::game
         static constexpr auto kSettingsPath = "settings.json";
 
     public:
+        /// \param h_render_controller handle to render controller
+        explicit GameController(render::RenderController** h_render_controller)
+            : keybindManager{input.key, {*this, h_render_controller}} {}
+
         /// Clears worlds, logic, player
         void ResetGame();
 
@@ -51,7 +55,8 @@ namespace jactorio::game
 
         // Serialized settings
 
-        KeybindManager keybindManager{input.key, *this};
+        // Initializing this is a big pain in the rear because of what it requires
+        KeybindManager keybindManager;
         std::string localIdentifier = "en";
 
         // Serialized per game

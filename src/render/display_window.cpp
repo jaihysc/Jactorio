@@ -16,7 +16,7 @@
 #include "gui/imgui_manager.h"
 #include "proto/sprite.h"
 #include "render/render_loop.h"
-#include "render/renderer.h"
+#include "render/tile_renderer.h"
 
 using namespace jactorio;
 
@@ -50,6 +50,12 @@ void render::DisplayWindow::SetFullscreen(const bool desired_fullscreen) {
 }
 
 
+render::DisplayWindow::~DisplayWindow() {
+    if (glContextActive_) {
+        Terminate();
+    }
+}
+
 int render::DisplayWindow::Init(const int width, const int height) {
     LOG_MESSAGE(info, "Using SDL2 for window creation");
 
@@ -60,6 +66,10 @@ int render::DisplayWindow::Init(const int width, const int height) {
         LOG_MESSAGE(critical, "SDL initialization failed");
         goto sdl_error;
     }
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, kRequiredGlMajor);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, kRequiredGlMinor);
 
     // Window initialization
     sdlWindow_ = SDL_CreateWindow((std::string("Jactorio ") + CConfig::kVersion).c_str(), // window title
@@ -85,11 +95,11 @@ int render::DisplayWindow::Init(const int width, const int height) {
         const auto icon = proto::Sprite("core/graphics/jactorio-64-64.png"); // <-- This will throw if it fails
 
         // Convert the loaded Image into a surface for setting the icon
-        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(const_cast<unsigned char*>(icon.GetSpritePtr()),
-                                                        icon.GetWidth(),
-                                                        icon.GetHeight(),
+        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(icon.GetImage().buffer,
+                                                        icon.GetImage().width,
+                                                        icon.GetImage().height,
                                                         32,
-                                                        sizeof(unsigned char) * 4 * icon.GetWidth(),
+                                                        sizeof(unsigned char) * 4 * icon.GetImage().width,
                                                         0x000000ff,
                                                         0x0000ff00,
                                                         0x00ff0000,
@@ -172,7 +182,7 @@ bool render::DisplayWindow::WindowContextActive() const {
 // ======================================================================
 // Events
 
-void HandleWindowEvent(render::Renderer& renderer, game::EventData& event, const SDL_Event& sdl_event) {
+void HandleWindowEvent(render::TileRenderer& renderer, game::EventData& event, const SDL_Event& sdl_event) {
     switch (sdl_event.window.event) {
     case SDL_WINDOWEVENT_RESIZED:
     case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -204,7 +214,7 @@ void HandleWindowEvent(render::Renderer& renderer, game::EventData& event, const
 void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL_Event& sdl_event) const {
     switch (sdl_event.type) {
     case SDL_WINDOWEVENT:
-        HandleWindowEvent(*common.renderer, common.gameController.event, sdl_event);
+        HandleWindowEvent(common.renderController->renderer, common.gameController.event, sdl_event);
         break;
 
     case SDL_QUIT:
@@ -239,8 +249,19 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         game::MouseSelection::SetCursor({sdl_event.motion.x, sdl_event.motion.y});
         break;
     case SDL_MOUSEWHEEL:
-        if (!gui::input_mouse_captured)
-            common.renderer->tileProjectionMatrixOffset += SafeCast<float>(sdl_event.wheel.y * 10);
+        if (!gui::input_mouse_captured) {
+            constexpr auto near_zoom_sensitivity = 0.01f;
+            constexpr auto far_zoom_sensitivity  = 0.04f;
+            constexpr auto near_threshold        = 0.85f;
+
+            const auto current_zoom = common.renderController->renderer.GetZoom();
+            auto sensitivity        = far_zoom_sensitivity;
+            if (current_zoom >= near_threshold) {
+                sensitivity = near_zoom_sensitivity;
+            }
+
+            common.renderController->renderer.SetZoom(current_zoom + SafeCast<float>(sdl_event.wheel.y) * sensitivity);
+        }
         break;
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:

@@ -8,14 +8,17 @@ def addBelt(name, iconSpritePath, worldSpritePath):
                 .sprite(
                     j.Sprite()
                         .load(iconSpritePath)
+                        .group(j.SpriteGroup.GUI)
                 )
         )
         .sprite(
             j.Sprite()
                 .load(worldSpritePath)
+                .group(j.SpriteGroup.TERRAIN)
                 .frames(16)
                 .sets(20)
                 .trim(16)
+                .strategy(j.FrameGenStrategy.FIRST_FRAMES)
         )
         .speed(0.05)
         .rotatable(True)

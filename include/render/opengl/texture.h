@@ -7,6 +7,7 @@
 #include "jactorio.h"
 
 #include <memory>
+#include <utility>
 
 namespace jactorio::render
 {
@@ -25,10 +26,22 @@ namespace jactorio::render
         Texture(std::shared_ptr<SpriteBufferT> buffer, DimensionT width, DimensionT height);
         ~Texture();
 
-        Texture(const Texture& other)     = delete;
-        Texture(Texture&& other) noexcept = delete;
-        Texture& operator=(const Texture& other) = delete;
-        Texture& operator=(Texture&& other) noexcept = delete;
+        Texture(const Texture& other) = delete;
+        Texture(Texture&& other) noexcept;
+
+        Texture& operator=(Texture other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
+
+        friend void swap(Texture& lhs, Texture& rhs) noexcept {
+            using std::swap;
+            swap(lhs.id_, rhs.id_);
+            swap(lhs.textureBuffer_, rhs.textureBuffer_);
+            swap(lhs.width_, rhs.width_);
+            swap(lhs.height_, rhs.height_);
+        }
 
         /// \exception Renderer_exception Index out of bounds
         void Bind(unsigned int slot = 0) const;
@@ -43,12 +56,11 @@ namespace jactorio::render
         }
 
         J_NODISCARD unsigned int GetId() const {
-            return rendererId_;
+            return id_;
         }
 
     private:
-        static unsigned int boundTextureId_;
-        unsigned int rendererId_;
+        unsigned int id_;
 
         // Image properties
         std::shared_ptr<SpriteBufferT> textureBuffer_;

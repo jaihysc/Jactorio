@@ -8,44 +8,30 @@
 
 using namespace jactorio;
 
-void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
-                                        const SpriteUvCoordsT& uv_coords,
-                                        const Position2<float>& pixel_offset,
-                                        const UniqueDataBase* unique_data) const {
-    DrawInserterArm(layer, uv_coords, pixel_offset, *this, *SafeCast<const InserterData*>(unique_data));
-}
-
-SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
-                                            game::World& /*world*/,
-                                            const WorldCoord& /*coord*/) const {
-    switch (orientation) {
-
-    case Orientation::up:
-        return 0;
-    case Orientation::right:
-        return 1;
-    case Orientation::down:
-        return 2;
-    case Orientation::left:
-        return 3;
-
-    default:;
-        assert(false);
-        break;
-    }
-
-    return 0;
+SpriteTexCoordIndexT proto::Inserter::OnGetTexCoordId(const game::World& /*world*/,
+                                                      const WorldCoord& /*coord*/,
+                                                      const Orientation orientation) const {
+    return sprite->texCoordId + static_cast<int>(orientation);
 }
 
 void proto::Inserter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              const game::TileLayer tlayer,
                               Orientation orientation) const {
-    auto& inserter_data = world.GetTile(coord, tlayer)->MakeUniqueData<InserterData>(orientation);
-    inserter_data.set   = OnRGetSpriteSet(orientation, world, coord);
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<InserterData>(orientation);
 
-    InitPickupDropoff(world, coord, orientation);
+    // Dropoff side
+    {
+        auto emit_coords = GetDropoffCoord(coord, orientation);
+        world.updateDispatcher.Register(coord, emit_coords, *this);
+        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
+    }
+    // Pickup side
+    {
+        auto emit_coords = GetPickupCoord(coord, orientation);
+        world.updateDispatcher.Register(coord, emit_coords, *this);
+        world.UpdateDispatch(emit_coords, UpdateType::place); // Calls own OnTileUpdate
+    }
 }
 
 void proto::Inserter::OnTileUpdate(game::World& world,
@@ -88,13 +74,10 @@ void proto::Inserter::OnTileUpdate(game::World& world,
     }
 }
 
-void proto::Inserter::OnRemove(game::World& world,
-                               game::Logic& /*logic*/,
-                               const WorldCoord& coord,
-                               const game::TileLayer tlayer) const {
+void proto::Inserter::OnRemove(game::World& world, game::Logic& /*logic*/, const WorldCoord& coord) const {
     world.LogicRemove(game::LogicGroup::inserter, coord, game::TileLayer::entity);
 
-    const auto* inserter_data = world.GetTile(coord, tlayer)->GetUniqueData<InserterData>();
+    const auto* inserter_data = world.GetTile(coord, game::TileLayer::entity)->GetUniqueData<InserterData>();
 
     world.updateDispatcher.Unregister({coord, GetDropoffCoord(coord, inserter_data->orientation)});
     world.updateDispatcher.Unregister({coord, GetPickupCoord(coord, inserter_data->orientation)});
@@ -104,17 +87,20 @@ void proto::Inserter::OnDeserialize(game::World& world, const WorldCoord& coord,
     auto* inserter_data = tile.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
-    InitPickupDropoff(world, coord, inserter_data->orientation);
+    const auto orientation = inserter_data->orientation;
+    world.UpdateDispatch(GetDropoffCoord(coord, orientation), UpdateType::place); // Calls own OnTileUpdate
+    world.UpdateDispatch(GetPickupCoord(coord, orientation), UpdateType::place);
 }
 
-void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
+void proto::Inserter::PostLoadValidate(const data::PrototypeManager& proto) const {
+    HealthEntity::PostLoadValidate(proto);
+
     J_PROTO_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
     J_PROTO_ASSERT(armSprite != nullptr, "Arm sprite not provided");
     J_PROTO_ASSERT(handSprite != nullptr, "Hand sprite not provided");
-}
 
-void proto::Inserter::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+    J_PROTO_ASSERT(armSprite->group == Sprite::SpriteGroup::gui, "Arm sprite must be in group GUI");
+    J_PROTO_ASSERT(handSprite->group == Sprite::SpriteGroup::gui, "Hand sprite must be in group TERRAIN");
 }
 
 // ======================================================================
@@ -125,21 +111,4 @@ WorldCoord proto::Inserter::GetDropoffCoord(const WorldCoord& coord, const Orien
 
 WorldCoord proto::Inserter::GetPickupCoord(const WorldCoord& coord, const Orientation orientation) const {
     return coord.Incremented(orientation, this->tileReach * -1);
-}
-
-void proto::Inserter::InitPickupDropoff(game::World& world,
-                                        const WorldCoord& coord,
-                                        const Orientation orientation) const {
-    // Dropoff side
-    {
-        auto emit_coords = GetDropoffCoord(coord, orientation);
-        world.updateDispatcher.Register(coord, emit_coords, *this);
-        world.UpdateDispatch(emit_coords, UpdateType::place);
-    }
-    // Pickup side
-    {
-        auto emit_coords = GetPickupCoord(coord, orientation);
-        world.updateDispatcher.Register(coord, emit_coords, *this);
-        world.UpdateDispatch(emit_coords, UpdateType::place);
-    }
 }

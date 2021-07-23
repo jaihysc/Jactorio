@@ -8,9 +8,9 @@
 namespace jactorio::game
 {
     TEST(PlayerAction, GetExecutor) {
-        GameController game_controller;
+        GameController game_controller{nullptr};
 
-        PlayerAction::GetExecutor(PlayerAction::Type::test)(game_controller);
+        PlayerAction::GetExecutor(PlayerAction::Type::test)({game_controller});
 
         EXPECT_FLOAT_EQ(game_controller.player.world.GetPosition().x, -100.f);
         EXPECT_FLOAT_EQ(game_controller.player.world.GetPosition().y, 120.f);

@@ -13,7 +13,7 @@ namespace jactorio
 {
     /// Performs cast, data may be lost
     template <typename TTarget, typename TOriginal>
-    J_NODISCARD constexpr TTarget LossyCast(
+    J_NODISCARD FORCEINLINE constexpr TTarget LossyCast(
         TOriginal val,
         std::enable_if_t<std::is_integral_v<TOriginal> || std::is_floating_point_v<TOriginal>, int> = 0,
         std::enable_if_t<std::is_integral_v<TTarget> || std::is_floating_point_v<TTarget>, int>     = 0) noexcept {
@@ -24,7 +24,7 @@ namespace jactorio
     /// Performs cast ensuring no data is lost
     /// \remark Same behavior as static cast if assertions are disabled
     template <typename TTargetInt, typename TOriginalInt>
-    J_NODISCARD constexpr TTargetInt SafeCast(
+    J_NODISCARD FORCEINLINE constexpr TTargetInt SafeCast(
         TOriginalInt val,
         std::enable_if_t<std::is_integral_v<TOriginalInt>, int>                                       = 0,
         std::enable_if_t<std::is_integral_v<TTargetInt> || std::is_floating_point_v<TTargetInt>, int> = 0) noexcept {
@@ -43,14 +43,14 @@ namespace jactorio
     }
 
     template <typename TyLeft, typename TyRight>
-    void SafeCastAssign(TyLeft& l_val, TyRight&& r_val) {
+    FORCEINLINE void SafeCastAssign(TyLeft& l_val, TyRight&& r_val) {
         l_val = SafeCast<std::remove_reference_t<decltype(l_val)>>(r_val);
     }
 
     /// Performs downcast of pointer safely
     /// \remark Same behavior as static cast if non debug
     template <typename TTarget, typename TOriginal>
-    J_NODISCARD constexpr auto* SafeCast(
+    J_NODISCARD FORCEINLINE constexpr auto* SafeCast(
         TOriginal* ptr,
         std::enable_if_t<std::is_pointer_v<TTarget> &&                                       //
                              std::is_base_of_v<TOriginal, std::remove_pointer_t<TTarget>> && //
@@ -72,16 +72,16 @@ namespace jactorio
     /// Performs downcast of reference safely
     /// \remark Same behavior as static cast if non debug
     template <typename TTarget, typename TOriginal>
-    J_NODISCARD
+    J_NODISCARD FORCEINLINE
 #ifndef JACTORIO_DEBUG_BUILD
-    constexpr
+        constexpr
 #endif
-    auto& SafeCast(
-        TOriginal& ref,
-        std::enable_if_t<std::is_reference_v<TTarget> &&                                       //
-                             std::is_base_of_v<TOriginal, std::remove_reference_t<TTarget>> && //
-                             std::is_polymorphic_v<TOriginal>,
-                         int> = 0) noexcept {
+        auto&
+        SafeCast(TOriginal& ref,
+                 std::enable_if_t<std::is_reference_v<TTarget> &&                                       //
+                                      std::is_base_of_v<TOriginal, std::remove_reference_t<TTarget>> && //
+                                      std::is_polymorphic_v<TOriginal>,
+                                  int> = 0) noexcept {
 
 #ifdef JACTORIO_DEBUG_BUILD
         try {

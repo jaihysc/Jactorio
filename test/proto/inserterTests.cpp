@@ -37,7 +37,7 @@ namespace jactorio::proto
         EXPECT_DOUBLE_EQ(inserter_data->rotationDegree.getAsDouble(), 180.);
 
         // Does not have both pickup + dropoff, not added
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 0);
     }
 
     TEST_F(InserterTest, FindPickupDropoffOnBuild) {
@@ -66,7 +66,7 @@ namespace jactorio::proto
         world_.UpdateDispatch({1, 1}, UpdateType::place);
 
         EXPECT_TRUE(tile.GetUniqueData<InserterData>()->dropoff.IsInitialized());
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 0);
 
 
         // Pickup
@@ -74,7 +74,7 @@ namespace jactorio::proto
         world_.UpdateDispatch({3, 1}, UpdateType::place);
 
         EXPECT_TRUE(tile.GetUniqueData<InserterData>()->pickup.IsInitialized());
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1); // Added since both are now valid
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 1); // Added since both are now valid
     }
 
     TEST_F(InserterTest, FindPickupDropoffFar) {
@@ -95,7 +95,7 @@ namespace jactorio::proto
         world_.UpdateDispatch({2, 0}, UpdateType::place);
 
         EXPECT_TRUE(tile.GetUniqueData<InserterData>()->dropoff.IsInitialized());
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 0);
 
 
         // Pickup
@@ -103,7 +103,7 @@ namespace jactorio::proto
         world_.UpdateDispatch({2, 4}, UpdateType::place);
 
         EXPECT_TRUE(tile.GetUniqueData<InserterData>()->pickup.IsInitialized());
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1); // Added since both are now valid
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 1); // Added since both are now valid
     }
 
     TEST_F(InserterTest, RemovePickupDropoff) {
@@ -118,7 +118,7 @@ namespace jactorio::proto
 
         TestSetupContainer(world_, {1, 1}, Orientation::up, containerProto_);
         world_.UpdateDispatch({1, 1}, UpdateType::place);
-        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 1);
 
 
         // Removed chest
@@ -132,7 +132,7 @@ namespace jactorio::proto
         EXPECT_FALSE(tile.GetUniqueData<InserterData>()->pickup.IsInitialized());
         EXPECT_FALSE(tile.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 
-        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::inserter).size(), 0);
     }
 
     TEST_F(InserterTest, Serialize) {
@@ -171,5 +171,11 @@ namespace jactorio::proto
 
         EXPECT_TRUE(inserter_data->pickup.IsInitialized());
         EXPECT_TRUE(inserter_data->dropoff.IsInitialized());
+
+        // Was a bug, registering to updateDispatcher twice
+        ASSERT_EQ(world_.updateDispatcher.GetDebugInfo().storedEntries.size(), 2);
+        for (auto& [coord, entries] : world_.updateDispatcher.GetDebugInfo().storedEntries) {
+            EXPECT_EQ(entries.size(), 1);
+        }
     }
 } // namespace jactorio::proto

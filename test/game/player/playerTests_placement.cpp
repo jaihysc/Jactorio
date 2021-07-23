@@ -69,39 +69,39 @@ namespace jactorio::game
         world.EmplaceChunk({0, 0});
 
 
-        auto* tile_base   = world.GetTile({0, 0}, TileLayer::base);
-        auto* tile_entity = world.GetTile({0, 0}, TileLayer::entity);
-
+        auto* tile_base   = world.GetTile({3, 4}, TileLayer::base);
+        auto* tile_entity = world.GetTile({3, 4}, TileLayer::entity);
         tile_base->SetPrototype(Orientation::up, &tile_proto);
 
         // No entity, do not activate
-        EXPECT_FALSE(player.placement.TryActivateTile(world, {0, 0}));
+        EXPECT_FALSE(player.placement.TryActivateTile(world, {3, 4}));
 
-
-        // If selected item's entity is placeable, do not set activated_layer
+        // If selected item's entity is placeable, DO set activated_layer
         tile_entity->SetPrototype(Orientation::up, &entity);
-
         player.inventory.SetSelectedItem({&item, 2});
 
-        EXPECT_FALSE(player.placement.TryPlaceEntity(world, logic, {0, 0}));
-        EXPECT_EQ(player.placement.GetActivatedTile(), nullptr);
-
+        EXPECT_FALSE(player.placement.TryPlaceEntity(world, logic, {3, 4}));
+        auto [activated_tile, activated_coord] = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, nullptr);
 
         // Clicking on an entity with no placeable items selected will set activated_layer
         player.inventory.SetSelectedItem({&item_no_entity, 2});
 
-        EXPECT_TRUE(player.placement.TryActivateTile(world, {0, 0}));
-        EXPECT_EQ(player.placement.GetActivatedTile(), tile_entity);
-
+        EXPECT_TRUE(player.placement.TryActivateTile(world, {3, 4}));
+        std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, tile_entity);
+        EXPECT_EQ(activated_coord, WorldCoord(3, 4));
 
         // Clicking again will NOT unset
-        EXPECT_TRUE(player.placement.TryActivateTile(world, {0, 0}));
-        EXPECT_EQ(player.placement.GetActivatedTile(), tile_entity);
+        EXPECT_TRUE(player.placement.TryActivateTile(world, {3, 4}));
+        std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, tile_entity);
+        EXPECT_EQ(activated_coord, WorldCoord(3, 4));
 
-
-        // Activated tile can be set to nullptr to deactivate
-        player.placement.SetActivatedTile(nullptr);
-        EXPECT_EQ(player.placement.GetActivatedTile(), nullptr);
+        // Activated tile can be deactivated
+        player.placement.DeactivateTile();
+        std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
+        EXPECT_EQ(activated_tile, nullptr);
     }
 
     // ======================================================================
@@ -115,6 +115,7 @@ namespace jactorio::game
             auto& chunk = world_.EmplaceChunk({0, 0});
 
             container_.SetItem(&item_);
+            container_.sprite = &sprite_; // Conveyor utility requires tex coord id when setting up conveyor
 
             tile_.isWater = false;
 
@@ -133,6 +134,7 @@ namespace jactorio::game
         /// Item for container_
         proto::Item item_;
         proto::ContainerEntity container_;
+        proto::Sprite sprite_;
     };
 
 
@@ -218,11 +220,11 @@ namespace jactorio::game
         player_.inventory.DecrementSelectedItem();
 
         EXPECT_TRUE(player_.placement.TryActivateTile(world_, {2, 3}));
-        EXPECT_EQ(player_.placement.GetActivatedTile(), world_.GetTile({0, 0}, TileLayer::entity));
+        EXPECT_EQ(player_.placement.GetActivatedTile().first, world_.GetTile({0, 0}, TileLayer::entity));
 
 
         player_.placement.TryPickup(world_, logic_, {1, 2});
-        EXPECT_EQ(player_.placement.GetActivatedTile(), nullptr);
+        EXPECT_EQ(player_.placement.GetActivatedTile().first, nullptr);
     }
 
     TEST_F(PlayerPlacementTest, PickupEntity) {
@@ -251,6 +253,7 @@ namespace jactorio::game
         auto* tile = world_.GetTile({0, 0}, TileLayer::resource);
         tile->SetPrototype(Orientation::up, &resource);
         auto& resource_data = tile->MakeUniqueData<proto::ResourceEntityData>(2);
+        world_.SetTexCoordId({0, 0}, TileLayer::resource, 1234);
 
 
         player_.placement.TryPickup(world_, logic_, {0, 0}, 180);
@@ -269,6 +272,7 @@ namespace jactorio::game
 
         player_.placement.TryPickup(world_, logic_, {0, 0}, 60);
         EXPECT_EQ(tile->GetPrototype(), nullptr); // Picked up, item given to inventory
+        EXPECT_EQ(world_.GetTexCoordId({0, 0}, TileLayer::resource), 0);
 
         EXPECT_EQ(player_.inventory.inventory[0].item, &item);
         EXPECT_EQ(player_.inventory.inventory[0].count, 2);
@@ -321,15 +325,11 @@ namespace jactorio::game
             void OnBuild(World& /*world*/,
                          Logic& /*logic*/,
                          const WorldCoord& /*coord*/,
-                         TileLayer /*tlayer*/,
                          Orientation /*orientation*/) const override {
                 onBuildCalled = true;
             }
 
-            void OnRemove(World& /*world*/,
-                          Logic& /*logic*/,
-                          const WorldCoord& /*coord*/,
-                          TileLayer /*tlayer*/) const override {
+            void OnRemove(World& /*world*/, Logic& /*logic*/, const WorldCoord& /*coord*/) const override {
                 onRemoveCalled = true;
             }
 
@@ -348,6 +348,9 @@ namespace jactorio::game
             mutable int onUpdateCalled           = 0;
             mutable proto::UpdateType updateType = proto::UpdateType::place;
         } mock;
+        proto::Sprite sprite;
+        mock.sprite = &sprite;
+
         mock.SetDimension({3, 2});
         mock.SetItem(&item_);
 
@@ -393,6 +396,8 @@ namespace jactorio::game
                 receiveCoords.push_back(receive_coord);
             }
         } mock;
+        proto::Sprite sprite;
+        mock.sprite = &sprite;
 
         proto::Item item;
         mock.SetDimension({2, 3});

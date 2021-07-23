@@ -21,14 +21,6 @@ namespace jactorio::proto
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : structure(std::move(line_segment)) {}
 
-        /// Updates orientation and member set for rendering
-        void SetOrientation(LineOrientation orientation) {
-            this->lOrien = orientation;
-            this->set    = static_cast<uint16_t>(orientation);
-        }
-
-        static Orientation ToOrientation(LineOrientation line_orientation);
-
 
         std::shared_ptr<game::ConveyorStruct> structure = nullptr;
 
@@ -36,11 +28,9 @@ namespace jactorio::proto
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
         uint8_t structIndex = 0;
 
-        LineOrientation lOrien = LineOrientation::up;
-
 
         CEREAL_SERIALIZE(archive) {
-            archive(structure, structIndex, lOrien, cereal::base_class<HealthEntityData>(this));
+            archive(structure, structIndex, cereal::base_class<HealthEntityData>(this));
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
@@ -48,7 +38,7 @@ namespace jactorio::proto
             archive(line_segment);
             construct(line_segment);
 
-            archive(construct->structIndex, construct->lOrien, cereal::base_class<HealthEntityData>(construct.ptr()));
+            archive(construct->structIndex, cereal::base_class<HealthEntityData>(construct.ptr()));
         }
     };
 
@@ -67,27 +57,13 @@ namespace jactorio::proto
         /// Number of tiles traveled by each item on the belt per tick
         LineDistT speed;
 
-
-        // ======================================================================
-        // Game events
-
-        void OnRDrawUniqueData(render::RendererLayer& layer,
-                               const SpriteUvCoordsT& uv_coords,
-                               const Position2<float>& pixel_offset,
-                               const UniqueDataBase* unique_data) const override;
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::World& world,
-                                               const WorldCoord& coord) const override;
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                   GameTickT game_tick) const override;
-
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
 
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
         void OnNeighborUpdate(game::World& world,
@@ -96,10 +72,7 @@ namespace jactorio::proto
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override;
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override;
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
@@ -109,7 +82,6 @@ namespace jactorio::proto
 
         void PostLoad() override;
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
-        void ValidatedPostLoad() override;
     };
 } // namespace jactorio::proto
 

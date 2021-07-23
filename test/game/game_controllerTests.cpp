@@ -10,7 +10,7 @@
 namespace jactorio::game
 {
     TEST(GameController, ResetGame) {
-        GameController game_controller;
+        GameController game_controller{nullptr};
 
         game_controller.worlds[0].SetWorldGeneratorSeed(1234);
         game_controller.logic.GameTickAdvance();

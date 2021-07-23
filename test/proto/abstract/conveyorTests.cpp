@@ -22,12 +22,15 @@ namespace jactorio::proto
         game::Logic logic_;
 
         TransportBelt lineProto_;
+        Sprite sprite_;
 
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
-        }
 
-        // ======================================================================
+            // Conveyor utility requires tex coord id when setting up conveyor
+            lineProto_.sprite  = &sprite_;
+            sprite_.texCoordId = 1234;
+        }
 
         static game::ConveyorStruct& GetSegment(game::ChunkTile* tile) {
             return *tile->GetUniqueData<ConveyorData>()->structure;
@@ -47,7 +50,7 @@ namespace jactorio::proto
 
         /// Dispatches the appropriate events for when a conveyor is built
         void TlBuildEvents(const WorldCoord& coord, const Orientation orientation) {
-            lineProto_.OnBuild(world_, logic_, coord, game::TileLayer::entity, orientation);
+            lineProto_.OnBuild(world_, logic_, coord, orientation);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -58,7 +61,7 @@ namespace jactorio::proto
 
         /// Dispatches the appropriate events AFTER a conveyor is removed
         void TlRemoveEvents(const WorldCoord& coord) {
-            lineProto_.OnRemove(world_, logic_, coord, game::TileLayer::entity);
+            lineProto_.OnRemove(world_, logic_, coord);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -72,18 +75,16 @@ namespace jactorio::proto
         /// \param l_index index for left only segment in logic group
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
-            game::Chunk& chunk = *world_.GetChunkC({0, 0});
-            auto& logic_group  = chunk.GetLogicGroup(game::LogicGroup::conveyor);
-
-            ASSERT_EQ(logic_group.size(), 3);
+            auto tiles = GetConveyors();
+            ASSERT_EQ(tiles.size(), 3);
 
             {
-                auto& line_segment = GetSegment(logic_group[r_index]);
+                auto& line_segment = GetSegment(tiles[r_index]);
                 EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
                 EXPECT_EQ(line_segment.length, 2);
             }
             {
-                auto& line_segment = GetSegment(logic_group[l_index]);
+                auto& line_segment = GetSegment(tiles[l_index]);
                 EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
                 EXPECT_EQ(line_segment.length, 2);
             }
@@ -91,8 +92,16 @@ namespace jactorio::proto
 
         // Grouping
 
-        std::vector<game::ChunkTile*>& GetConveyors(const ChunkCoord& chunk_coords) {
-            return world_.GetChunkC(chunk_coords)->GetLogicGroup(game::LogicGroup::conveyor);
+        /// \return All conveyors registered for logic updates
+        std::vector<game::ChunkTile*> GetConveyors() {
+            auto& logic_list = world_.LogicGet(game::LogicGroup::conveyor);
+
+            std::vector<game::ChunkTile*> tiles;
+            tiles.reserve(logic_list.size());
+            for (auto& object : logic_list) {
+                tiles.push_back(world_.GetTile(object.coord, game::TileLayer::entity));
+            }
+            return tiles;
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
@@ -133,9 +142,9 @@ namespace jactorio::proto
         // ======================================================================
 
         // Added current chunk as a logic chunk
-        ASSERT_EQ(world_.LogicGetChunks().size(), 1);
+        ASSERT_EQ(world_.LogicGet(game::LogicGroup::conveyor).size(), 1);
 
-        auto& tiles = GetConveyors({-1, 0});
+        auto tiles = GetConveyors();
 
         // Should have created a conveyor structure
         ASSERT_EQ(tiles.size(), 1);
@@ -154,7 +163,7 @@ namespace jactorio::proto
         TlRemoveEvents({0, 0});
 
         // Conveyor structure count should be 0 as it was removed
-        EXPECT_TRUE(world_.GetChunkC({0, 0})->GetLogicGroup(game::LogicGroup::conveyor).empty());
+        EXPECT_TRUE(world_.LogicGet(game::LogicGroup::conveyor).empty());
     }
 
     TEST_F(ConveyorTest, OnDeserializeRelinkTarget) {
@@ -198,7 +207,7 @@ namespace jactorio::proto
         BuildConveyor({1, 0}, Orientation::right);
         BuildConveyor({0, 0}, Orientation::right);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -224,7 +233,7 @@ namespace jactorio::proto
 
         TlRemoveEvents({0, 0});
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -248,14 +257,11 @@ namespace jactorio::proto
         tile->SetPrototype(Orientation::up, &proto);
 
 
-        // Should update line above, turn right to a up-right
+        // Should update line above, right to a up-right
         TlBuildEvents({1, 1}, Orientation::up);
 
-        {
-            auto* result_tile = world_.GetTile({1, 0}, game::TileLayer::entity);
-
-            EXPECT_EQ(result_tile->GetUniqueData<ConveyorData>()->lOrien, LineOrientation::up_right);
-        }
+        EXPECT_EQ(world_.GetTexCoordId({1, 0}, game::TileLayer::entity),
+                  1234 + static_cast<int>(proto::LineOrientation::up_right));
     }
 
     TEST_F(ConveyorTest, OnRemoveUpdateNeighboringLines) {
@@ -278,11 +284,8 @@ namespace jactorio::proto
         // Removing the bottom line makes the center one bend down-right
         TlRemoveEvents({1, 2});
 
-        {
-            auto* result_tile = world_.GetTile({1, 1}, game::TileLayer::entity);
-
-            EXPECT_EQ(result_tile->GetUniqueData<ConveyorData>()->lOrien, LineOrientation::down_right);
-        }
+        EXPECT_EQ(world_.GetTexCoordId({1, 1}, game::TileLayer::entity),
+                  1234 + static_cast<int>(proto::LineOrientation::down_right));
     }
 
     // ======================================================================
@@ -302,7 +305,7 @@ namespace jactorio::proto
         left_tile->SetPrototype(Orientation::left, &lineProto_);
         TlBuildEvents({1, 0}, Orientation::left);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -326,7 +329,7 @@ namespace jactorio::proto
         down_tile->SetPrototype(Orientation::down, &lineProto_);
         TlBuildEvents({0, 0}, Orientation::down);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 2);
 
@@ -353,7 +356,7 @@ namespace jactorio::proto
 
         TlRemoveEvents({0, 1});
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 1);
 
@@ -361,24 +364,6 @@ namespace jactorio::proto
         EXPECT_EQ(segment.terminationType, game::ConveyorStruct::TerminationType::straight);
         EXPECT_EQ(segment.length, 1);
     }
-
-    TEST_F(ConveyorTest, SetOrientation) {
-        // When the orientation is set, the member "set" should also be updated
-
-        // Arbitrary segment is fine since no logic updates are performed
-        const auto segment = std::make_shared<game::ConveyorStruct>(
-            Orientation::left, game::ConveyorStruct::TerminationType::straight, 1);
-
-        ConveyorData line_data{segment};
-        line_data.structIndex = 1; // Prevents it from attempting to delete line segment
-
-        line_data.SetOrientation(LineOrientation::down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(LineOrientation::down));
-
-        line_data.SetOrientation(LineOrientation::left_down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(LineOrientation::left_down));
-    }
-
 
     // ======================================================================
     // Side only
@@ -484,7 +469,7 @@ namespace jactorio::proto
         BuildConveyor({1, 1}, Orientation::up);
         BuildConveyor({1, 2}, Orientation::up);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -521,7 +506,7 @@ namespace jactorio::proto
 
         BuildConveyor({1, 1}, Orientation::right);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -552,7 +537,7 @@ namespace jactorio::proto
 
         BuildConveyor({1, 0}, Orientation::down);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -588,7 +573,7 @@ namespace jactorio::proto
 
         BuildConveyor({0, 1}, Orientation::left);
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
 
         ASSERT_EQ(tiles.size(), 3);
 
@@ -638,7 +623,7 @@ namespace jactorio::proto
         }
 
 
-        auto& tiles = GetConveyors({0, 0});
+        auto tiles = GetConveyors();
         ASSERT_EQ(tiles.size(), 4);
 
         // Right

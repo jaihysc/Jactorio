@@ -17,50 +17,15 @@ namespace jactorio::proto
     public:
         PROTOTYPE_CATEGORY(tile);
 
-        Tile() = default;
-
-        /// \param sprite_ptr Points to a sprite prototype
-        explicit Tile(Sprite* sprite_ptr) : sprite(sprite_ptr) {}
-
-        ~Tile() override = default;
-
-        Tile(const Tile& other)     = default;
-        Tile(Tile&& other) noexcept = default;
-        Tile& operator=(const Tile& other) = default;
-        Tile& operator=(Tile&& other) noexcept = default;
-
-        // ======================================================================
-
         /// If true, resources will not spawn on this and player cannot navigate onto it
         PYTHON_PROP_REF_I(bool, isWater, false);
 
-        /// Separately managed by PrototypeManager
-        PYTHON_PROP_I(Sprite*, sprite, nullptr);
-
-
-        // ======================================================================
         // Renderer
-
-        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
-            return sprite;
-        }
-
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
-            return 0;
-        }
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const override {
-            return 0;
-        }
 
         bool OnRShowGui(const gui::Context& /*context*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
-        // ======================================================================
         // Data
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}
@@ -68,8 +33,8 @@ namespace jactorio::proto
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
     };
 
-    inline void Tile::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
-        J_PROTO_ASSERT(sprite != nullptr, "Sprite was not provided");
+    inline void Tile::PostLoadValidate(const data::PrototypeManager& proto) const {
+        FWorldObject::PostLoadValidate(proto);
     }
 } // namespace jactorio::proto
 

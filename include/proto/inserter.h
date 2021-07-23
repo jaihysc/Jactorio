@@ -80,27 +80,14 @@ namespace jactorio::proto
         RotationDegreeT rotationSpeed;
 
 
-        void PostLoad() override {
-            rotationSpeed = RotationDegreeT(rotationSpeedFloat);
-        }
-
-
-        // ======================================================================
-
-        void OnRDrawUniqueData(render::RendererLayer& layer,
-                               const SpriteUvCoordsT& uv_coords,
-                               const Position2<float>& pixel_offset,
-                               const UniqueDataBase* unique_data) const override;
-
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::World& world,
-                                               const WorldCoord& coord) const override;
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
 
         /// \param orientation Points towards dropoff
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
 
@@ -109,23 +96,21 @@ namespace jactorio::proto
                           const WorldCoord& receive_coord,
                           UpdateType type) const override;
 
-        void OnRemove(game::World& world,
-                      game::Logic& logic,
-                      const WorldCoord& coord,
-                      game::TileLayer tlayer) const override;
+        void OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const override;
 
 
         void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
 
+        void PostLoad() override {
+            rotationSpeed = RotationDegreeT(rotationSpeedFloat);
+        }
+
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
-        void ValidatedPostLoad() override;
 
     private:
         J_NODISCARD WorldCoord GetDropoffCoord(const WorldCoord& coord, Orientation orientation) const;
         J_NODISCARD WorldCoord GetPickupCoord(const WorldCoord& coord, Orientation orientation) const;
-
-        void InitPickupDropoff(game::World& world, const WorldCoord& coord, Orientation orientation) const;
     };
 } // namespace jactorio::proto
 

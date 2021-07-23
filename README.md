@@ -60,6 +60,7 @@ The installation of dependencies listed below is automatic, but may carry additi
 * [backward-cpp](https://github.com/bombela/backward-cpp)
 * [cereal](https://github.com/USCiLab/cereal)
 * [decimal_for_cpp](https://github.com/vpiotr/decimal_for_cpp)
+* [freetype](https://gitlab.freedesktop.org/freetype/freetype)
 * [GLEW](http://glew.sourceforge.net/)
 * [glm](https://github.com/g-truc/glm)
 * [imgui](https://github.com/ocornut/imgui)

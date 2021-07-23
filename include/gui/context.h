@@ -33,6 +33,8 @@ namespace jactorio::gui
         const data::PrototypeManager& proto;
 
         MenuData& menuData;
+        /// Location player clicked/activated (Not guaranteed top left of entities)
+        WorldCoord coord;
     };
 } // namespace jactorio::gui
 

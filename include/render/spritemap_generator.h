@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "core/coordinate_tuple.h"
@@ -15,31 +16,72 @@
 
 namespace jactorio::render
 {
+    struct Animation
+    {
+        /// Index into tex coords vector for first tex coord of this animation
+        std::size_t texCoordIndex = 0;
+
+        /// Total number of ANIMATION frames
+        int frames = 0;
+        /// Tex coords per frame
+        int span = 0;
+
+        /// Current animation frame
+        mutable int currentFrame = 0; // Allows generating tex coords for frames in const
+    };
+
+    class Spritemap
+    {
+    public:
+        using DimensionT = uint64_t;
+
+        explicit Spritemap(SpriteTexCoords tex_coords, std::vector<Animation> animation)
+            : texCoords_(std::move(tex_coords)), animations_(std::move(animation)) {}
+
+
+        J_NODISCARD const SpriteTexCoords& GetTexCoords() const noexcept {
+            return texCoords_;
+        }
+
+        /// Generates tex coords for current frame of animation
+        /// Returned pointer valid until next Gen...() call
+        /// \return Pointer to tex coords, amount of tex coords
+        J_NODISCARD std::pair<const TexCoord*, int> GenCurrentFrame() const;
+
+        /// Generates tex coords for next frame of animation
+        /// Returned pointer valid until next Gen...() call
+        /// \return Pointer to tex coords, amount of tex coords
+        J_NODISCARD std::pair<const TexCoord*, int> GenNextFrame() const;
+
+        std::shared_ptr<Texture::SpriteBufferT> spriteBuffer;
+
+        DimensionT width  = 0;
+        DimensionT height = 0;
+
+    private:
+        /// 0 - 1 positions of the sprite within the spritemap
+        /// Upper left is 0, 0 - bottom right is 1, 1
+        SpriteTexCoords texCoords_;
+        /// Animation information for each sprite
+        std::vector<Animation> animations_;
+
+        /// Generated tex coords is saved here first prior to copying to GPU
+        mutable std::vector<TexCoord> buffer_;
+    };
+
     /// Generates spritemaps on initialization with tile sprites
     /// - Concatenate sprite into spritemap
     /// - Location of a sprite within spritemap
+    /// \remark Gl methods requires OpenGL context
     class RendererSprites
     {
+        using SpritemapDimensionT = Spritemap::DimensionT;
+
+        /// Additional border to each sprite, use to avoid black lines
+        static constexpr auto kSpriteBorder                     = 1;
+        static constexpr SpritemapDimensionT kMaxSpritemapWidth = 99999;
+
     public:
-        using SpritemapDimensionT = uint64_t;
-
-        struct SpritemapData
-        {
-            // For the loaded sprite
-            std::shared_ptr<Texture::SpriteBufferT> spriteBuffer;
-
-            SpritemapDimensionT width  = 0;
-            SpritemapDimensionT height = 0;
-
-            // Image positions retrieved via the path originally given to create the spritemap
-            // 0 - 1 positions of the sprite within the spritemap
-            // Upper left is 0, 0 - bottom right is 1, 1
-            // std::string is internal name of prototype
-            SpriteUvCoordsT spritePositions;
-        };
-
-        // ======================================================================
-
         RendererSprites() = default;
 
         ~RendererSprites() {
@@ -57,66 +99,69 @@ namespace jactorio::render
         friend void swap(RendererSprites& lhs, RendererSprites& rhs) noexcept {
             using std::swap;
             swap(lhs.textures_, rhs.textures_);
-            swap(lhs.spritemapDatas_, rhs.spritemapDatas_);
+            swap(lhs.spritemaps_, rhs.spritemaps_);
         }
 
-    private:
-        std::map<unsigned int, Texture*> textures_;
-        std::map<unsigned int, SpritemapData> spritemapDatas_;
-
-    public:
         /// Frees all spritemap memory
         void Clear();
 
         /// Creates a spritemap and stores it as a render::Texture
-        /// \remark Requires OpenGL context
-        void GInitializeSpritemap(const data::PrototypeManager& proto,
-                                  proto::Sprite::SpriteGroup group,
-                                  bool invert_sprites);
+        void GlInitializeSpritemap(const data::PrototypeManager& proto,
+                                   proto::Sprite::SpriteGroup group,
+                                   bool invert_sprites);
 
-        /// Creates a spritemap
-        J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& proto,
-                                                  proto::Sprite::SpriteGroup group,
-                                                  bool invert_sprites) const;
+        /// Creates a spritemap using sprites in PrototypeManager proto of SpriteGroup group
+        /// \param invert_sprites If true, flips each sprite across its X axis
+        J_NODISCARD static Spritemap CreateSpritemap(const data::PrototypeManager& proto,
+                                                     proto::Sprite::SpriteGroup group,
+                                                     bool invert_sprites);
 
         /// Retrieves spritemap at specified group
-        const SpritemapData& GetSpritemap(proto::Sprite::SpriteGroup group);
-        const Texture* GetTexture(proto::Sprite::SpriteGroup group);
+        J_NODISCARD const Spritemap& GetSpritemap(proto::Sprite::SpriteGroup group) const;
+        const Texture& GetTexture(proto::Sprite::SpriteGroup group);
 
         /// Generates spritemap
+        /// Assigns texCoordId to sprites
         /// \remark Color in non specified areas of the spritemap are undefined
         /// \param sprites Collection of pointers towards sprite prototypes
-        /// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for
-        /// OpenGL
-        J_NODISCARD SpritemapData GenSpritemap(const std::vector<const proto::Sprite*>& sprites,
-                                               bool invert_sprites) const;
+        /// \param invert_sprites If true, flips each sprite across its X axis
+        J_NODISCARD static Spritemap GenSpritemap(std::vector<proto::Sprite*> sprites, bool invert_sprites);
 
     private:
-        /// Additional border to each sprite, use to avoid black lines
-        static constexpr int sprite_border = 1;
-
         /// Holds a sprite and its neighbors on the spritemap
         struct GeneratorNode
         {
-            explicit GeneratorNode(const proto::Sprite* sprite) : sprite(sprite) {}
+            explicit GeneratorNode(proto::Sprite* sprite) : sprite(sprite) {}
 
-            const proto::Sprite* sprite;
+            proto::Sprite* sprite;
 
             GeneratorNode* above = nullptr;
             GeneratorNode* right = nullptr;
         };
 
-        /// Gets sprite width with adjustments
-        static proto::Sprite::SpriteDimension GetSpriteWidth(const proto::Sprite* sprite);
-        /// Gets sprite height with adjustments
-        static proto::Sprite::SpriteDimension GetSpriteHeight(const proto::Sprite* sprite);
+        struct GeneratorContext
+        {
+            Texture::SpriteBufferT* spritemapBuffer;
+            SpritemapDimensionT spritemapWidth;
+            SpriteTexCoords& texCoords;
+            bool invertSprites;
+
+            SpriteTexCoordIndexT texCoordIdCounter = 1;
+            std::vector<Animation> animations;
+        };
 
 
-        static void SortInputSprites(std::vector<const proto::Sprite*>& sprites);
+        /// Sprite width with border
+        static proto::Sprite::SpriteDimension TotalSpriteWidth(const proto::Sprite& sprite) noexcept;
+        /// Sprite height with border
+        static proto::Sprite::SpriteDimension TotalSpriteHeight(const proto::Sprite& sprite) noexcept;
 
-        /// Recursively creates linked GeneratorNodes of sprites
+
+        static void SortInputSprites(std::vector<proto::Sprite*>& sprites);
+
+        /// Recursively creates linked GeneratorNodes of sprites into node_buffer
         /// Will erase from sprites as each sprite is used
-        static void GenerateSpritemapNodes(std::vector<const proto::Sprite*>& sprites,
+        static void GenerateSpritemapNodes(std::vector<proto::Sprite*>& sprites,
                                            std::vector<GeneratorNode*>& node_buffer,
                                            GeneratorNode& parent_node,
                                            SpritemapDimensionT max_width,
@@ -128,25 +173,41 @@ namespace jactorio::render
         static SpritemapDimensionT GetSpritemapWidth(GeneratorNode& base_node);
 
 
-        /// Copies pixel at sprite_x, sprite_y to spritemap buffer
-        static void SetSpritemapPixel(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
-                                      SpritemapDimensionT spritemap_width,
-                                      bool invert_sprites,
-                                      SpritemapDimensionT spritemap_x_offset,
-                                      SpritemapDimensionT spritemap_y_offset,
-                                      const unsigned char* sprite_data,
-                                      proto::Sprite::SpriteDimension sprite_width,
-                                      proto::Sprite::SpriteDimension sprite_height,
-                                      unsigned pixel_x,
-                                      unsigned pixel_y);
-        /// Recursively outputs GeneratorNodes into provided sprite buffer
-        static void GenerateSpritemapOutput(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
-                                            SpritemapDimensionT spritemap_width,
+        /// Copies pixel of image at provided pixel_pos to spritemap buffer at offset
+        /// \param offset Offset for writing into spritemap
+        static void SetSpritemapPixel(GeneratorContext& context,
+                                      Position2<SpritemapDimensionT> offset,
+                                      const proto::ImageContainer& image,
+                                      Position2<unsigned> pixel_pos);
+
+        /// Adds a border around of kSpriteBorder around the image in spritemap
+        /// \param offset Offset for writing into spritemap
+        static void SetImageBorder(GeneratorContext& context,
+                                   const proto::ImageContainer& image,
+                                   Position2<SpritemapDimensionT> offset);
+
+        /// \return Number of frames/sets which should have tex coords generated, for 1 animation tick of the game
+        static std::pair<SpriteFrameT, SpriteSetT> GetGameTickFrameSet(const proto::Sprite& sprite) noexcept;
+
+        /// Generates animation + ALL the tex coords for the sprite (all frames + sets)
+        /// - Assigns tex coords id to sprite
+        /// \param sprite Sprite having its animations generated
+        /// \exception runtime_error Could not generate reversed sprite animation
+        static void GenerateAnimationTexCoords(GeneratorContext& context,
+                                               Position2<SpritemapDimensionT> offset,
+                                               proto::Sprite& sprite);
+
+        /// Recursively processes GeneratorNodes
+        /// - outputs sprites into into provided sprite buffer
+        /// - Assigns tex coord id to sprites
+        /// - sets NON-normalized tex coord
+        /// \param offset Offset for writing into spritemap
+        static void GenerateSpritemapOutput(GeneratorContext& context,
                                             GeneratorNode& base_node,
-                                            bool invert_sprites,
-                                            SpriteUvCoordsT& image_positions,
-                                            SpritemapDimensionT x_offset,
-                                            SpritemapDimensionT y_offset);
+                                            Position2<SpritemapDimensionT> offset);
+
+        std::map<unsigned int, Texture> textures_;
+        std::map<unsigned int, Spritemap> spritemaps_;
     };
 } // namespace jactorio::render
 

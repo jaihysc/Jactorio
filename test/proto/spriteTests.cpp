@@ -2,207 +2,131 @@
 
 #include <gtest/gtest.h>
 
-#include "core/coordinate_tuple.h"
 #include "proto/sprite.h"
+
+#include "data/prototype_manager.h"
 
 namespace jactorio::proto
 {
     TEST(Sprite, SpriteCopy) {
-        const Sprite first;
+        Sprite first;
+        first.Load("test/graphics/test/test_tile.png");
+
         const auto second = first;
 
-        EXPECT_NE(first.GetSpritePtr(), second.GetSpritePtr());
+        EXPECT_NE(first.GetImage().buffer, second.GetImage().buffer);
     }
 
     TEST(Sprite, SpriteMove) {
         Sprite first;
-        first.LoadImage("test/graphics/test/test_tile.png");
+        first.Load("test/graphics/test/test_tile.png");
 
         const auto second = std::move(first);
 
-        EXPECT_EQ(first.GetSpritePtr(), nullptr);
-        EXPECT_NE(second.GetSpritePtr(), nullptr);
-    }
-
-    TEST(Sprite, TrySetDefaultSpriteGroup) {
-        {
-            // Item's sprite group should be set to terrain and gui if blank
-            Sprite sprite;
-
-            auto& group = sprite.group;
-
-            sprite.DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
-
-            EXPECT_NE(std::find(group.begin(), group.end(), Sprite::SpriteGroup::terrain), group.end());
-            EXPECT_NE(std::find(group.begin(), group.end(), Sprite::SpriteGroup::gui), group.end());
-        }
-        {
-            // If not blank, use initialization provided sprite groups
-            Sprite sprite;
-
-            auto& group = sprite.group;
-            group.push_back(Sprite::SpriteGroup::gui);
-
-            EXPECT_EQ(group.size(), 1);
-        }
+        EXPECT_EQ(first.GetImage().buffer, nullptr);
+        EXPECT_NE(second.GetImage().buffer, nullptr);
     }
 
     TEST(Sprite, LoadSprite) {
         {
             Sprite sprite;
 
-            EXPECT_EQ(sprite.GetWidth(), 0);
-            EXPECT_EQ(sprite.GetHeight(), 0);
+            EXPECT_EQ(sprite.GetImage().width, 0);
+            EXPECT_EQ(sprite.GetImage().height, 0);
 
-            sprite.LoadImage("test/graphics/test/test_tile.png");
+            sprite.Load("test/graphics/test/test_tile.png");
 
-            EXPECT_EQ(sprite.GetWidth(), 32);
-            EXPECT_EQ(sprite.GetHeight(), 32);
+            EXPECT_EQ(sprite.GetImage().width, 32);
+            EXPECT_EQ(sprite.GetImage().height, 32);
         }
         {
-            const Sprite sprite("test/graphics/test/test_tile.png");
+            const Sprite sprite("test/graphics/test/20x59.png");
 
-            EXPECT_EQ(sprite.GetWidth(), 32);
-            EXPECT_EQ(sprite.GetHeight(), 32);
-        }
-    }
-
-    TEST(Sprite, GetCoords) {
-        {
-            Sprite sprite;
-            sprite.SetWidth(1);
-            sprite.SetHeight(1);
-            sprite.sets   = 4;
-            sprite.frames = 10;
-
-            auto coords = sprite.GetCoords(3, 0);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 0.1f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.25f);
-        }
-        {
-            // 7 % 4 = 3
-            Sprite sprite;
-            sprite.SetWidth(1);
-            sprite.SetHeight(1);
-            sprite.sets   = 4;
-            sprite.frames = 10;
-
-            auto coords = sprite.GetCoords(7, 0);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 0.1f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.25f);
-        }
-
-        {
-            Sprite sprite;
-            sprite.SetWidth(1);
-            sprite.SetHeight(1);
-            sprite.sets   = 49;
-            sprite.frames = 2;
-
-            auto coords = sprite.GetCoords(42, 1);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.5f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.1224489795918f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 1.f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.14285714285714f);
-        }
-
-        // Frames will wrap around
-        {
-            Sprite sprite;
-            sprite.SetWidth(1);
-            sprite.SetHeight(1);
-            sprite.sets   = 2;
-            sprite.frames = 2;
-
-            auto coords = sprite.GetCoords(0, 3);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.5f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 1.f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.5f);
+            EXPECT_EQ(sprite.GetImage().width, 20);
+            EXPECT_EQ(sprite.GetImage().height, 59);
         }
     }
 
-    TEST(Sprite, GetCoordsTrimmed) {
-        // This requires width_ and height_ to be initialized
-        {
-            Sprite sprite;
-            sprite.sets   = 2;
-            sprite.frames = 3;
+    TEST(Sprite, ErrorNoSpriteGroup) {
+        data::PrototypeManager proto;
 
-            sprite.SetWidth(620);
-            sprite.SetHeight(190);
-            sprite.trim = 12;
-
-            const auto coords = sprite.GetCoords(0, 2);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.686021505f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.563157894f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 0.980645161f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.936842105f);
+        Sprite sprite1;
+        sprite1.group = Sprite::SpriteGroup::terrain;
+        try {
+            sprite1.PostLoadValidate(proto);
+            SUCCEED();
+        }
+        catch (std::exception&) {
+            FAIL();
         }
 
-        {
-            // 4 % 2 = 0
-            Sprite sprite;
-            sprite.sets   = 2;
-            sprite.frames = 3;
-
-            sprite.SetWidth(620);
-            sprite.SetHeight(190);
-            sprite.trim = 12;
-
-            const auto coords = sprite.GetCoords(4, 2);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.686021505f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.563157894f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 0.980645161f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.936842105f);
+        const Sprite sprite2;
+        try {
+            sprite2.PostLoadValidate(proto);
+            FAIL();
+        }
+        catch (std::exception&) {
+            SUCCEED();
         }
     }
 
-    TEST(Sprite, GetCoordsTrimmedInverted) {
-        {
-            Sprite sprite;
-            sprite.Set_invertSetFrame(true);
-            sprite.sets   = 2;
-            sprite.frames = 3;
+    static void TestPixel(Sprite& sprite, const std::pair<int, int> xy, std::tuple<int, int, int, int> rgba) {
+        const auto offset = (sprite.GetImage().width * xy.second + xy.first) * sprite.GetImage().bytesPerPixel;
+        EXPECT_EQ(sprite.GetImage().buffer[offset + 0], std::get<0>(rgba));
+        EXPECT_EQ(sprite.GetImage().buffer[offset + 1], std::get<1>(rgba));
+        EXPECT_EQ(sprite.GetImage().buffer[offset + 2], std::get<2>(rgba));
+        EXPECT_EQ(sprite.GetImage().buffer[offset + 3], std::get<3>(rgba));
+    };
 
-            sprite.SetWidth(100);
-            sprite.SetHeight(100);
+    TEST(Sprite, Trim) {
+        Sprite sprite;
+        sprite.Load("test/graphics/test/test_tile4.png");
 
-            const auto coords = sprite.GetCoords(2, 1);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.5f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.6666666f);
+        sprite.Trim(4);
+        EXPECT_EQ(sprite.GetImage().width, 9);
+        EXPECT_EQ(sprite.GetImage().height, 24);
 
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 1.f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 1.f);
+        TestPixel(sprite, {0, 0}, {0, 105, 162, 255});
+        TestPixel(sprite, {8, 0}, {46, 109, 62, 255});
+        TestPixel(sprite, {7, 9}, {119, 85, 255, 255});
+        TestPixel(sprite, {8, 23}, {153, 223, 168, 255});
+    }
+
+    TEST(Sprite, TrimMultipleSetFrame) {
+        Sprite sprite;
+        sprite.Load("test/graphics/test/test_tile4.png");
+
+        sprite.sets   = 4;
+        sprite.frames = 2;
+
+        sprite.Trim(1);
+        EXPECT_EQ(sprite.GetImage().width, 12);
+        EXPECT_EQ(sprite.GetImage().height, 24);
+
+        TestPixel(sprite, {0, 0}, {251, 101, 20, 255});
+        TestPixel(sprite, {5, 11}, {153, 223, 219, 255});
+        TestPixel(sprite, {9, 10}, {73, 28, 253, 255});
+        TestPixel(sprite, {9, 15}, {0, 251, 63, 255});
+        TestPixel(sprite, {3, 18}, {21, 101, 38, 255});
+        TestPixel(sprite, {11, 23}, {255, 0, 123, 255});
+    }
+
+    TEST(Sprite, TrimTooLarge) {
+        Sprite sprite;
+        sprite.Load("test/graphics/test/test_tile.png");
+
+        sprite.Trim(16); // Ok, No pixels left after trimming
+        EXPECT_EQ(sprite.GetImage().width, 0);
+        EXPECT_EQ(sprite.GetImage().height, 0);
+
+        sprite.Trim(0);
+
+        try {
+            sprite.Trim(1);
+            FAIL();
         }
-
-        {
-            // 3 % 2 = 1
-            Sprite sprite;
-            sprite.Set_invertSetFrame(true);
-            sprite.sets   = 3;
-            sprite.frames = 2;
-
-            sprite.SetWidth(620);
-            sprite.SetHeight(190);
-            sprite.trim = 12;
-
-            const auto coords = sprite.GetCoords(1, 2);
-            EXPECT_FLOAT_EQ(coords.topLeft.x, 0.686021505f);
-            EXPECT_FLOAT_EQ(coords.topLeft.y, 0.563157894f);
-
-            EXPECT_FLOAT_EQ(coords.bottomRight.x, 0.980645161f);
-            EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.936842105f);
+        catch (std::exception&) {
+            SUCCEED();
         }
     }
 } // namespace jactorio::proto

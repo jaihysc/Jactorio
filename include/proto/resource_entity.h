@@ -51,18 +51,16 @@ namespace jactorio::proto
         void OnBuild(game::World& /*world*/,
                      game::Logic& /*logic*/,
                      const WorldCoord& /*coord*/,
-                     game::TileLayer /*tlayer*/,
                      Orientation /*orientation*/) const override {
             assert(false); // Is not player placeable
         }
 
-        void OnRemove(game::World& /*world*/,
-                      game::Logic& /*logic*/,
-                      const WorldCoord& /*coord*/,
-                      game::TileLayer /*tlayer*/) const override {}
+        void OnRemove(game::World& /*world*/, game::Logic& /*logic*/, const WorldCoord& /*coord*/) const override {}
 
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& proto) const override {
+            Entity::PostLoadValidate(proto);
+
             // Must convert to at least 1 game tick
             J_PROTO_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
         }

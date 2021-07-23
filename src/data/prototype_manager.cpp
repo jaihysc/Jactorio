@@ -127,8 +127,9 @@ void data::PrototypeManager::LoadProto(const char* data_folder_path) {
                 throw;
             }
             prototype.ValidatedPostLoad();
+            prototype.SetupSprite();
 
-            LOG_MESSAGE_F(debug, "Validating prototype %d %s Success\n", prototype.internalId, prototype.name.c_str());
+            LOG_MESSAGE_F(debug, "Validating prototype %d %s Success", prototype.internalId, prototype.name.c_str());
         }
     }
 }

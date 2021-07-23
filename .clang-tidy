@@ -32,6 +32,7 @@ Checks: >
   -modernize-avoid-c-arrays,
   -modernize-use-trailing-return-type,
   -readability-braces-around-statements,
+  -readability-isolate-declaration,
   -readability-magic-numbers,
   -readability-uppercase-literal-suffix,
 

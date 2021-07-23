@@ -43,17 +43,13 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
-        void OnRemove(game::World& /*world*/,
-                      game::Logic& /*logic*/,
-                      const WorldCoord& /*coord*/,
-                      game::TileLayer /*tlayer*/) const override {}
+        void OnRemove(game::World& /*world*/, game::Logic& /*logic*/, const WorldCoord& /*coord*/) const override {}
 
         bool OnRShowGui(const gui::Context& context, game::ChunkTile* tile) const override;
 
-        void ValidatedPostLoad() override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
     };
 } // namespace jactorio::proto
 

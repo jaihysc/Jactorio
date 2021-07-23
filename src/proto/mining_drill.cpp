@@ -18,50 +18,6 @@ bool proto::MiningDrill::OnRShowGui(const gui::Context& context, game::ChunkTile
     return true;
 }
 
-proto::Sprite* proto::MiningDrill::OnRGetSprite(const SpriteSetT set) const {
-    if (set <= 7)
-        return sprite;
-
-    if (set <= 15)
-        return spriteE;
-
-    if (set <= 23)
-        return spriteS;
-
-    return spriteW;
-}
-
-SpriteSetT proto::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-                                               game::World& /*world*/,
-                                               const WorldCoord& /*coord*/) const {
-    switch (orientation) {
-    case Orientation::up:
-        return 0;
-    case Orientation::right:
-        return 8;
-    case Orientation::down:
-        return 16;
-    case Orientation::left:
-        return 24;
-
-    default:
-        assert(false); // Missing switch case
-        return 0;
-    }
-}
-
-SpriteFrameT proto::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
-    const auto& drill_data = SafeCast<const MiningDrillData&>(unique_data);
-
-    // Drill is inactive
-    if (!drill_data.deferralEntry.Valid())
-        game_tick = 0;
-
-    return AllOfSpriteReversing(*sprite, game_tick);
-}
-
-// ======================================================================
-
 proto::Item* proto::MiningDrill::FindOutputItem(const game::World& world,
                                                 WorldCoord coord,
                                                 const Orientation orien) const {
@@ -128,10 +84,9 @@ bool proto::MiningDrill::OnCanBuild(const game::World& world, const WorldCoord& 
 void proto::MiningDrill::OnBuild(game::World& world,
                                  game::Logic& logic,
                                  const WorldCoord& coord,
-                                 const game::TileLayer tlayer,
                                  const Orientation orientation) const {
-    auto& drill_data = world.GetTile(coord, tlayer)->MakeUniqueData<MiningDrillData>(orientation);
-
+    auto& drill_data = world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<MiningDrillData>(orientation);
+    world.DisableAnimation(coord, game::TileLayer::entity);
 
     drill_data.resourceCoord.x = coord.x - this->miningRadius;
     drill_data.resourceCoord.y = coord.y - this->miningRadius;
@@ -142,7 +97,6 @@ void proto::MiningDrill::OnBuild(game::World& world,
 
     const auto output_coords = GetOutputCoord(coord, orientation);
 
-    drill_data.set        = OnRGetSpriteSet(orientation, world, coord);
     drill_data.outputTile = output_coords;
 
     OnNeighborUpdate(world, logic, output_coords, coord, orientation);
@@ -170,21 +124,21 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
                                 SafeCast<const ResourceEntity*>(drill_data->outputItem->entityPrototype)->pickupTime);
 
         const bool success = DeductResource(world, self_tile.GetOrientation(), *drill_data);
-        assert(success);
-        RegisterMineCallback(logic.deferralTimer, drill_data);
+        if (success) {
+            RegisterMineCallback(logic.deferralTimer, drill_data);
+            world.EnableAnimation(receive_coord, game::TileLayer::entity);
+        }
     }
     else {
         // Un-register callback if one is registered
         logic.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
+        world.DisableAnimation(receive_coord, game::TileLayer::entity);
     }
 }
 
 
-void proto::MiningDrill::OnRemove(game::World& world,
-                                  game::Logic& logic,
-                                  const WorldCoord& coord,
-                                  const game::TileLayer tlayer) const {
-    auto* drill_data = world.GetTile(coord, tlayer)->GetUniqueData<MiningDrillData>();
+void proto::MiningDrill::OnRemove(game::World& world, game::Logic& logic, const WorldCoord& coord) const {
+    auto* drill_data = world.GetTile(coord, game::TileLayer::entity)->GetUniqueData<MiningDrillData>();
     logic.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 
@@ -195,20 +149,9 @@ void proto::MiningDrill::OnDeserialize(game::World& world, const WorldCoord& coo
     InitializeOutput(world, GetOutputCoord(coord, drill_data->output.GetOrientation()), drill_data);
 }
 
-void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
-    J_PROTO_ASSERT(sprite != nullptr, "North sprite not provided");
-    J_PROTO_ASSERT(spriteE != nullptr, "East sprite not provided");
-    J_PROTO_ASSERT(spriteS != nullptr, "South sprite not provided");
-    J_PROTO_ASSERT(spriteW != nullptr, "West sprite not provided");
+void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& proto) const {
+    HealthEntity::PostLoadValidate(proto);
 }
-
-void proto::MiningDrill::ValidatedPostLoad() {
-    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-    spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-}
-
 
 // ======================================================================
 
@@ -262,24 +205,26 @@ bool proto::MiningDrill::DeductResource(game::World& world,
                                         const Orientation orien,
                                         MiningDrillData& drill_data,
                                         const ResourceEntityData::ResourceCount amount) const {
-
-    auto get_resource_layer = [&]() {
-        auto* tile = world.GetTile({drill_data.resourceCoord.x + drill_data.resourceOffset % GetMiningAreaX(orien),
-                                    drill_data.resourceCoord.y + drill_data.resourceOffset / GetMiningAreaX(orien)},
-                                   game::TileLayer::resource);
-
+    auto get_tile_coord = [&]() {
+        return WorldCoord{drill_data.resourceCoord.x + drill_data.resourceOffset % GetMiningAreaX(orien),
+                          drill_data.resourceCoord.y + drill_data.resourceOffset / GetMiningAreaX(orien)};
+    };
+    auto get_resource_layer = [&](const WorldCoord& coord) {
+        auto* tile = world.GetTile(coord, game::TileLayer::resource);
         assert(tile != nullptr);
         return std::make_tuple(tile, tile->GetUniqueData<ResourceEntityData>());
     };
 
 
-    auto [resource_layer, resource_data] = get_resource_layer();
+    auto tile_coord                      = get_tile_coord();
+    auto [resource_layer, resource_data] = get_resource_layer(tile_coord);
 
     if (resource_data == nullptr) {
         if (!SetupResourceDeduction(world, drill_data, orien))
             return false; // Drill has no resources left to mine
 
-        std::tie(resource_layer, resource_data) = get_resource_layer();
+        tile_coord                              = get_tile_coord();
+        std::tie(resource_layer, resource_data) = get_resource_layer(tile_coord);
     }
 
     assert(resource_data != nullptr);
@@ -290,6 +235,7 @@ bool proto::MiningDrill::DeductResource(game::World& world,
 
     if (resource_data->resourceAmount == 0) {
         resource_layer->Clear();
+        world.SetTexCoordId(tile_coord, game::TileLayer::resource, 0);
     }
 
     return true;

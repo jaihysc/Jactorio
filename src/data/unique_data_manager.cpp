@@ -4,8 +4,8 @@
 
 using namespace jactorio;
 
-void data::UniqueDataManager::AssignId(proto::UniqueDataBase& framework_base) noexcept {
-    framework_base.internalId = nextId_;
+void data::UniqueDataManager::AssignId(proto::UniqueDataBase& unique_data) noexcept {
+    unique_data.internalId = nextId_;
     nextId_++;
 }
 

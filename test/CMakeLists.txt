@@ -6,7 +6,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG            ${CMAKE_RUNTIME_OUTPUT_DIREC
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-jactorio_copy_runtime_files()
+jactorio_copy_runtime_files(true) # true, is test build
 
 
 
@@ -57,6 +57,7 @@ set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 # ======================================== Test files .cpp
 set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/convertTests.cpp
+	${JACTORIO_TEST_DIR}/core/dvectorTests.cpp
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
 	${JACTORIO_TEST_DIR}/core/orientationTests.cpp
@@ -117,7 +118,6 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp
 	${JACTORIO_TEST_DIR}/proto/abstract/entityTests.cpp
-	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/render/mvp_managerTests.cpp
