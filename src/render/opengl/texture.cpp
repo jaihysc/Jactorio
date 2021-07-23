@@ -12,18 +12,16 @@
 
 using namespace jactorio;
 
-unsigned int render::Texture::boundTextureId_ = 0;
-
 render::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer, const DimensionT width, const DimensionT height)
-    : rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
+    : id_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
 
     if (!textureBuffer_) {
         LOG_MESSAGE(error, "Received empty texture");
         return;
     }
 
-    DEBUG_OPENGL_CALL(glGenTextures(1, &rendererId_));
-    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, rendererId_));
+    DEBUG_OPENGL_CALL(glGenTextures(1, &id_));
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, id_));
 
     // Required by openGL, handles when textures are too big/small
     DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -40,13 +38,16 @@ render::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer, const DimensionT
                                    GL_RGBA,
                                    GL_UNSIGNED_BYTE,
                                    textureBuffer_.get()));
-
-    // Rebind the last bound texture
-    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, boundTextureId_));
 }
 
 render::Texture::~Texture() {
-    DEBUG_OPENGL_CALL(glDeleteTextures(1, &rendererId_));
+    DEBUG_OPENGL_CALL(glDeleteTextures(1, &id_));
+}
+
+render::Texture::Texture(Texture&& other) noexcept
+    : id_{other.id_}, textureBuffer_{std::move(other.textureBuffer_)}, width_{other.width_}, height_{other.height_} {
+    // Despite opengl silently accepting invalid ids, if a move is make, the old object deletes the texture!
+    other.id_ = 0;
 }
 
 void render::Texture::Bind(const unsigned int slot) const {
@@ -59,8 +60,7 @@ void render::Texture::Bind(const unsigned int slot) const {
     }
 
     DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
-    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, rendererId_));
-    boundTextureId_ = rendererId_;
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, id_));
 }
 
 void render::Texture::Unbind() {

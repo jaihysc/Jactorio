@@ -206,7 +206,7 @@ namespace jactorio::render
                                             GeneratorNode& base_node,
                                             Position2<SpritemapDimensionT> offset);
 
-        std::map<unsigned int, Texture*> textures_;
+        std::map<unsigned int, Texture> textures_;
         std::map<unsigned int, Spritemap> spritemaps_;
     };
 } // namespace jactorio::render

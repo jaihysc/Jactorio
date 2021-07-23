@@ -1010,6 +1010,8 @@ namespace jactorio
         /// - Does not delete data_ (assumes it is nullptr)
         /// - Assumes resizing up and new_capacity is odd
         void CopyFromOther(const DVector& old) {
+            assert(data_ == nullptr);
+
             const auto new_capacity = old.capacity();
             std::unique_ptr<value_type[]> new_data(allocator_.allocate(new_capacity));
 

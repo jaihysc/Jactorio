@@ -543,16 +543,16 @@ FORCEINLINE void render::TileRenderer::PrepareChunk(TRenderBuffer& r_layer,
                                                     const SpriteTexCoordIndexT* tex_coord_ids,
                                                     const Position2<int> render_tile_offset,
                                                     const Position2<uint8_t> tile_start,
-                                                    const Position2<uint8_t> tile_amount) const noexcept {
+                                                    const Position2<uint8_t> tile_end) const noexcept {
     tex_coord_ids += tile_start.y * game::Chunk::kChunkWidth * game::kTileLayerCount;
 
 
-    for (ChunkTileCoordAxis tile_y = tile_start.y; tile_y < tile_amount.y; ++tile_y) {
+    for (ChunkTileCoordAxis tile_y = tile_start.y; tile_y < tile_end.y; ++tile_y) {
         const auto pixel_y = (render_tile_offset.y + tile_y) * SafeCast<int>(tileWidth);
 
         tex_coord_ids += tile_start.x * game::kTileLayerCount;
 
-        for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < tile_amount.x; ++tile_x) {
+        for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < tile_end.x; ++tile_x) {
             const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
 
             // Manually unrolled 3 times
@@ -579,7 +579,7 @@ FORCEINLINE void render::TileRenderer::PrepareChunk(TRenderBuffer& r_layer,
             tex_coord_ids += 3;
         }
 
-        tex_coord_ids += (game::Chunk::kChunkWidth - tile_amount.x) * game::kTileLayerCount;
+        tex_coord_ids += (game::Chunk::kChunkWidth - tile_end.x) * game::kTileLayerCount;
     }
 }
 

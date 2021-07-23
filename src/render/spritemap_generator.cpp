@@ -39,11 +39,7 @@ std::pair<const TexCoord*, int> render::Spritemap::GenNextFrame() const {
 }
 
 void render::RendererSprites::Clear() {
-    for (auto& map : textures_) {
-        delete map.second;
-    }
     textures_.clear();
-    // The pointer which this contains is already cleared by spritemaps
     spritemaps_.clear();
 }
 
@@ -52,8 +48,8 @@ void render::RendererSprites::GlInitializeSpritemap(const data::PrototypeManager
                                                     const bool invert_sprites) {
     const auto spritemap_data = CreateSpritemap(proto, group, invert_sprites);
 
-    textures_[static_cast<int>(group)] =
-        new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
+    textures_.emplace(static_cast<int>(group),
+                      Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height));
     spritemaps_.emplace(std::make_pair(static_cast<int>(group), spritemap_data));
 }
 
@@ -78,9 +74,8 @@ const render::Spritemap& render::RendererSprites::GetSpritemap(proto::Sprite::Sp
 }
 
 const render::Texture& render::RendererSprites::GetTexture(proto::Sprite::SpriteGroup group) {
-    auto* texture = textures_[static_cast<int>(group)];
-    assert(texture != nullptr);
-    return *texture;
+    const auto it = textures_.find(static_cast<int>(group));
+    return it->second;
 }
 
 

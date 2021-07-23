@@ -4,6 +4,8 @@
 #define JACTORIO_INCLUDE_RENDER_OPENGL_VERTEX_ARRAY_H
 #pragma once
 
+#include <utility>
+
 namespace jactorio::render
 {
     class VertexBuffer;
@@ -17,10 +19,19 @@ namespace jactorio::render
         VertexArray() = default;
         ~VertexArray();
 
-        VertexArray(const VertexArray& other)     = delete;
-        VertexArray(VertexArray&& other) noexcept = default;
-        VertexArray& operator=(const VertexArray& other) = delete;
-        VertexArray& operator=(VertexArray&& other) noexcept = default;
+        VertexArray(const VertexArray& other) = delete;
+        VertexArray(VertexArray&& other) noexcept;
+
+        VertexArray& operator=(VertexArray other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
+
+        friend void swap(VertexArray& lhs, VertexArray& rhs) noexcept {
+            using std::swap;
+            swap(lhs.id_, rhs.id_);
+        }
 
         /// Generates buffer
         void Init() noexcept;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <utility>
 
 #include "jactorio.h"
 
@@ -17,10 +18,14 @@ namespace jactorio::render
         VertexBuffer() = default;
         ~VertexBuffer();
 
-        VertexBuffer(const VertexBuffer& other)     = delete;
-        VertexBuffer(VertexBuffer&& other) noexcept = default;
-        VertexBuffer& operator=(const VertexBuffer& other) = delete;
-        VertexBuffer& operator=(VertexBuffer&& other) noexcept = default;
+        VertexBuffer(const VertexBuffer& other) = delete;
+        VertexBuffer(VertexBuffer&& other) noexcept;
+
+        VertexBuffer& operator=(VertexBuffer other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
 
         /// Generates buffer
         void Init() noexcept;

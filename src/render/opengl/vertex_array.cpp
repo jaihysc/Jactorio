@@ -13,6 +13,10 @@ render::VertexArray::~VertexArray() {
     DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
 }
 
+render::VertexArray::VertexArray(VertexArray&& other) noexcept : id_{other.id_} {
+    other.id_ = 0;
+}
+
 void render::VertexArray::Init() noexcept {
     DEBUG_OPENGL_CALL(glGenVertexArrays(1, &id_));
 }

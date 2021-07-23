@@ -11,6 +11,10 @@ render::IndexBuffer::~IndexBuffer() {
     DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
+render::IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept : id_{other.id_} {
+    other.id_ = 0;
+}
+
 void render::IndexBuffer::Init() noexcept {
     DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
 }
@@ -18,7 +22,6 @@ void render::IndexBuffer::Init() noexcept {
 void render::IndexBuffer::Reserve(const void* data, const uint32_t index_count) noexcept {
     Bind();
     DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(GLuint), data, GL_STATIC_DRAW));
-    count_ = index_count;
 }
 
 void* render::IndexBuffer::Map() const noexcept {
@@ -38,8 +41,4 @@ void render::IndexBuffer::Bind() const noexcept {
 
 void render::IndexBuffer::Unbind() noexcept {
     DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-}
-
-unsigned render::IndexBuffer::Count() const noexcept {
-    return count_;
 }

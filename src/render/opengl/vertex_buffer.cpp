@@ -11,6 +11,10 @@ render::VertexBuffer::~VertexBuffer() {
     DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
+render::VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept : id_{other.id_} {
+    other.id_ = 0;
+}
+
 void render::VertexBuffer::Init() noexcept {
     DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
 }

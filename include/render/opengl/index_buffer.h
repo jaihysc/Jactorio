@@ -4,6 +4,8 @@
 #define JACTORIO_INCLUDE_RENDER_OPENGL_INDEX_BUFFER_H
 #pragma once
 
+#include <utility>
+
 #include "jactorio.h"
 
 namespace jactorio::render
@@ -15,10 +17,19 @@ namespace jactorio::render
         IndexBuffer() = default;
         ~IndexBuffer();
 
-        IndexBuffer(const IndexBuffer& other)     = delete;
-        IndexBuffer(IndexBuffer&& other) noexcept = default;
-        IndexBuffer& operator=(const IndexBuffer& other) = delete;
-        IndexBuffer& operator=(IndexBuffer&& other) noexcept = default;
+        IndexBuffer(const IndexBuffer& other) = delete;
+        IndexBuffer(IndexBuffer&& other) noexcept;
+
+        IndexBuffer& operator=(IndexBuffer other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
+
+        friend void swap(IndexBuffer& lhs, IndexBuffer& rhs) noexcept {
+            using std::swap;
+            swap(lhs.id_, rhs.id_);
+        }
 
         /// Generates buffer
         void Init() noexcept;
@@ -37,11 +48,8 @@ namespace jactorio::render
         void Bind() const noexcept;
         static void Unbind() noexcept;
 
-        J_NODISCARD unsigned int Count() const noexcept;
-
     private:
-        unsigned int id_    = 0;
-        unsigned int count_ = 0;
+        unsigned int id_ = 0;
     };
 } // namespace jactorio::render
 

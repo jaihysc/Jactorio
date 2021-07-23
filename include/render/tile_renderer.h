@@ -154,12 +154,12 @@ namespace jactorio::render
         /// Prepares 1 chunk to r_layer using data from tex_coord_ids
         /// tex_coord_ids should never be nullptr
         /// \param tile_start Only prepares tiles with x >= tile_start.x && y >= tile_start.y
-        /// \param tile_amount Amount in x, y directions
+        /// \param tile_end Only prepares tiles with x < tile_end.x && y < tile_end.y
         void PrepareChunk(TRenderBuffer& r_layer,
                           const SpriteTexCoordIndexT* tex_coord_ids,
                           Position2<int> render_tile_offset,
                           Position2<uint8_t> tile_start,
-                          Position2<uint8_t> tile_amount) const noexcept;
+                          Position2<uint8_t> tile_end) const noexcept;
 
         void PrepareOverlayLayers(TRenderBuffer& r_layer,
                                   const game::Chunk& chunk,
