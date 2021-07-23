@@ -4,6 +4,9 @@ trigger:  # Run for all branches
   branches:
     include:
     - '*'
+  tags:
+    include:
+    - v*.*.*
 
 stages:
 - stage: RunTest
