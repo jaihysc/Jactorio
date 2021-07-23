@@ -119,6 +119,7 @@ void render::RenderController::InitGuiFont(ThreadedLoopCommon& common) {
         LOG_MESSAGE(warning, "No font was loaded, using default font");
     }
 
+    // Defaults to loading imgui's embedded font if none is loaded
     imManager.imRenderer.InitFontsTexture(); // Must be called after loading gui font
 }
 

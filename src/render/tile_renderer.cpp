@@ -86,7 +86,7 @@ void render::TileRenderer::InitShader() {
 }
 
 void render::TileRenderer::GlClear() noexcept {
-    DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 void render::TileRenderer::GlBind() const noexcept {
@@ -119,20 +119,19 @@ void render::TileRenderer::GlResizeWindow(const unsigned int window_x, const uns
 
 
 size_t render::TileRenderer::GetDrawThreads() const noexcept {
-    return drawThreads_;
+    return chunkDrawThreads_.size();
 }
 
 void render::TileRenderer::GlSetDrawThreads(const size_t threads) {
     assert(threads > 0);
-    drawThreads_ = threads;
 
-    chunkDrawThreads_.resize(drawThreads_);
+    chunkDrawThreads_.resize(threads);
 
     renderLayers_.clear(); // Opengl probably stores some internal memory addresses, so each layer must be recreated
-    renderLayers_.resize(drawThreads_);
+    renderLayers_.resize(threads);
 
-    assert(chunkDrawThreads_.size() == drawThreads_);
-    assert(renderLayers_.size() == drawThreads_);
+    assert(chunkDrawThreads_.size() == threads);
+    assert(renderLayers_.size() == threads);
 }
 
 SpriteTexCoordIndexT render::TileRenderer::GetAnimationOffset() noexcept {
@@ -159,8 +158,8 @@ void render::TileRenderer::SetPlayerPosition(const Position2<float>& player_posi
 }
 
 void render::TileRenderer::GlRender(const game::World& world) {
-    assert(drawThreads_ > 0);
-    assert(renderLayers_.size() == drawThreads_);
+    assert(GetDrawThreads() > 0);
+    assert(renderLayers_.size() == chunkDrawThreads_.size());
 
     EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 
@@ -239,7 +238,7 @@ void render::TileRenderer::GlRender(const game::World& world) {
     // ... Repeat until done
 
     const auto needed_threads   = chunk_amount.y;
-    const auto threads_to_start = std::min(LossyCast<int>(drawThreads_), needed_threads);
+    const auto threads_to_start = std::min(LossyCast<int>(GetDrawThreads()), needed_threads);
 
     // Start all threads
     int i = 0;
@@ -287,7 +286,7 @@ void render::TileRenderer::GlRender(const game::World& world) {
                                                  render_tile_offset);
 
         thread_n++;
-        if (thread_n >= drawThreads_)
+        if (thread_n >= GetDrawThreads())
             thread_n = 0;
     }
 
@@ -299,7 +298,7 @@ void render::TileRenderer::GlRender(const game::World& world) {
         GlPrepareEnd(r_layer);
 
         thread_n++;
-        if (thread_n >= drawThreads_)
+        if (thread_n >= GetDrawThreads())
             thread_n = 0;
     }
 }
@@ -339,18 +338,19 @@ WorldCoord render::TileRenderer::ScreenPosToWorldCoord(const Position2<float>& p
         common_->mvpManager.GetMvpMatrix() / glm::vec4(norm_screen_pos_x, norm_screen_pos_y, 1, 1);
 
     // Normalize window center between -1 and 1, since is window center, simplifies to 0
-    auto screen_center_pos = common_->mvpManager.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
-
-    // Players can be partially on a tile, adjust the center accordingly to the correct location
-    screen_center_pos.x -= SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
-    screen_center_pos.y += SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
+    const auto screen_center_pos = common_->mvpManager.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
 
     // WorldCoord sign direction
-    const auto pixels_from_center_x = adjusted_screen_pos.x - screen_center_pos.x;
-    const auto pixels_from_center_y = screen_center_pos.y - adjusted_screen_pos.y;
+    // Pixels from top left of tile player standing on
+    const auto pixels_from_tl_x = adjusted_screen_pos.x - screen_center_pos.x +
+        SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
 
-    auto tile_x = truncated_player_pos_x + pixels_from_center_x / LossyCast<float>(tileWidth);
-    auto tile_y = truncated_player_pos_y + pixels_from_center_y / LossyCast<float>(tileWidth);
+    // Opengl Y increases going up, WorldCoord increases going down
+    const auto pixels_from_tl_y = screen_center_pos.y - adjusted_screen_pos.y +
+        SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
+
+    auto tile_x = truncated_player_pos_x + pixels_from_tl_x / LossyCast<float>(tileWidth);
+    auto tile_y = truncated_player_pos_y + pixels_from_tl_y / LossyCast<float>(tileWidth);
 
     // Subtract extra tile if negative because no tile exists at -0, -0
     if (tile_x < 0)
@@ -370,18 +370,16 @@ Position2<int16_t> render::TileRenderer::WorldCoordToBufferPos(const Position2<f
     const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(player_pos.x));
     const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(player_pos.y));
 
-    // From center, without matrix adjustments (WorldCoord sign direction)
-    const auto pixels_from_center_x = (coord.x - truncated_player_pos_x) * tileWidth;
-    const auto pixels_from_center_y = (coord.y - truncated_player_pos_y) * tileWidth;
+    // From top left, without matrix adjustments (WorldCoord sign direction)
+    const auto pixels_from_tl_x = (coord.x - truncated_player_pos_x) * tileWidth;
+    const auto pixels_from_tl_y = (coord.y - truncated_player_pos_y) * tileWidth;
 
     // From top left of screen (Top left 0, 0)
     const auto buffer_center_pos = common_->mvpManager.GetMvpMatrix() / glm::vec4(0, 0, 1.f, 1.f);
-    auto buffer_pos_x            = pixels_from_center_x + buffer_center_pos.x;
-    auto buffer_pos_y            = pixels_from_center_y + buffer_center_pos.y;
-
-    // Players can be partially on a tile, remove partial distance for top left of a tile
-    buffer_pos_x -= SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
-    buffer_pos_y -= SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
+    const auto buffer_pos_x =
+        pixels_from_tl_x + buffer_center_pos.x - SafeCast<float>(tileWidth) * (player_pos.x - truncated_player_pos_x);
+    const auto buffer_pos_y =
+        pixels_from_tl_y + buffer_center_pos.y - SafeCast<float>(tileWidth) * (player_pos.y - truncated_player_pos_y);
 
     // Sometimes has float 8.99999, which is wrongly truncated to 8, thus must round first
     return {LossyCast<int16_t>(std::round(buffer_pos_x)), LossyCast<int16_t>(std::round(buffer_pos_y))};
@@ -423,13 +421,6 @@ void render::TileRenderer::GlDraw(const uint64_t count) noexcept {
     DEBUG_OPENGL_CALL(glDrawArrays(GL_PATCHES, 0, SafeCast<GLsizei>(count)));
 }
 
-void render::TileRenderer::GlDrawIndex(const uint64_t index_count) noexcept {
-    DEBUG_OPENGL_CALL(glDrawElements(GL_PATCHES,
-                                     SafeCast<GLsizei>(index_count),
-                                     GL_UNSIGNED_INT,
-                                     nullptr)); // Pointer not needed as index buffer is already bound
-}
-
 void render::TileRenderer::CalculateViewMatrix(const Position2<int> i_player) noexcept {
     // Decimal is used to shift the camera
     // Invert the movement to give the illusion of moving in the correct direction
@@ -455,9 +446,13 @@ void render::TileRenderer::CalculateViewMatrix(const Position2<int> i_player) no
 }
 
 Position2<int> render::TileRenderer::GetTileDrawAmount() const noexcept {
-    const auto matrix = glm::vec4(1, -1, 1, 1) / common_->mvpManager.GetMvpMatrix();
-    return Position2{LossyCast<int>(matrix.x / LossyCast<double>(tileWidth) * 2) + 2,
-                     LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2};
+    // Units are in pixels
+    const auto bottom_right = glm::vec4(1, -1, 1, 1) / common_->mvpManager.GetMvpMatrix();
+
+    // Double because 0 is at the center
+    // + 2 for some extra tiles
+    return Position2{LossyCast<int>(bottom_right.x / LossyCast<double>(tileWidth) * 2) + 2,
+                     LossyCast<int>(bottom_right.y / LossyCast<double>(tileWidth) * 2) + 2};
 }
 
 void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
@@ -502,7 +497,7 @@ void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
     // Allocate for the maximum possible tile layers to render
     const auto required_r_layer_capacity =
         SafeCast<uint32_t>(chunk_span * game::Chunk::kChunkArea * game::kTileLayerCount);
-    if (required_r_layer_capacity >= r_layer.Capacity()) {
+    if (required_r_layer_capacity > r_layer.Capacity()) {
         r_layer.Reserve(required_r_layer_capacity);
         return;
     }
@@ -513,7 +508,8 @@ void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
         skip_tiles_top = 0;
     }
 
-    auto tiles_prepare_y = (windowHeight_ - render_tile_offset.y) / SafeCast<int>(tileWidth);
+    // Tiles needed to reach the window height
+    auto tiles_prepare_y = (windowHeight_ - render_tile_offset.y * SafeCast<int>(tileWidth)) / SafeCast<int>(tileWidth);
     if (tiles_prepare_y > game::Chunk::kChunkWidth) {
         tiles_prepare_y = game::Chunk::kChunkWidth;
     }
@@ -526,7 +522,9 @@ void render::TileRenderer::PrepareChunkRow(TRenderBuffer& r_layer,
             skip_tiles_left = 0;
         }
 
-        auto tiles_prepare_x = (windowWidth_ - render_tile_offset.x) / SafeCast<int>(tileWidth);
+        // Tiles needed to reach window width
+        auto tiles_prepare_x =
+            (windowWidth_ - render_tile_offset.x * SafeCast<int>(tileWidth)) / SafeCast<int>(tileWidth);
         if (tiles_prepare_x > game::Chunk::kChunkWidth) {
             tiles_prepare_x = game::Chunk::kChunkWidth;
         }
@@ -545,16 +543,16 @@ FORCEINLINE void render::TileRenderer::PrepareChunk(TRenderBuffer& r_layer,
                                                     const SpriteTexCoordIndexT* tex_coord_ids,
                                                     const Position2<int> render_tile_offset,
                                                     const Position2<uint8_t> tile_start,
-                                                    const Position2<uint8_t> tile_end) const noexcept {
+                                                    const Position2<uint8_t> tile_amount) const noexcept {
     tex_coord_ids += tile_start.y * game::Chunk::kChunkWidth * game::kTileLayerCount;
 
 
-    for (ChunkTileCoordAxis tile_y = tile_start.y; tile_y < tile_end.y; ++tile_y) {
+    for (ChunkTileCoordAxis tile_y = tile_start.y; tile_y < tile_amount.y; ++tile_y) {
         const auto pixel_y = (render_tile_offset.y + tile_y) * SafeCast<int>(tileWidth);
 
         tex_coord_ids += tile_start.x * game::kTileLayerCount;
 
-        for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < tile_end.x; ++tile_x) {
+        for (ChunkTileCoordAxis tile_x = tile_start.x; tile_x < tile_amount.x; ++tile_x) {
             const auto pixel_x = (render_tile_offset.x + tile_x) * SafeCast<int>(tileWidth);
 
             // Manually unrolled 3 times
@@ -581,7 +579,7 @@ FORCEINLINE void render::TileRenderer::PrepareChunk(TRenderBuffer& r_layer,
             tex_coord_ids += 3;
         }
 
-        tex_coord_ids += (game::Chunk::kChunkWidth - tile_end.x) * game::kTileLayerCount;
+        tex_coord_ids += (game::Chunk::kChunkWidth - tile_amount.x) * game::kTileLayerCount;
     }
 }
 
@@ -632,7 +630,7 @@ void render::TileRenderer::GlPrepareEnd(TRenderBuffer& r_layer) {
 void render::TileRenderer::GlUpdateTileProjectionMatrix(const float zoom) noexcept {
     // Must subtract some because zooming to EXACTLY half leaves no pixels remaining, making everything invisible
     const auto max_pixel_zoom     = std::min(windowWidth_, windowHeight_) / 2.f - 1;
-    constexpr auto min_pixel_zoom = 1.f;
+    constexpr auto min_pixel_zoom = 1.f; // MvpManager requests pixel zoom never 0
 
     auto pixel_zoom = zoom * max_pixel_zoom;
 

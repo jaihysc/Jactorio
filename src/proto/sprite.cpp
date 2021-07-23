@@ -116,7 +116,6 @@ proto::Sprite* proto::Sprite::Trim(const SpriteTrimT pixels) {
         }
     };
 
-    // Saves the trimmed image in place
     auto* write_ptr = new_buffer;
     auto* read_ptr  = image_.buffer;
     read_ptr += pixels * image_.width * image_.bytesPerPixel; // Skip top

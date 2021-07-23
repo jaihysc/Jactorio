@@ -429,7 +429,7 @@ namespace jactorio
                 reserve(other.capacity());
 
                 for (auto it = other.begin(); it != other.end(); ++it) {
-                    UncheckedEmplaceBack(*it);
+                    UncheckedEmplaceBack(std::move(*it));
                 }
             }
         }
@@ -669,7 +669,10 @@ namespace jactorio
             backPtr_  = midpoint_;
         }
 
-        // TODO insert, erase front and back
+        // If needed one day emplace_move_front, emplace_move_back; insert, erase front and back
+
+        /*
+        // Current emplace is non ideal, cannot write to index -1
 
         /// Inserts a new element into the container directly before pos
         /// - If pos <  midpoint: Existing elements moved forwards
@@ -700,7 +703,6 @@ namespace jactorio
             return iterator(emplace_ptr);
         }
 
-        /*
         /// Removes the element at pos
         /// - Invalidates all iterators after pos, including end()
         /// \return Iterator following the removed element
@@ -939,13 +941,15 @@ namespace jactorio
         }
 
 
+        /*
         /// Creates a gap of count elements starting with element at element_offset from data_
         /// by moving elements to the front of the container
         /// \param element_offset Elements from data_
         void CreateElementGapFront(const size_type element_offset, const size_type count) {
             assert(count != 0);
 
-            reserve(size() + count * 2); // Reversed capacity is split between front and back
+            assert(false); // This reads into uninitialized memory because of element_offset after reserve
+            reserve((std::max(size_front(), size_back()) + count) * 2);
 
             auto current_element = frontPtr_;
             const auto* end      = data_ + element_offset;
@@ -965,7 +969,8 @@ namespace jactorio
         void CreateElementGapBack(const size_type element_offset, const size_type count) {
             assert(count != 0);
 
-            reserve(size() + count * 2); // Reversed capacity is split between front and back
+            assert(false); // This reads into uninitialized memory because of element_offset after reserve
+            reserve((std::max(size_front(), size_back()) + count) * 2);
 
             auto current_element = backPtr_ - 1;
             const auto* start    = data_ + element_offset;
@@ -979,7 +984,6 @@ namespace jactorio
             backPtr_ += count;
         }
 
-        /*
         /// Remove count elements starting at start (start removed if count >= 1)
         void RemoveElements(const pointer start, size_type count) {
             assert(count != 0);

@@ -291,7 +291,7 @@ namespace jactorio::game
     };
 
     template <typename T>
-    FORCEINLINE const T* ChunkTile::GetPrototype() const noexcept {
+    const T* ChunkTile::GetPrototype() const noexcept {
         return SafeCast<const T*>(common_.prototype.Get());
     }
 
@@ -313,7 +313,7 @@ namespace jactorio::game
     }
 
     template <typename T>
-    FORCEINLINE T* ChunkTile::GetUniqueData() noexcept {
+    T* ChunkTile::GetUniqueData() noexcept {
         if (!IsTopLeft()) {
             auto* tl_layer = AsNonTopLeft().topLeft;
             assert(tl_layer != nullptr);
@@ -325,7 +325,7 @@ namespace jactorio::game
     }
 
     template <typename T>
-    FORCEINLINE const T* ChunkTile::GetUniqueData() const noexcept {
+    const T* ChunkTile::GetUniqueData() const noexcept {
         return const_cast<ChunkTile*>(this)->GetUniqueData<const T>();
     }
 

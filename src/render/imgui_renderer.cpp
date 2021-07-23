@@ -209,27 +209,14 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data) const {
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     DEBUG_OPENGL_CALL(glEnable(GL_SCISSOR_TEST));
 
-    // Support for GL 4.5 rarely used glClipControl(GL_UPPER_LEFT)
-    bool clip_origin_lower_left = true;
-#if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
-    GLenum current_clip_origin = 0;
-    DEBUG_OPENGL_CALL(glGetIntegerv(GL_CLIP_ORIGIN, reinterpret_cast<GLint*>(&current_clip_origin)));
-    if (current_clip_origin == GL_UPPER_LEFT)
-        clip_origin_lower_left = false;
-#endif
-
     // Setup viewport, orthographic projection matrix
     // Our visible imgui space lies from draw_data->DisplayPos (top left) to
     // draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
     const auto l = draw_data->DisplayPos.x;
     const auto r = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
-    auto t       = draw_data->DisplayPos.y;
-    auto b       = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
-    if (!clip_origin_lower_left) {
-        const auto tmp = t;
-        t              = b;
-        b              = tmp;
-    } // Swap top and bottom if origin is upper left
+    const auto t = draw_data->DisplayPos.y;
+    const auto b = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
+
     const float ortho_projection[4][4] = {
         {2.0f / (r - l), 0.0f, 0.0f, 0.0f},
         {0.0f, 2.0f / (t - b), 0.0f, 0.0f},
@@ -238,8 +225,4 @@ void render::ImGuiRenderer::SetupRenderState(ImDrawData* draw_data) const {
     };
     DEBUG_OPENGL_CALL(glUniform1i(attribLocationTex_, 0));
     DEBUG_OPENGL_CALL(glUniformMatrix4fv(attribLocationProjMtx_, 1, GL_FALSE, &ortho_projection[0][0]));
-#ifdef GL_SAMPLER_BINDING
-    // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
-    DEBUG_OPENGL_CALL(glBindSampler(0, 0));
-#endif
 }

@@ -53,27 +53,12 @@ namespace jactorio::game
         }
 
         /// Tiles at provided tlayer
-        J_NODISCARD FORCEINLINE TileArrayT& Tiles(TileLayer tlayer) noexcept {
-            return layers_[static_cast<int>(tlayer)];
-        }
-        J_NODISCARD FORCEINLINE const TileArrayT& Tiles(TileLayer tlayer) const noexcept {
-            return layers_[static_cast<int>(tlayer)];
-        }
+        J_NODISCARD TileArrayT& Tiles(TileLayer tlayer) noexcept;
+        J_NODISCARD const TileArrayT& Tiles(TileLayer tlayer) const noexcept;
 
         /// Gets tile at x, y offset from top left of chunk
-        J_NODISCARD FORCEINLINE ChunkTile& GetCTile(const ChunkTileCoord& coord, const TileLayer tlayer) noexcept {
-            return const_cast<ChunkTile&>(static_cast<const Chunk*>(this)->GetCTile(coord, tlayer));
-        }
-        J_NODISCARD FORCEINLINE const ChunkTile& GetCTile(const ChunkTileCoord& coord,
-                                                          const TileLayer tlayer) const noexcept {
-            assert(coord.x < kChunkWidth);
-            assert(coord.y < kChunkWidth);
-
-            using IndexT = uint16_t;
-
-            static_assert(std::numeric_limits<IndexT>::max() > kChunkArea);
-            return Tiles(tlayer)[SafeCast<IndexT>(coord.y) * kChunkWidth + coord.x];
-        }
+        J_NODISCARD ChunkTile& GetCTile(const ChunkTileCoord& coord, TileLayer tlayer) noexcept;
+        J_NODISCARD const ChunkTile& GetCTile(const ChunkTileCoord& coord, TileLayer tlayer) const noexcept;
 
         // Overlays - Rendered without being fixed to a tile position
 

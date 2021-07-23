@@ -60,7 +60,7 @@ void render::TRenderBuffer::GlHandleBufferResize() {
         return;
 
     gResizeVertexBuffers_ = false;
-    eCapacity_            = LossyCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
+    eCapacity_ = LossyCast<decltype(eCapacity_)>(SafeCast<float>(queuedECapacity_) * kResizeECapacityMultiplier);
 
     baseVb_.Reserve(nullptr, eCapacity_ * kBaseBytesPerElement, false);
 

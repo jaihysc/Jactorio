@@ -98,7 +98,7 @@ namespace jactorio::game
         EXPECT_EQ(activated_tile, tile_entity);
         EXPECT_EQ(activated_coord, WorldCoord(3, 4));
 
-        // Activated tile can be set to nullptr to deactivate
+        // Activated tile can be deactivated
         player.placement.DeactivateTile();
         std::tie(activated_tile, activated_coord) = player.placement.GetActivatedTile();
         EXPECT_EQ(activated_tile, nullptr);
@@ -115,7 +115,7 @@ namespace jactorio::game
             auto& chunk = world_.EmplaceChunk({0, 0});
 
             container_.SetItem(&item_);
-            container_.sprite = &sprite_;
+            container_.sprite = &sprite_; // Conveyor utility requires tex coord id when setting up conveyor
 
             tile_.isWater = false;
 

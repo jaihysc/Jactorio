@@ -58,7 +58,7 @@ static void PrepareConveyorSegmentData(render::IRenderBuffer& buf,
         *target_offset += dist.getAsDouble() * multiplier;
 
         // tl = Top left; br = Bottom right
-        constexpr auto f_tile_width = static_cast<float>(render::TileRenderer::tileWidth);
+        constexpr auto f_tile_width = SafeCast<float>(render::TileRenderer::tileWidth);
         const auto tl               = Position2{
             pixel_offset.x + LossyCast<float>(tile_offset.x) * f_tile_width,
             pixel_offset.y + LossyCast<float>(tile_offset.y) * f_tile_width,
@@ -323,10 +323,10 @@ void render::PrepareInserterParts(IRenderBuffer& buf,
     constexpr auto arm_length = 0.9f; // Since arm is centered, arm sticks out of the tile by 0.4
 
     // Since center of inserter on sprite is NOT center of tile, offset a little so arm lines up with inserter
-    constexpr auto arm_offset = glm::vec2{-0.05, -0.05f};
+    constexpr auto arm_offset = glm::vec2{-0.05f, -0.05f};
 
 
-    constexpr auto arm_pixel_offset = arm_offset * glm::vec2{static_cast<float>(TileRenderer::tileWidth)};
+    constexpr auto arm_pixel_offset = arm_offset * glm::vec2{SafeCast<float>(TileRenderer::tileWidth)};
 
     constexpr auto arm_pixel_width = arm_width * TileRenderer::tileWidth;
     const auto arm_pixel_length    = arm_length * TileRenderer::tileWidth +
@@ -338,8 +338,8 @@ void render::PrepareInserterParts(IRenderBuffer& buf,
                                            static_cast<float>(inserter_data.orientation) * 90);
 
     // To world space
-    const auto transform = glm::vec2{pixel_offset.x + static_cast<float>(TileRenderer::tileWidth) / 2,
-                                     pixel_offset.y + static_cast<float>(TileRenderer::tileWidth) / 2} +
+    const auto transform = glm::vec2{pixel_offset.x + SafeCast<float>(TileRenderer::tileWidth) / 2,
+                                     pixel_offset.y + SafeCast<float>(TileRenderer::tileWidth) / 2} +
         arm_pixel_offset;
 
     // Arm
@@ -389,7 +389,7 @@ void render::PrepareInserterParts(IRenderBuffer& buf,
     // Held item
     if (inserter_data.status == proto::InserterData::Status::dropoff) {
         // Render the top of item to align with the top of inserter arm
-        constexpr auto item_pixel_width = static_cast<float>(TileRenderer::tileWidth) * game::ConveyorProp::kItemWidth;
+        constexpr auto item_pixel_width = SafeCast<float>(TileRenderer::tileWidth) * game::ConveyorProp::kItemWidth;
 
         /*
         // To always have the item upright when picking up:
@@ -407,7 +407,7 @@ void render::PrepareInserterParts(IRenderBuffer& buf,
         auto bl = glm::vec2{tl.x, br.y};
 
         // When inserter is up, must rotate 180 deg since pickup is facing down
-        const auto item_rotation_rad = glm::radians(180 - static_cast<float>(inserter_data.orientation) * 90);
+        const auto item_rotation_rad = glm::radians(180 - SafeCast<float>(inserter_data.orientation) * 90);
 
         tl = glm::rotate(tl, item_rotation_rad);
         tr = glm::rotate(tr, item_rotation_rad);

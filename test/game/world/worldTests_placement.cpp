@@ -83,6 +83,7 @@ namespace jactorio::game
         void SetUp() override {
             GenerateTestWorld(world_, &waterTile_, &landTile_);
 
+            // Conveyor utility requires tex coord id when setting up conveyor
             entity_.sprite     = &sprite_;
             sprite_.texCoordId = 1234;
         }

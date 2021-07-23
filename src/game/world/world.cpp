@@ -72,6 +72,7 @@ void game::World::DeleteChunk(const ChunkCoord& c_coord) {
 
 void game::World::Clear() {
     worldChunks_.clear();
+    chunkTexCoordIds_.clear();
     for (auto& list : logicLists_) {
         list.clear();
     }

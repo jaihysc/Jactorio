@@ -262,6 +262,7 @@ namespace jactorio::game
 
         EXPECT_EQ(world_.GetChunkC({6, 6}), nullptr);
         EXPECT_TRUE(world_.LogicGet(LogicGroup::inserter).empty());
+        EXPECT_EQ(world_.GetChunkTexCoordIds({6, 6}).second, 0);
     }
 
 

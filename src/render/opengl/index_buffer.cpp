@@ -8,7 +8,6 @@
 using namespace jactorio;
 
 render::IndexBuffer::~IndexBuffer() {
-    Unbind();
     DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 

@@ -8,7 +8,6 @@
 using namespace jactorio;
 
 render::VertexBuffer::~VertexBuffer() {
-    Unbind();
     DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 

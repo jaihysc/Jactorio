@@ -23,11 +23,11 @@ namespace jactorio
             member_ = 0xFE;
         }
         TestClass(const TestClass& other) {
-            assert(other.member_ == 0xAB); // Ensures class is valid (Invalid invalid memory)
+            assert(other.member_ == 0xAB); // Ensures class is valid (Invalid? -> invalid memory)
             copyCalls++;
         }
         TestClass(TestClass&& other) noexcept {
-            assert(other.member_ == 0xAB); // Ensures class is valid (Invalid invalid memory)
+            assert(other.member_ == 0xAB); // Ensures class is valid (Invalid? -> invalid memory)
             member_ = 0xE0E;
             moveCalls++;
         }
@@ -40,7 +40,7 @@ namespace jactorio
 
         friend void swap(TestClass& lhs, TestClass& rhs) noexcept {
             using std::swap;
-            swap(lhs.member_, rhs.member_);
+            // swap(lhs.member_, rhs.member_);
         }
 
         /// Resets counters of constructor destructor calls to 0
@@ -196,6 +196,7 @@ namespace jactorio
             }
             EXPECT_EQ(TestClass::destructorCalls, 2);
         }
+        // Nothing for v to destruct, its entire data pointer was moved
         EXPECT_EQ(TestClass::destructorCalls, 2);
     }
 
@@ -591,6 +592,7 @@ namespace jactorio
         EXPECT_EQ(TestClass::destructorCalls, 3);
     }
 
+    /*
     TEST(DVector, EmplaceMoveFront) {
         DVector<int> v;
         v.push_front(3);
@@ -678,7 +680,6 @@ namespace jactorio
         EXPECT_EQ(TestClass::moveCalls, 11);
     }
 
-    /*
     TEST(DVector, EraseElement) {
         DVector v{1, 2, 3, 4, 5};
         auto it = v.erase(v.begin() + 1);

@@ -10,7 +10,6 @@
 using namespace jactorio;
 
 render::VertexArray::~VertexArray() {
-    Unbind();
     DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
 }
 

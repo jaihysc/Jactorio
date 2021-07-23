@@ -23,7 +23,7 @@ namespace jactorio::render
         static constexpr uint32_t kInitialSize = 500;
 
         /// When resizing, the amount requested is multiplied by this, reducing future allocations
-        static constexpr double kResizeECapacityMultiplier = 1.25;
+        static constexpr auto kResizeECapacityMultiplier = 1.25f;
 
         // Vertex buffer
         // It is actually 5ms faster when each tile is 4 components! Just put 0 for Z if depth testing not needed

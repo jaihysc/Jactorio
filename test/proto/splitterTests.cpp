@@ -17,6 +17,7 @@ namespace jactorio::proto
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
 
+            // Conveyor utility requires tex coord id when setting up conveyor
             transBelt_.sprite  = &sprite_;
             splitter_.sprite   = &sprite_;
             sprite_.texCoordId = 1234;

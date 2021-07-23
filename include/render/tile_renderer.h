@@ -109,6 +109,7 @@ namespace jactorio::render
         /// Renders, disallows use of Prepare methods after this call
         void GlPrepareEnd();
 
+        /// Provided tex coord id increments along dimension.x, left to right; then dimension.y up to down
         void PrepareSprite(const WorldCoord& coord,
                            SpriteTexCoordIndexT tex_coord_id,
                            const Dimension& dimension = {1, 1});
@@ -133,9 +134,6 @@ namespace jactorio::render
 
         /// glDrawArrays
         static void GlDraw(uint64_t count) noexcept;
-        /// glDrawBuffers
-        /// Requires index buffer bound
-        static void GlDrawIndex(uint64_t index_count) noexcept;
 
 
         void CalculateViewMatrix(Position2<int> i_player) noexcept;
@@ -156,12 +154,12 @@ namespace jactorio::render
         /// Prepares 1 chunk to r_layer using data from tex_coord_ids
         /// tex_coord_ids should never be nullptr
         /// \param tile_start Only prepares tiles with x >= tile_start.x && y >= tile_start.y
-        /// \param tile_end Only prepares tiles with x < tile_end.x && y < tile_end.y
+        /// \param tile_amount Amount in x, y directions
         void PrepareChunk(TRenderBuffer& r_layer,
                           const SpriteTexCoordIndexT* tex_coord_ids,
                           Position2<int> render_tile_offset,
                           Position2<uint8_t> tile_start,
-                          Position2<uint8_t> tile_end) const noexcept;
+                          Position2<uint8_t> tile_amount) const noexcept;
 
         void PrepareOverlayLayers(TRenderBuffer& r_layer,
                                   const game::Chunk& chunk,
@@ -187,7 +185,6 @@ namespace jactorio::render
         const Spritemap* spritemap_ = nullptr;
         const Texture* texture_     = nullptr;
 
-        size_t drawThreads_ = 0;
         std::vector<std::future<void>> chunkDrawThreads_;
 
         /// Each thread gets a render layer

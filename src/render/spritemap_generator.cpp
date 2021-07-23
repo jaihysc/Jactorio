@@ -17,7 +17,8 @@ std::pair<const TexCoord*, int> render::Spritemap::GenCurrentFrame() const {
     buffer_.emplace_back(); // Index 0 unused
 
     for (const auto& animation : animations_) {
-        const auto base_offset = animation.texCoordIndex + animation.currentFrame * animation.span;
+        const auto base_offset =
+            SafeCast<std::size_t>(animation.currentFrame) * animation.span + animation.texCoordIndex;
         for (int i = 0; i < animation.span; ++i) {
             buffer_.push_back(texCoords_[base_offset + i]);
         }
@@ -256,8 +257,8 @@ void render::RendererSprites::SetSpritemapPixel(GeneratorContext& context,
                                                 Position2<unsigned> pixel_pos) {
     assert(image.buffer != nullptr);
 
-    /// Calculates index into image buffer
-    auto calc_image_index = [&](const uint8_t color_offset) {
+    /// Calculates index to first component into image buffer
+    auto calc_image_index = [&]() {
         auto base = SafeCast<uint64_t>(image.width);
 
         if (context.invertSprites) {
@@ -269,27 +270,28 @@ void render::RendererSprites::SetSpritemapPixel(GeneratorContext& context,
         base += pixel_pos.x;
 
         // Obtain R, G, B or A
-        base = base * 4 + color_offset;
+        base = base * 4;
         return base;
     };
 
-    /// Calculates index into spritemap buffer
-    auto calc_spritemap_index = [&](const uint8_t color_offset) {
+    /// Calculates index to first component into spritemap buffer
+    auto calc_spritemap_index = [&]() {
         auto buffer_index = SafeCast<uint64_t>(context.spritemapWidth) * offset.y;
         buffer_index += offset.x;
 
         // Obtain R, G, B or A
-        buffer_index = buffer_index * 4 + color_offset;
+        buffer_index = buffer_index * 4;
         return buffer_index;
     };
 
 
-    for (uint8_t color_offset = 0; color_offset < 4; ++color_offset) {
-        const auto image_index     = calc_image_index(color_offset);
-        const auto spritemap_index = calc_spritemap_index(color_offset);
+    const auto image_index     = calc_image_index();
+    const auto spritemap_index = calc_spritemap_index();
 
-        context.spritemapBuffer[spritemap_index] = image.buffer[image_index];
-    }
+    context.spritemapBuffer[spritemap_index]     = image.buffer[image_index];
+    context.spritemapBuffer[spritemap_index + 1] = image.buffer[image_index + 1];
+    context.spritemapBuffer[spritemap_index + 2] = image.buffer[image_index + 2];
+    context.spritemapBuffer[spritemap_index + 3] = image.buffer[image_index + 3];
 }
 
 void render::RendererSprites::SetImageBorder(GeneratorContext& context,
@@ -406,6 +408,8 @@ void render::RendererSprites::GenerateAnimationTexCoords(GeneratorContext& conte
             throw std::runtime_error("Not enough animation frames to reverse, >= 3 required");
         }
 
+        // Moves back 2 frames, starting at second last frame:
+        // Copies tex for frame, moves 1 frame back, repeat
         auto index = context.texCoords.size() - animation.span * 2;
         for (int j = 0; j < animation.frames - 2; ++j) {
             for (int i = 0; i < animation.span; ++i) {

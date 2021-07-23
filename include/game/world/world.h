@@ -169,11 +169,17 @@ namespace jactorio::game
                            SpriteTexCoordIndexT id) noexcept;
 
         /// Enables animation for multi-tile(if exists) at tile layer at coord
-        /// All animations are enabled by default
+        /// - Uses animation offset from TileRenderer
+        /// - All animations are enabled by default
         void EnableAnimation(const WorldCoord& coord, TileLayer tlayer) noexcept;
+        /// Enables animation for multi-tile(if exists) at tile layer at coord
+        /// - All animations are enabled by default
         void EnableAnimation(WorldCoord coord, TileLayer tlayer, SpriteTexCoordIndexT animation_offset) noexcept;
+
         /// Disables animation for multi-tile(if exists) at tile layer at coord
+        /// - Uses animation offset from TileRenderer
         void DisableAnimation(const WorldCoord& coord, TileLayer tlayer) noexcept;
+        /// Disables animation for multi-tile(if exists) at tile layer at coord
         void DisableAnimation(WorldCoord coord, TileLayer tlayer, SpriteTexCoordIndexT animation_offset) noexcept;
 
 

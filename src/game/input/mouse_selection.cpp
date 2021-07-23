@@ -25,11 +25,7 @@ void game::MouseSelection::DrawCursorOverlay(render::TileRenderer& renderer,
                                              GameWorlds& worlds,
                                              Player& player,
                                              const data::PrototypeManager& proto) {
-    const auto* stack         = player.inventory.GetSelectedItem();
-    const auto* cursor_sprite = proto.Get<proto::Sprite>(
-        player.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
-    assert(cursor_sprite != nullptr);
-
+    const auto* stack = player.inventory.GetSelectedItem();
 
     const auto cursor_coord = player.world.GetMouseTileCoords();
     auto& world             = worlds[player.world.GetId()];
@@ -56,6 +52,10 @@ void game::MouseSelection::DrawCursorOverlay(render::TileRenderer& renderer,
 
         if (entity_tile->GetPrototype() != nullptr || resource_tile->GetPrototype() != nullptr) {
             // No item selected, over entity
+            const auto* cursor_sprite = proto.Get<proto::Sprite>(
+                player.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
+            assert(cursor_sprite != nullptr);
+
             renderer.PrepareSprite(cursor_coord, cursor_sprite->texCoordId);
         }
     }

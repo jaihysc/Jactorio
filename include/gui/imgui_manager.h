@@ -56,7 +56,7 @@ namespace jactorio::gui
         /// Sets up ImGui context
         void Init(const render::DisplayWindow& display_window);
         /// Initializes the spritemap for rendering the world and character menus
-        /// \remark Requires Sprite::sprite_group::gui to be initialized
+        /// \remark spritemap and texture must be kept alive for lifetime of ImGuiManager
         void InitData(const render::Spritemap& spritemap, const render::Texture& texture);
 
         /// Loads glyphs from provided localization's font and builds font

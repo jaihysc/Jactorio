@@ -48,8 +48,6 @@ namespace jactorio::render
         void InitRendererCommon() const noexcept;
         void InitGuiFont(ThreadedLoopCommon& common);
         void InitTextures(ThreadedLoopCommon& common);
-
-        bool setupGui_ = false;
     };
 } // namespace jactorio::render
 
