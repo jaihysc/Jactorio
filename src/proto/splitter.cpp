@@ -10,7 +10,11 @@
 
 using namespace jactorio;
 
-static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitter;
+SpriteTexCoordIndexT proto::Splitter::OnGetTexCoordId(const game::World& world,
+                                                      const WorldCoord& coord,
+                                                      const Orientation orientation) const {
+    return FWorldObject::OnGetTexCoordId(world, coord, orientation);
+}
 
 void proto::Splitter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
@@ -19,10 +23,10 @@ void proto::Splitter::OnBuild(game::World& world,
     world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<SplitterData>(orientation);
 
     auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
-        auto* con_data = GetConData(world, side_coord);
+        auto [proto, con_data] = GetConveyorInfo(world, side_coord);
         assert(con_data != nullptr);
 
-        BuildConveyor(world, side_coord, *con_data, orientation, kSplitterLogicGroup);
+        BuildConveyor(world, side_coord, *con_data, orientation, game::LogicGroup::splitter);
     };
 
     build_conveyor(coord);
@@ -39,8 +43,8 @@ void proto::Splitter::OnNeighborUpdate(game::World& world,
 
 void proto::Splitter::OnRemove(game::World& world, game::Logic& /*logic*/, const WorldCoord& coord) const {
 
-    RemoveConveyor(world, coord, kSplitterLogicGroup);
-    RemoveConveyor(world, GetNonTopLeftCoord(world, coord, game::TileLayer::entity), kSplitterLogicGroup);
+    RemoveConveyor(world, coord, game::LogicGroup::splitter);
+    RemoveConveyor(world, GetNonTopLeftCoord(world, coord, game::TileLayer::entity), game::LogicGroup::splitter);
 }
 
 

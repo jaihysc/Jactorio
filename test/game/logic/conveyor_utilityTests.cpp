@@ -36,7 +36,7 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, GetConveyorDataConveyor) {
         auto& con_data = TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_);
 
-        EXPECT_EQ(GetConData(world_, {0, 0}), &con_data);
+        EXPECT_EQ(GetConveyorInfo(world_, {0, 0}).second, &con_data);
     }
 
     TEST_F(ConveyorUtilityTest, GetConveyorDataSplitter) {
@@ -45,8 +45,8 @@ namespace jactorio::game
 
         auto& splitter_data = TestSetupBlankSplitter(world_, {0, 0}, Orientation::up, splitter);
 
-        EXPECT_EQ(GetConData(world_, {0, 0}), &splitter_data.left);
-        EXPECT_EQ(GetConData(world_, {1, 0}), &splitter_data.right);
+        EXPECT_EQ(GetConveyorInfo(world_, {0, 0}).second, &splitter_data.left);
+        EXPECT_EQ(GetConveyorInfo(world_, {1, 0}).second, &splitter_data.right);
     }
 
     TEST_F(ConveyorUtilityTest, GetConveyorDataSplitterInverted) {
@@ -55,8 +55,8 @@ namespace jactorio::game
 
         auto& splitter_data = TestSetupBlankSplitter(world_, {0, 0}, Orientation::left, splitter);
 
-        EXPECT_EQ(GetConData(world_, {0, 1}), &splitter_data.left);
-        EXPECT_EQ(GetConData(world_, {0, 0}), &splitter_data.right);
+        EXPECT_EQ(GetConveyorInfo(world_, {0, 1}).second, &splitter_data.left);
+        EXPECT_EQ(GetConveyorInfo(world_, {0, 0}).second, &splitter_data.right);
     }
 
 
@@ -422,7 +422,7 @@ namespace jactorio::game
         ConveyorDestroy(world_, {1, 0}, kLogicGroup_);
 
 
-        auto* behind_con_data = GetConData(world_, {0, 0});
+        auto [behind_proto, behind_con_data] = GetConveyorInfo(world_, {0, 0});
         ASSERT_NE(behind_con_data, nullptr);
 
         EXPECT_EQ(behind_con_data->structure->length, 1);
@@ -461,13 +461,13 @@ namespace jactorio::game
 
         ConveyorDestroy(world_, {2, 0}, kLogicGroup_);
 
-        auto* ahead_con_data = GetConData(world_, {4, 0});
+        auto [ahead_proto, ahead_con_data] = GetConveyorInfo(world_, {4, 0});
         ASSERT_NE(ahead_con_data, nullptr);
 
         EXPECT_EQ(ahead_con_data->structure->length, 2);
 
 
-        auto* behind_con_data = GetConData(world_, {0, 0});
+        auto [behind_proto, behind_con_data] = GetConveyorInfo(world_, {0, 0});
         ASSERT_NE(behind_con_data, nullptr);
 
         EXPECT_EQ(behind_con_data->structIndex, 1);
@@ -863,6 +863,19 @@ namespace jactorio::game
         ValidateResultOrientation(Orientation::left, proto::LineOrientation::up_left);
     }
 
+    TEST_F(ConveyorUtilityTest, IgnoreSplitters) {
+        //
+        // S>
+        // S>
+        //
+        proto::Splitter splitter;
+        splitter.SetDimension({2, 1});
+        TestSetupSplitter(world_, {1, 1}, Direction::right, splitter);
+
+        world_.SetTexCoordId({1, 1}, TileLayer::entity, 177);
+        ConveyorUpdateLineOrien(world_, {1, 1}); // Does not change id since is splitter
+        EXPECT_EQ(world_.GetTexCoordId({1, 1}, TileLayer::entity), 177);
+    }
 
     /// Should change line orientation of right neighbor from {0, 0} to up_right (Aesthetics only)
     TEST_F(ConveyorUtilityTest, UpdateNeighborLineOrientation) {

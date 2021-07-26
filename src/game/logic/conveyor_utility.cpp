@@ -30,30 +30,33 @@ void game::RemoveConveyor(World& world, const WorldCoord& coord, const LogicGrou
 }
 
 
-proto::ConveyorData* game::GetConData(World& world, const WorldCoord& coord) {
-    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const World&>(world), coord));
+std::pair<const proto::Conveyor*, proto::ConveyorData*> game::GetConveyorInfo(World& world, const WorldCoord& coord) {
+    auto [proto, data] = GetConveyorInfo(static_cast<const World&>(world), coord);
+    return {proto, const_cast<proto::ConveyorData*>(data)};
 }
 
-const proto::ConveyorData* game::GetConData(const World& world, const WorldCoord& coord) {
+std::pair<const proto::Conveyor*, const proto::ConveyorData*> game::GetConveyorInfo(const World& world,
+                                                                                    const WorldCoord& coord) {
     const auto* tile = world.GetTile(coord, TileLayer::entity);
     if (tile == nullptr)
-        return nullptr;
+        return {nullptr, nullptr};
 
-    return GetConData(*tile);
+    return GetConveyorInfo(*tile);
 }
 
-proto::ConveyorData* game::GetConData(ChunkTile& tile) {
-    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const ChunkTile&>(tile)));
+std::pair<const proto::Conveyor*, proto::ConveyorData*> game::GetConveyorInfo(ChunkTile& tile) {
+    auto [proto, data] = GetConveyorInfo(static_cast<const ChunkTile&>(tile));
+    return {proto, const_cast<proto::ConveyorData*>(data)};
 }
 
-const proto::ConveyorData* game::GetConData(const ChunkTile& tile) {
+std::pair<const proto::Conveyor*, const proto::ConveyorData*> game::GetConveyorInfo(const ChunkTile& tile) {
     const auto* proto = tile.GetPrototype();
     if (proto == nullptr)
-        return nullptr;
+        return {nullptr, nullptr};
 
     switch (proto->GetCategory()) {
     case proto::Category::transport_belt:
-        return tile.GetUniqueData<proto::ConveyorData>();
+        return {SafeCast<const proto::Conveyor*>(proto), tile.GetUniqueData<proto::ConveyorData>()};
 
     case proto::Category::splitter:
     {
@@ -62,20 +65,20 @@ const proto::ConveyorData* game::GetConData(const ChunkTile& tile) {
 
         if (splitter_data->orientation == Orientation::up || splitter_data->orientation == Orientation::right) {
             if (tile.IsTopLeft()) {
-                return &splitter_data->left;
+                return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->left};
             }
-            return &splitter_data->right;
+            return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->right};
         }
 
         // Down or left
         if (tile.IsTopLeft()) {
-            return &splitter_data->right;
+            return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->right};
         }
-        return &splitter_data->left;
+        return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->left};
     }
 
     default:
-        return nullptr;
+        return {nullptr, nullptr};
     }
 }
 
@@ -124,14 +127,14 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
 /// \tparam YOffset Offset applied to origin to get neighbor
 template <Direction OriginConnect, int XOffset, int YOffset>
 static void DoConnect(game::World& world, const WorldCoord& coord) {
-    auto* current_struct = GetConData(world, {coord.x, coord.y});
-    auto* neigh_struct   = GetConData(world, {coord.x + XOffset, coord.y + YOffset});
+    auto [current_proto, current_data] = GetConveyorInfo(world, {coord.x, coord.y});
+    auto [neigh_proto, neigh_data]     = GetConveyorInfo(world, {coord.x + XOffset, coord.y + YOffset});
 
     // Multi-tile neighbors may not have structures while processing removes for all its tiles
-    if (current_struct == nullptr || neigh_struct == nullptr || neigh_struct->structure == nullptr)
+    if (current_data == nullptr || neigh_data == nullptr || neigh_data->structure == nullptr)
         return;
 
-    CalculateTargets<OriginConnect, Orientation::Invert(OriginConnect)>(*current_struct, *neigh_struct);
+    CalculateTargets<OriginConnect, Orientation::Invert(OriginConnect)>(*current_data, *neigh_data);
 }
 
 
@@ -164,8 +167,8 @@ template <int XOffset, int YOffset>
 void DisconnectSegment(game::World& world, const WorldCoord& coord) {
     const auto neighbor_coord = WorldCoord(coord.x + XOffset, coord.y + YOffset);
 
-    auto* origin_data   = GetConData(world, coord);
-    auto* neighbor_data = GetConData(world, neighbor_coord);
+    auto [origin_proto, origin_data]     = GetConveyorInfo(world, coord);
+    auto [neighbor_proto, neighbor_data] = GetConveyorInfo(world, neighbor_coord);
 
     assert(origin_data != nullptr);
 
@@ -258,7 +261,7 @@ void game::ConveyorCreate(World& world,
             return nullptr;
         }
 
-        return GetConData(world, current_coord);
+        return GetConveyorInfo(world, current_coord).second;
     };
 
     auto get_behind = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
@@ -268,7 +271,7 @@ void game::ConveyorCreate(World& world,
             return nullptr;
         }
 
-        return GetConData(world, current_coord);
+        return GetConveyorInfo(world, current_coord).second;
     };
 
     // Group ahead
@@ -321,7 +324,7 @@ void game::ConveyorDestroy(World& world, const WorldCoord& coord, const LogicGro
     // o_ = old
     // n_ = new
 
-    auto* o_line_data = GetConData(world, coord);
+    auto [o_line_proto, o_line_data] = GetConveyorInfo(world, coord);
     assert(o_line_data != nullptr);
 
     const auto& o_line_segment = o_line_data->structure;
@@ -379,14 +382,14 @@ void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
 }
 
 void game::ConveyorRenumber(World& world, WorldCoord coord, const int start_index) {
-    auto* con_data = GetConData(world, coord);
+    auto [proto, con_data] = GetConveyorInfo(world, coord);
     assert(con_data != nullptr);
     assert(con_data->structure.get() != nullptr);
     for (auto i = start_index; i < con_data->structure->length; ++i) {
-        auto* i_line_data = GetConData(world, coord);
-        assert(i_line_data != nullptr);
+        auto [i_proto, i_data] = GetConveyorInfo(world, coord);
+        assert(i_data != nullptr);
 
-        SafeCastAssign(i_line_data->structIndex, i);
+        SafeCastAssign(i_data->structIndex, i);
 
         coord.Increment(con_data->structure->direction, -1);
     }
@@ -398,7 +401,7 @@ void ChangeTargetSingle(game::World& world,
                         const WorldCoord& coord,
                         const game::ConveyorStruct& old_con_struct,
                         game::ConveyorStruct& new_con_struct) {
-    auto* con_data = GetConData(world, coord);
+    auto [proto, con_data] = GetConveyorInfo(world, coord);
 
     if (con_data != nullptr && con_data->structure->target == &old_con_struct) {
         con_data->structure->target = &new_con_struct;
@@ -425,7 +428,7 @@ void game::ConveyorChangeStructure(World& world,
 
     // Update targets of neighbor structures which has old structure as a target
 
-    auto* head_con_data = GetConData(world, coord);
+    auto [head_proto, head_con_data] = GetConveyorInfo(world, coord);
     assert(head_con_data != nullptr);
 
     switch (con_struct_p->direction) {
@@ -456,7 +459,7 @@ void game::ConveyorChangeStructure(World& world,
 
     // Change structure
     for (unsigned i = 0; i < con_struct_p->length; ++i) {
-        auto* i_con_data = GetConData(world, coord);
+        auto [i_con_proto, i_con_data] = GetConveyorInfo(world, coord);
         assert(i_con_data != nullptr);
 
 
@@ -475,10 +478,10 @@ void game::ConveyorChangeStructure(World& world,
 proto::LineOrientation game::ConveyorCalcLineOrien(const World& world,
                                                    const WorldCoord& coord,
                                                    const Orientation direction) {
-    const auto* up    = GetConData(world, {coord.x, coord.y - 1});
-    const auto* right = GetConData(world, {coord.x + 1, coord.y});
-    const auto* down  = GetConData(world, {coord.x, coord.y + 1});
-    const auto* left  = GetConData(world, {coord.x - 1, coord.y});
+    const auto [up_proto, up]       = GetConveyorInfo(world, {coord.x, coord.y - 1});
+    const auto [right_proto, right] = GetConveyorInfo(world, {coord.x + 1, coord.y});
+    const auto [down_proto, down]   = GetConveyorInfo(world, {coord.x, coord.y + 1});
+    const auto [left_proto, left]   = GetConveyorInfo(world, {coord.x - 1, coord.y});
 
     /// \return true if has neighbor segment and its direction matches provided
     auto neighbor_valid = [](const proto::ConveyorData* conveyor, const Orientation orient) {
@@ -532,31 +535,39 @@ proto::LineOrientation game::ConveyorCalcLineOrien(const World& world,
     }
 }
 
+void game::ConveyorUpdateLineOrien(World& world, const WorldCoord& coord) {
+    auto* tile = world.GetTile(coord, TileLayer::entity);
+    if (tile == nullptr) {
+        return;
+    }
+
+    auto [proto, con_data] = GetConveyorInfo(*tile);
+    // Not conveyor or splitter
+    if (proto == nullptr) {
+        return;
+    }
+    // Splitters don't use line orientations
+    if (proto->GetCategory() == proto::Category::splitter) {
+        return;
+    }
+    // Multi-tile neighbors may not have structures while processing removes for all its tiles
+    assert(con_data != nullptr);
+    if (con_data->structure == nullptr) {
+        return;
+    }
+
+    auto* conveyor = tile->GetPrototype<proto::Conveyor>();
+    assert(conveyor->sprite != nullptr);
+
+    auto line_orien = ConveyorCalcLineOrien(world, coord, con_data->structure->direction);
+    world.SetTexCoordId(coord, TileLayer::entity, conveyor->sprite->texCoordId + static_cast<int>(line_orien));
+}
+
 void game::ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord) {
-
-    auto calculate_neighbor = [&world](const WorldCoord& neighbor_coord) {
-        auto* tile = world.GetTile(neighbor_coord, TileLayer::entity);
-        if (tile == nullptr) {
-            return;
-        }
-
-        auto* con_data = GetConData(*tile);
-
-        // Multi-tile neighbors may not have structures while processing removes for all its tiles
-        if (con_data != nullptr && con_data->structure != nullptr) {
-            auto* conveyor = tile->GetPrototype<proto::Conveyor>();
-            assert(conveyor->sprite != nullptr);
-
-            auto line_orien = ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction);
-            world.SetTexCoordId(
-                neighbor_coord, TileLayer::entity, conveyor->sprite->texCoordId + static_cast<int>(line_orien));
-        }
-    };
-
-    calculate_neighbor({coord.x, coord.y - 1});
-    calculate_neighbor({coord.x + 1, coord.y});
-    calculate_neighbor({coord.x, coord.y + 1});
-    calculate_neighbor({coord.x - 1, coord.y});
+    ConveyorUpdateLineOrien(world, {coord.x, coord.y - 1});
+    ConveyorUpdateLineOrien(world, {coord.x + 1, coord.y});
+    ConveyorUpdateLineOrien(world, {coord.x, coord.y + 1});
+    ConveyorUpdateLineOrien(world, {coord.x - 1, coord.y});
 }
 
 
@@ -564,7 +575,7 @@ void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coo
 
     /// Changes termination type at coordinates
     auto change_ttype = [&world](const WorldCoord& neighbor_coord, const ConveyorStruct::TerminationType new_ttype) {
-        auto* con_data = GetConData(world, neighbor_coord);
+        auto [proto, con_data] = GetConveyorInfo(world, neighbor_coord);
         if (con_data != nullptr) {
             assert(con_data->structure != nullptr);
 
@@ -584,7 +595,7 @@ void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coo
     auto try_change_ttype = [&world, &change_ttype](const WorldCoord& neighbor_coord,
                                                     const Orientation required_direction,
                                                     const ConveyorStruct::TerminationType new_ttype) {
-        auto* con_data = GetConData(world, neighbor_coord);
+        auto [proto, con_data] = GetConveyorInfo(world, neighbor_coord);
 
         // Multi-tile neighbors may not have structures while processing removes for all its tiles
         if (con_data == nullptr || con_data->structure == nullptr)
@@ -596,7 +607,7 @@ void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coo
         change_ttype(neighbor_coord, new_ttype);
     };
 
-    auto* con_data = GetConData(world, coord);
+    auto [proto, con_data] = GetConveyorInfo(world, coord);
     assert(con_data != nullptr);
 
     switch (ConveyorCalcLineOrien(world, coord, con_data->structure->direction)) {

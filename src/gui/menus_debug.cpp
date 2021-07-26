@@ -385,8 +385,8 @@ void gui::DebugConveyorInfo(GameWorlds& worlds,
     ImGuard guard;
     guard.Begin("Conveyor Info");
 
-    const auto selected_tile = player.world.GetMouseTileCoords();
-    auto* con_data           = GetConData(world, {selected_tile.x, selected_tile.y});
+    const auto selected_tile   = player.world.GetMouseTileCoords();
+    auto [con_proto, con_data] = GetConveyorInfo(world, {selected_tile.x, selected_tile.y});
 
     // Try to use current selected line segment first, otherwise used the last valid if checked
     game::ConveyorStruct* segment_ptr = nullptr;
@@ -415,7 +415,8 @@ void gui::DebugConveyorInfo(GameWorlds& worlds,
     }
     else {
         if (use_last_valid_line_segment) {
-            con_data = GetConData(world, {last_valid_line_segment.x, last_valid_line_segment.y});
+            std::tie(con_proto, con_data) =
+                GetConveyorInfo(world, {last_valid_line_segment.x, last_valid_line_segment.y});
             if (con_data != nullptr)
                 segment_ptr = con_data->structure.get();
         }

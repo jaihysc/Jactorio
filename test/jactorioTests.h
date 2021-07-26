@@ -63,7 +63,7 @@ namespace jactorio
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
 
-    /// Sets up a multi tile with proto at coord on the provided specified tile
+    /// Sets up a multi tile with dimensions specified by proto, coord is top left, on the provided specified tile
     /// \return Top left tile
     inline game::ChunkTile& TestSetupMultiTile(game::World& world,
                                                const WorldCoord& coord,
@@ -195,7 +195,7 @@ namespace jactorio
         return tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
     }
 
-    /// Creates conveyor at tile its own conveyor structure
+    /// Creates conveyor at tile its own conveyor structure, dimensions specified by con_proto, coord is top left
     inline auto& TestSetupConveyor(
         game::World& world,
         const WorldCoord& coord,
