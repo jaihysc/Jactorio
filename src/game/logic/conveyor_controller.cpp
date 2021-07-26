@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "game/logic/conveyor_struct.h"
+#include "game/logic/conveyor_utility.h"
 #include "game/world/world.h"
 #include "proto/abstract/conveyor.h"
 
@@ -222,6 +223,31 @@ void game::ConveyorLogicUpdate(World& world) {
         const auto* line_proto = SafeCast<const proto::Conveyor*>(prototype.Get());
         auto* con_data         = SafeCast<proto::ConveyorData*>(unique_data.Get());
 
+        assert(line_proto != nullptr);
+        assert(con_data != nullptr);
+
+        LogicUpdateTransitionItems(*line_proto, *con_data);
+    }
+}
+
+void game::SplitterLogicUpdate(World& world) {
+    // Similar to conveyors
+    // 		1. Move items on their conveyors
+    //		2. Check if any items have reached the end of their lines, and need to be moved to another one
+
+    // Each side of a splitter is registered for logic updates
+    // Therefore we cannot update both sides per iteration or it goes double speed
+
+    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::splitter)) {
+        auto [line_proto, con_data] = GetConveyorInfo(world, coord);
+        assert(line_proto != nullptr);
+        assert(con_data != nullptr);
+
+        LogicUpdateMoveItems(*line_proto, *con_data);
+    }
+
+    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::splitter)) {
+        auto [line_proto, con_data] = GetConveyorInfo(world, coord);
         assert(line_proto != nullptr);
         assert(con_data != nullptr);
 

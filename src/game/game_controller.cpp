@@ -75,6 +75,7 @@ void game::GameController::LogicUpdate() {
             EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
             ConveyorLogicUpdate(world);
+            SplitterLogicUpdate(world);
         }
         {
             EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");

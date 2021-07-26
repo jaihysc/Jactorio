@@ -51,12 +51,11 @@ namespace jactorio::proto
         auto* splitter_data = world_.GetTile({0, 1}, game::TileLayer::entity)->GetUniqueData<SplitterData>();
         ASSERT_NE(splitter_data, nullptr);
 
-        // Top conveyor grouped with splitter
-        EXPECT_EQ(con_data_tl.structure->target, con_data_bl.structure.get());
-        EXPECT_EQ(con_data_tr.structure->target, con_data_br.structure.get());
+        EXPECT_EQ(con_data_tl.structure->target, splitter_data->right.structure.get());
+        EXPECT_EQ(con_data_tr.structure->target, splitter_data->structure.get()); // Left
 
         EXPECT_EQ(splitter_data->right.structure->target, con_data_bl.structure.get());
-        EXPECT_EQ(splitter_data->left.structure->target, con_data_br.structure.get());
+        EXPECT_EQ(splitter_data->structure->target, con_data_br.structure.get()); // Left
     }
 
     /// Removing should disconnect from neighboring conveyors
@@ -74,17 +73,17 @@ namespace jactorio::proto
         auto& splitter_data = TestSetupSplitter(world_, {1, 0}, Orientation::left, splitter_);
 
 
-        splitter_data.left.structure->target  = con_data_lb.structure.get();
+        splitter_data.structure->target       = con_data_lb.structure.get(); // Left
         splitter_data.right.structure->target = con_data_lt.structure.get();
 
-        con_data_rb.structure->target = splitter_data.left.structure.get();
+        con_data_rb.structure->target = splitter_data.structure.get(); // Left
         con_data_rt.structure->target = splitter_data.right.structure.get();
 
 
         splitter_.OnRemove(world_, logic_, {1, 0});
 
 
-        EXPECT_EQ(splitter_data.left.structure.get(), nullptr);
+        EXPECT_EQ(splitter_data.structure.get(), nullptr); // Left
         EXPECT_EQ(splitter_data.right.structure.get(), nullptr);
 
         EXPECT_EQ(con_data_rb.structure->target, nullptr);

@@ -20,7 +20,7 @@ void proto::Splitter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               const Orientation orientation) const {
-    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<SplitterData>(orientation);
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<SplitterData>();
 
     auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
         auto [proto, con_data] = GetConveyorInfo(world, side_coord);
@@ -31,6 +31,8 @@ void proto::Splitter::OnBuild(game::World& world,
 
     build_conveyor(coord);
     build_conveyor(GetNonTopLeftCoord(world, coord, game::TileLayer::entity));
+
+    // Only use the splitter LogicGroup to swap item sides
 }
 
 void proto::Splitter::OnNeighborUpdate(game::World& world,
@@ -74,7 +76,7 @@ WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world,
 
     // Increment to the other side depending on splitter 's orientation
 
-    switch (tile->GetUniqueData<SplitterData>()->orientation) {
+    switch (tile->GetOrientation()) {
     case Orientation::up:
     case Orientation::down:
         return {tl_coord.x + 1, tl_coord.y};

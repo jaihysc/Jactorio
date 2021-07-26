@@ -8,8 +8,11 @@ namespace jactorio::game
 {
     class World;
 
-    /// Updates belt logic for a logic chunk
+    /// Updates belt logic for a world
     void ConveyorLogicUpdate(World& world);
+
+    /// Updates splitter logic for a world
+    void SplitterLogicUpdate(World& world);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONTROLLER_H

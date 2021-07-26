@@ -24,12 +24,16 @@ namespace jactorio::game
         proto::TransportBelt transBelt_;
         proto::Sprite sprite_;
 
+        proto::Splitter splitter_;
+
         void SetUp() override {
             world_.EmplaceChunk({0, 0});
 
             // Conveyor utility requires tex coord id when setting up conveyor
             transBelt_.sprite  = &sprite_;
             sprite_.texCoordId = 1234;
+
+            splitter_.SetWidth(2);
         }
     };
 
@@ -45,7 +49,7 @@ namespace jactorio::game
 
         auto& splitter_data = TestSetupBlankSplitter(world_, {0, 0}, Orientation::up, splitter);
 
-        EXPECT_EQ(GetConveyorInfo(world_, {0, 0}).second, &splitter_data.left);
+        EXPECT_EQ(GetConveyorInfo(world_, {0, 0}).second, &splitter_data);
         EXPECT_EQ(GetConveyorInfo(world_, {1, 0}).second, &splitter_data.right);
     }
 
@@ -55,7 +59,7 @@ namespace jactorio::game
 
         auto& splitter_data = TestSetupBlankSplitter(world_, {0, 0}, Orientation::left, splitter);
 
-        EXPECT_EQ(GetConveyorInfo(world_, {0, 1}).second, &splitter_data.left);
+        EXPECT_EQ(GetConveyorInfo(world_, {0, 1}).second, &splitter_data);
         EXPECT_EQ(GetConveyorInfo(world_, {0, 0}).second, &splitter_data.right);
     }
 
@@ -186,6 +190,31 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
+    /// Splitter front/rear can be connected
+    TEST_F(ConveyorUtilityTest, ConnectSplitterFront) {
+        // S
+        // S v
+
+        auto& splitter   = TestSetupSplitter(world_, {0, 0}, Orientation::right, splitter_);
+        auto& con_struct = *TestSetupConveyor(world_, {1, 1}, Orientation::down, transBelt_).structure;
+
+        ConveyorConnectLeft(world_, {1, 1});
+        EXPECT_EQ(splitter.right.structure->target, &con_struct);
+    }
+
+    /// Splitter sides cannot be connected to
+    TEST_F(ConveyorUtilityTest, DoNotConnectSplitterSide) {
+        // v
+        // S
+        // S
+
+        auto& con_struct = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
+        TestSetupSplitter(world_, {0, 1}, Orientation::right, splitter_);
+
+        ConveyorConnectDown(world_, {0, 0});
+        EXPECT_EQ(con_struct.target, nullptr);
+    }
+
     //
     //
     //
@@ -285,8 +314,12 @@ namespace jactorio::game
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
-        World world_;
+        proto::Splitter splitter_;
         proto::TransportBelt transBelt_;
+
+        void SetUp() override {
+            splitter_.SetWidth(2);
+        }
 
         /// Checks if conveyor at current coords with current_direction
         /// grouped with other conveyor at other_coord with other_direction
@@ -368,6 +401,41 @@ namespace jactorio::game
         EXPECT_FALSE(TestGrouping({31, 0}, Orientation::right, {32, 0}, Orientation::right));
         EXPECT_FALSE(TestGrouping({0, 31}, Orientation::down, {0, 32}, Orientation::down));
         EXPECT_FALSE(TestGrouping({-1, 0}, Orientation::left, {0, 0}, Orientation::left));
+    }
+
+    /// Conveyors will not group with splitters (they use a different logic group)
+    TEST_F(ConveyorGroupingTest, ConveyorNoGroupWithSplitter) {
+        //
+        // ^
+        // S S
+        //
+        World world;
+        world.EmplaceChunk({0, 0});
+
+        TestSetupSplitter(world, {0, 1}, Orientation::up, splitter_);
+
+        auto conveyor = TestSetupConveyor(world, {0, 0}, Orientation::up, transBelt_);
+        ConveyorCreate(world, {0, 0}, conveyor, Orientation::up, LogicGroup::conveyor);
+
+        EXPECT_EQ(conveyor.structure->length, 1);
+    }
+
+    /// The splitter will not group with conveyors
+    TEST_F(ConveyorGroupingTest, ConveyorSplitterNoGroupWithConveyor) {
+        //
+        // ^
+        // S S
+        //
+        World world;
+        world.EmplaceChunk({0, 0});
+
+        auto conveyor = TestSetupConveyor(world, {0, 0}, Orientation::up, transBelt_);
+        ConveyorCreate(world, {0, 0}, conveyor, Orientation::up, LogicGroup::conveyor);
+
+        TestSetupSplitter(world, {0, 1}, Orientation::up, splitter_);
+        ConveyorCreate(world, {0, 1}, conveyor, Orientation::up, LogicGroup::conveyor);
+
+        EXPECT_EQ(conveyor.structure->length, 1);
     }
 
     //
@@ -868,13 +936,12 @@ namespace jactorio::game
         // S>
         // S>
         //
-        proto::Splitter splitter;
-        splitter.SetDimension({2, 1});
-        TestSetupSplitter(world_, {1, 1}, Direction::right, splitter);
+        TestSetupSplitter(world_, {1, 1}, Orientation::right, splitter_);
 
         world_.SetTexCoordId({1, 1}, TileLayer::entity, 177);
         ConveyorUpdateLineOrien(world_, {1, 1}); // Does not change id since is splitter
         EXPECT_EQ(world_.GetTexCoordId({1, 1}, TileLayer::entity), 177);
+        EXPECT_EQ(ConveyorCalcLineOrien(world_, {0, 0}, Orientation::down), proto::LineOrientation::down);
     }
 
     /// Should change line orientation of right neighbor from {0, 0} to up_right (Aesthetics only)
@@ -895,5 +962,18 @@ namespace jactorio::game
         // line orientation rendered
         EXPECT_EQ(world_.GetTexCoordId({1, 0}, TileLayer::entity),
                   1234 + static_cast<int>(proto::LineOrientation::up_right));
+    }
+
+    TEST_F(ConveyorUtilityTest, DoNotLenghthenIntoSplitter) {
+        // v
+        // S
+        // S
+        //
+        auto& con_struct = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
+        TestSetupSplitter(world_, {0, 1}, Orientation::left, splitter_);
+
+        ConveyorUpdateNeighborTermination(world_, {0, 1});
+        EXPECT_EQ(con_struct.length, 1);
+        EXPECT_EQ(con_struct.terminationType, ConveyorStruct::TerminationType::straight);
     }
 } // namespace jactorio::game

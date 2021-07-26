@@ -8,20 +8,21 @@
 
 namespace jactorio::proto
 {
-    struct SplitterData final : HealthEntityData
+    struct SplitterData final : ConveyorData
     {
-        explicit SplitterData(const Orientation orien) : orientation(orien) {}
+        // Left lane is inherited
+        // Right lane below:
+        // TODO This is slightly wasteful as right also defines health which is unused,
+        // but the logic expects distinct conveyors
 
-
-        // HealthData of left and right will be unused
-        ConveyorData left;
         ConveyorData right;
 
-        /// Orientation of this splitter
-        Orientation orientation;
+        CEREAL_SERIALIZE(archive) {
+            archive(right, cereal::base_class<ConveyorData>(this));
+        }
     };
 
-    class Splitter : public Conveyor
+    class Splitter final : public Conveyor
     {
     public:
         PROTOTYPE_CATEGORY(splitter);

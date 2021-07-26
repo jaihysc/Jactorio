@@ -63,9 +63,10 @@ std::pair<const proto::Conveyor*, const proto::ConveyorData*> game::GetConveyorI
         const auto* splitter_data = tile.GetUniqueData<proto::SplitterData>();
         assert(splitter_data != nullptr);
 
-        if (splitter_data->orientation == Orientation::up || splitter_data->orientation == Orientation::right) {
+        const auto orientation = tile.GetOrientation();
+        if (orientation == Orientation::up || orientation == Orientation::right) {
             if (tile.IsTopLeft()) {
-                return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->left};
+                return {SafeCast<const proto::Conveyor*>(proto), splitter_data}; // Left
             }
             return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->right};
         }
@@ -74,7 +75,7 @@ std::pair<const proto::Conveyor*, const proto::ConveyorData*> game::GetConveyorI
         if (tile.IsTopLeft()) {
             return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->right};
         }
-        return {SafeCast<const proto::Conveyor*>(proto), &splitter_data->left};
+        return {SafeCast<const proto::Conveyor*>(proto), splitter_data}; // Left
     }
 
     default:
@@ -127,13 +128,32 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
 /// \tparam YOffset Offset applied to origin to get neighbor
 template <Direction OriginConnect, int XOffset, int YOffset>
 static void DoConnect(game::World& world, const WorldCoord& coord) {
-    auto [current_proto, current_data] = GetConveyorInfo(world, {coord.x, coord.y});
-    auto [neigh_proto, neigh_data]     = GetConveyorInfo(world, {coord.x + XOffset, coord.y + YOffset});
+    const auto neighbor_coord          = WorldCoord{coord.x + XOffset, coord.y + YOffset};
+    auto [current_proto, current_data] = GetConveyorInfo(world, coord);
+    auto [neigh_proto, neigh_data]     = GetConveyorInfo(world, neighbor_coord);
 
     // Multi-tile neighbors may not have structures while processing removes for all its tiles
-    if (current_data == nullptr || neigh_data == nullptr || neigh_data->structure == nullptr)
+    if (current_proto == nullptr || neigh_proto == nullptr || neigh_data->structure == nullptr)
         return;
+    assert(current_data != nullptr);
+    assert(neigh_data != nullptr);
 
+    auto can_connect = [&]() {
+        if (neigh_proto->GetCategory() == proto::Category::splitter) {
+            // Being connected to from a splitter is allowed when in front of splitter
+            if (neighbor_coord.Incremented(neigh_data->structure->direction) == coord) {
+                return true;
+            }
+            // Cannot connect to the side of splitters
+            if (current_data->structure->direction != neigh_data->structure->direction) {
+                return false;
+            }
+        }
+        return true;
+    };
+    if (!can_connect()) {
+        return;
+    }
     CalculateTargets<OriginConnect, Orientation::Invert(OriginConnect)>(*current_data, *neigh_data);
 }
 
@@ -253,6 +273,8 @@ void game::ConveyorCreate(World& world,
 
     auto& origin_chunk = *world.GetChunkW(coord);
 
+    /// Finding potential candiates for grouping ahead
+    /// Conveyors of same chunk only (not splitters)
     auto get_ahead = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
         current_coord.Increment(direction);
 
@@ -261,9 +283,15 @@ void game::ConveyorCreate(World& world,
             return nullptr;
         }
 
-        return GetConveyorInfo(world, current_coord).second;
+        auto [proto, data] = GetConveyorInfo(world, current_coord);
+        if (proto == nullptr || proto->GetCategory() == proto::Category::splitter) {
+            return nullptr;
+        }
+        return data;
     };
 
+    /// Finding potential candiates for grouping behind
+    /// Conveyors of same chunk only (not splitters)
     auto get_behind = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
         current_coord.Increment(direction, -1);
 
@@ -271,47 +299,56 @@ void game::ConveyorCreate(World& world,
             return nullptr;
         }
 
-        return GetConveyorInfo(world, current_coord).second;
+        auto [proto, data] = GetConveyorInfo(world, current_coord);
+        if (proto == nullptr || proto->GetCategory() == proto::Category::splitter) {
+            return nullptr;
+        }
+        return data;
     };
 
-    // Group ahead
+    // Splitters do not form groups as they occupy a different logic group
+    const auto* proto = world.GetTile(coord, TileLayer::entity)->GetPrototype();
+    assert(proto != nullptr);
+    if (proto->GetCategory() != proto::Category::splitter) {
+        // Group ahead
 
-    auto* con_ahead = get_ahead(coord);
+        auto* con_ahead = get_ahead(coord);
 
-    if (con_ahead != nullptr) {
-        assert(con_ahead->structure != nullptr);
+        if (con_ahead != nullptr) {
+            assert(con_ahead->structure != nullptr);
 
-        auto& con_ahead_struct = *con_ahead->structure;
-        if (con_ahead_struct.direction == direction) {
-            conveyor.structure = con_ahead->structure;
+            auto& con_ahead_struct = *con_ahead->structure;
+            if (con_ahead_struct.direction == direction) {
+                conveyor.structure = con_ahead->structure;
 
-            con_ahead_struct.length++;
-            conveyor.structIndex = con_ahead->structIndex + 1;
-            return;
+                con_ahead_struct.length++;
+                conveyor.structIndex = con_ahead->structIndex + 1;
+                return;
+            }
         }
-    }
 
 
-    // Group behind
+        // Group behind
 
-    auto* con_behind = get_behind(coord);
+        auto* con_behind = get_behind(coord);
 
-    if (con_behind != nullptr) {
-        assert(con_behind->structure != nullptr);
+        if (con_behind != nullptr) {
+            assert(con_behind->structure != nullptr);
 
-        auto& con_behind_struct = *con_behind->structure;
-        if (con_behind_struct.direction == direction) {
-            conveyor.structure = con_behind->structure;
+            auto& con_behind_struct = *con_behind->structure;
+            if (con_behind_struct.direction == direction) {
+                conveyor.structure = con_behind->structure;
 
-            // Move the conveyor behind's head forwards to current position
-            ConveyorLengthenFront(con_behind_struct);
+                // Move the conveyor behind's head forwards to current position
+                ConveyorLengthenFront(con_behind_struct);
 
-            // Remove old head from logic group, add new head which is now 1 tile ahead
-            world.LogicRemove(logic_group, coord.Incremented(con_behind_struct.direction, -1), TileLayer::entity);
-            world.LogicRegister(logic_group, coord, TileLayer::entity);
+                // Remove old head from logic group, add new head which is now 1 tile ahead
+                world.LogicRemove(logic_group, coord.Incremented(con_behind_struct.direction, -1), TileLayer::entity);
+                world.LogicRegister(logic_group, coord, TileLayer::entity);
 
-            ConveyorRenumber(world, coord);
-            return;
+                ConveyorRenumber(world, coord);
+                return;
+            }
         }
     }
 
@@ -608,7 +645,14 @@ void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coo
     };
 
     auto [proto, con_data] = GetConveyorInfo(world, coord);
+    assert(proto != nullptr);
     assert(con_data != nullptr);
+
+    // Terminations into splitter are only ever straight
+    // Thus below must not run (Otherwise neighboring conveyors terminates into splitter from side)
+    if (proto->GetCategory() == proto::Category::splitter) {
+        return;
+    }
 
     switch (ConveyorCalcLineOrien(world, coord, con_data->structure->direction)) {
         // Up

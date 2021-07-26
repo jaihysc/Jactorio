@@ -14,7 +14,7 @@
 
 namespace jactorio::proto
 {
-    struct ConveyorData final : HealthEntityData
+    struct ConveyorData : HealthEntityData
     {
         ConveyorData() = default;
 
@@ -31,14 +31,6 @@ namespace jactorio::proto
 
         CEREAL_SERIALIZE(archive) {
             archive(structure, structIndex, cereal::base_class<HealthEntityData>(this));
-        }
-
-        CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
-            std::shared_ptr<game::ConveyorStruct> line_segment;
-            archive(line_segment);
-            construct(line_segment);
-
-            archive(construct->structIndex, cereal::base_class<HealthEntityData>(construct.ptr()));
         }
     };
 

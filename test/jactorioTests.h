@@ -215,7 +215,7 @@ namespace jactorio
                                         const Orientation orien,
                                         const proto::Splitter& splitter) {
         auto& top_left = TestSetupMultiTile(world, coord, game::TileLayer::entity, orien, splitter);
-        return top_left.MakeUniqueData<proto::SplitterData>(orien);
+        return top_left.MakeUniqueData<proto::SplitterData>();
     }
 
     /// Creates splitter data at tile with conveyor structures
@@ -226,7 +226,7 @@ namespace jactorio
 
         auto& splitter_data = TestSetupBlankSplitter(world, coord, orien, splitter);
 
-        splitter_data.left.structure =
+        splitter_data.structure =
             std::make_shared<game::ConveyorStruct>(orien, game::ConveyorStruct::TerminationType::straight, 1);
 
         splitter_data.right.structure =

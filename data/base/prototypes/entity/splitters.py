@@ -28,6 +28,8 @@ def createSplitter(name, icon, spriteN, spriteE, spriteS, spriteW):
 
         .tileWidth(2)
         .tileHeight(1)
+
+        .speed(0.05)
     )
 
 

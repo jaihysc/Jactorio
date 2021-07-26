@@ -66,22 +66,27 @@ namespace jactorio::game
 
     /// Calls ConveyorConnect up, right, down, left
     /// \param coord Current struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorNeighborConnect(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment above
+    /// Attempts to connect from coord to conveyor above
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectUp(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment to right
+    /// Attempts to connect from coord to conveyor to right
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectRight(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment below
+    /// Attempts to connect from coord to conveyor below
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectDown(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment to left
+    /// Attempts to connect from coord to conveyor to left
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectLeft(World& world, const WorldCoord& coord);
 
 
@@ -155,6 +160,7 @@ namespace jactorio::game
     void ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord);
 
     /// Updates the termination type for 4 neighbors of coord
+    /// \remark Expects conveyor at coord to exist
     void ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coord);
 
 } // namespace jactorio::game
