@@ -138,7 +138,8 @@ static void DoConnect(game::World& world, const WorldCoord& coord) {
     assert(current_data != nullptr);
     assert(neigh_data != nullptr);
 
-    auto can_connect = [&]() {
+    // Older versions of clang does not implicitly capture structured bindings
+    auto can_connect = [&, current_data = current_data, neigh_proto = neigh_proto, neigh_data = neigh_data] {
         if (neigh_proto->GetCategory() == proto::Category::splitter) {
             // Being connected to from a splitter is allowed when in front of splitter
             if (neighbor_coord.Incremented(neigh_data->structure->direction) == coord) {
