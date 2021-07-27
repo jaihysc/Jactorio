@@ -16,7 +16,7 @@ namespace jactorio::game
     // - Line logic
     // - Line properties
     // - Item transition (to another segment)
-
+    // - Splitter logic
 
     class ConveyorControllerTest : public testing::Test
     {
@@ -24,18 +24,27 @@ namespace jactorio::game
         World world_;
         Logic logic_;
 
-        Chunk* chunk_ = nullptr;
-
-        proto::Item itemProto_;
+        proto::Item item_;
         proto::TransportBelt transportBelt_;
+        proto::Splitter splitter_;
 
         /// Creates a world, chunk at 0, 0
         void SetUp() override {
-            chunk_ = &world_.EmplaceChunk({0, 0});
+            world_.EmplaceChunk({0, 0});
+
+            splitter_.SetWidth(2);
         }
 
         void CreateSegment(const WorldCoord& coord, const std::shared_ptr<ConveyorStruct>& segment) {
             TestCreateConveyorSegment(world_, coord, segment, transportBelt_);
+        }
+
+        /// Creates and registers splitter for logic updates
+        /// coord is top left of splitter
+        auto& CreateSplitter(const WorldCoord& coord, const Orientation orien) {
+            auto& splitter = TestSetupSplitter(world_, coord, orien, splitter_);
+            world_.LogicRegister(LogicGroup::splitter, coord, TileLayer::entity);
+            return splitter;
         }
     };
 
@@ -67,9 +76,9 @@ namespace jactorio::game
         CreateSegment({0, 5}, left_segment);
 
         // Logic
-        left_segment->AppendItem(true, 0.f, itemProto_);
-        left_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
-        left_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
+        left_segment->AppendItem(true, 0.f, item_);
+        left_segment->AppendItem(true, ConveyorProp::kItemSpacing, item_);
+        left_segment->AppendItem(true, ConveyorProp::kItemSpacing, item_);
 
         // 1 update
         // first item moved to up segment
@@ -135,9 +144,9 @@ namespace jactorio::game
         CreateSegment({3, 0}, right_segment);
 
         // Offset is distance from beginning, or previous item
-        up_segment->AppendItem(true, 0.f, itemProto_);
-        up_segment->AppendItem(true, 1, itemProto_);
-        up_segment->AppendItem(true, 1, itemProto_);
+        up_segment->AppendItem(true, 0.f, item_);
+        up_segment->AppendItem(true, 1, item_);
+        up_segment->AppendItem(true, 1, item_);
         static_assert(ConveyorProp::kItemSpacing < 1); // Tested positions would otherwise be invalid
 
         // Logic
@@ -203,8 +212,8 @@ namespace jactorio::game
         CreateSegment({3, 0}, right_segment);
 
         // Offset is distance from beginning, or previous item
-        up_segment->AppendItem(true, 0.f, itemProto_);
-        up_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
+        up_segment->AppendItem(true, 0.f, item_);
+        up_segment->AppendItem(true, ConveyorProp::kItemSpacing, item_);
 
         // First item
         ConveyorLogicUpdate(world_);
@@ -242,9 +251,9 @@ namespace jactorio::game
 
         CreateSegment({0, 0}, segment);
 
-        segment->AppendItem(true, 0.5f, itemProto_);
-        segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
-        segment->AppendItem(true, ConveyorProp::kItemSpacing + 1.f, itemProto_);
+        segment->AppendItem(true, 0.5f, item_);
+        segment->AppendItem(true, ConveyorProp::kItemSpacing, item_);
+        segment->AppendItem(true, ConveyorProp::kItemSpacing + 1.f, item_);
 
         // Will reach distance 0 after 0.5 / 0.01 updates
         for (int i = 0; i < 50; ++i) {
@@ -310,11 +319,11 @@ namespace jactorio::game
 
         // RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / ConveyorProp::kItemSpacing{0.25} = 13.2
         for (int i = 0; i < 14; ++i) {
-            right_segment->AppendItem(false, 0.f, itemProto_);
+            right_segment->AppendItem(false, 0.f, item_);
         }
 
         // Items on up line should stop
-        up_segment->AppendItem(false, 0.f, itemProto_);
+        up_segment->AppendItem(false, 0.f, item_);
 
         // WIll not move after an arbitrary number of updates
         for (int i = 0; i < 34; ++i) {
@@ -337,11 +346,11 @@ namespace jactorio::game
         CreateSegment({2, 1}, left_segment);
 
         // One item stopped, one still moving
-        left_segment->AppendItem(true, 0, itemProto_);
+        left_segment->AppendItem(true, 0, item_);
         ConveyorLogicUpdate(world_);
         EXPECT_EQ(left_segment.get()->left.index, 0);
 
-        left_segment->AppendItem(true, 2, itemProto_);
+        left_segment->AppendItem(true, 2, item_);
         ConveyorLogicUpdate(world_);
         EXPECT_EQ(left_segment.get()->left.index, 1);
 
@@ -382,11 +391,11 @@ namespace jactorio::game
         // ======================================================================
 
 
-        left_segment->AppendItem(true, 1 - ConveyorProp::kItemSpacing + 0.01, itemProto_);
+        left_segment->AppendItem(true, 1 - ConveyorProp::kItemSpacing + 0.01, item_);
 
-        left_segment_2->AppendItem(true, 0, itemProto_);
-        left_segment_2->AppendItem(true, 0.5, itemProto_);
-        left_segment_2->AppendItem(true, 2, itemProto_);
+        left_segment_2->AppendItem(true, 0, item_);
+        left_segment_2->AppendItem(true, 0.5, item_);
+        left_segment_2->AppendItem(true, 2, item_);
 
         ConveyorLogicUpdate(world_);
 
@@ -409,8 +418,8 @@ namespace jactorio::game
 
         CreateSegment({0, 0}, right_segment);
 
-        right_segment->AppendItem(true, 0.f, itemProto_);
-        right_segment->AppendItem(true, 0.f, itemProto_); // Insert behind previous item
+        right_segment->AppendItem(true, 0.f, item_);
+        right_segment->AppendItem(true, 0.f, item_); // Insert behind previous item
 
         // Check that second item has a minimum distance of ConveyorProp::kItemSpacing
         EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.);
@@ -442,7 +451,7 @@ namespace jactorio::game
         CreateSegment({0, 0}, up_segment_1);
         CreateSegment({0, 1}, up_segment_2);
 
-        up_segment_2->AppendItem(true, 0.05, itemProto_);
+        up_segment_2->AppendItem(true, 0.05, item_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
         ConveyorLogicUpdate(world_);
@@ -466,14 +475,14 @@ namespace jactorio::game
 
         // ======================================================================
         // Fill the first segment up to 4 items
-        up_segment_1->AppendItem(true, 0, itemProto_);
-        up_segment_1->AppendItem(true, 0, itemProto_);
-        up_segment_1->AppendItem(true, 0, itemProto_);
+        up_segment_1->AppendItem(true, 0, item_);
+        up_segment_1->AppendItem(true, 0, item_);
+        up_segment_1->AppendItem(true, 0, item_);
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
 
         // Will not enter since segment 1 is full
-        up_segment_2->AppendItem(true, 0.05, itemProto_);
+        up_segment_2->AppendItem(true, 0.05, item_);
         ConveyorLogicUpdate(world_);
         ConveyorLogicUpdate(world_);
         ConveyorLogicUpdate(world_);
@@ -505,8 +514,8 @@ namespace jactorio::game
         CreateSegment({3, 0}, segment_2);
 
         // Insert item on left + right side
-        segment_2->AppendItem(true, 0.02f, itemProto_);
-        segment_2->AppendItem(false, 0.02f, itemProto_);
+        segment_2->AppendItem(true, 0.02f, item_);
+        segment_2->AppendItem(false, 0.02f, item_);
 
         // Travel to the next belt in 0.02 / 0.01 + 1 updates
         for (int i = 0; i < 3; ++i) {
@@ -553,8 +562,8 @@ namespace jactorio::game
 
         // Insert items
         for (int i = 0; i < 3; ++i) {
-            right_segment->AppendItem(true, 0.f, itemProto_);
-            right_segment->AppendItem(false, 0.f, itemProto_);
+            right_segment->AppendItem(true, 0.f, item_);
+            right_segment->AppendItem(false, 0.f, item_);
         }
 
         // Logic tests
@@ -651,8 +660,8 @@ namespace jactorio::game
 
         // Insert items
         for (int i = 0; i < 3; ++i) {
-            left_segment->AppendItem(true, 0.f, itemProto_);
-            left_segment->AppendItem(false, 0.f, itemProto_);
+            left_segment->AppendItem(true, 0.f, item_);
+            left_segment->AppendItem(false, 0.f, item_);
         }
 
         // Logic tests
@@ -741,7 +750,7 @@ namespace jactorio::game
         // Left lane
 
 
-        down_segment->AppendItem(true, 0, itemProto_);
+        down_segment->AppendItem(true, 0, item_);
 
         ConveyorLogicUpdate(world_);
 
@@ -756,7 +765,7 @@ namespace jactorio::game
 
         left_segment->right.lane.clear();
 
-        down_segment->AppendItem(false, 0, itemProto_);
+        down_segment->AppendItem(false, 0, item_);
 
         ConveyorLogicUpdate(world_);
 
@@ -779,7 +788,7 @@ namespace jactorio::game
         // Left lane
 
 
-        up_segment->AppendItem(true, 0, itemProto_);
+        up_segment->AppendItem(true, 0, item_);
 
         ConveyorLogicUpdate(world_);
 
@@ -793,7 +802,7 @@ namespace jactorio::game
 
         left_segment->left.lane.clear();
 
-        up_segment->AppendItem(false, 0, itemProto_);
+        up_segment->AppendItem(false, 0, item_);
 
         ConveyorLogicUpdate(world_);
 
@@ -826,7 +835,7 @@ namespace jactorio::game
         // ======================================================================
         // Left
 
-        right_segment->AppendItem(true, 0, itemProto_);
+        right_segment->AppendItem(true, 0, item_);
 
         ConveyorLogicUpdate(world_);
 
@@ -836,11 +845,83 @@ namespace jactorio::game
 
         // Right
 
-        right_segment->AppendItem(false, 0, itemProto_);
+        right_segment->AppendItem(false, 0, item_);
 
         ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(down_segment->right.lane.size(), 1);
         EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.3) - 0.06);
+    }
+
+    //
+    //
+    //
+    //
+
+    TEST_F(ConveyorControllerTest, SplitterSwapItems) {
+        splitter_.speed     = 0.05;
+        auto& splitter_data = CreateSplitter({0, 0}, Orientation::up);
+
+        /// Iterations for item at end of splitter to reach swap threshold
+        const auto it_to_threshold = LossyCast<int>(ConveyorProp::kSplitterThreshold / splitter_.speed.getAsDouble());
+
+        /// Iterations for next item to reach swap threshold on compressed lane
+        const auto it_next_item = LossyCast<int>(ConveyorProp::kItemSpacing / splitter_.speed.getAsDouble());
+
+        auto& l_struct = *splitter_data.structure;
+        auto& r_struct = *splitter_data.right.structure;
+
+        l_struct.AppendItem(true, 1.f, item_);
+        l_struct.AppendItem(true, 0.f, item_);
+        l_struct.AppendItem(true, 0.f, item_);
+
+        // First item at swap threshold
+        for (int i = 0; i < it_to_threshold; ++i) {
+            SplitterLogicUpdate(world_);
+        }
+        EXPECT_EQ(l_struct.left.lane.size(), 3);
+
+        // Past the threshold, first item not swapped
+        SplitterLogicUpdate(world_);
+        EXPECT_EQ(l_struct.left.lane.size(), 3);
+
+
+        // Second item at swap threshold
+        // - 1 since there is extra logic update above
+        for (int i = 0; i < it_next_item - 1; ++i) {
+            SplitterLogicUpdate(world_);
+        }
+        EXPECT_EQ(l_struct.left.lane.size(), 3);
+
+        // Second item swapped
+        SplitterLogicUpdate(world_);
+        ASSERT_EQ(l_struct.left.lane.size(), 2);
+        ASSERT_EQ(r_struct.left.lane.size(), 1);
+
+        EXPECT_DOUBLE_EQ( //
+            l_struct.left.lane[0].dist.getAsDouble(),
+            1. - ConveyorProp::kSplitterThreshold - ConveyorProp::kItemSpacing - splitter_.speed.getAsDouble());
+
+        EXPECT_DOUBLE_EQ( //
+            r_struct.left.lane[0].dist.getAsDouble(),
+            1 - ConveyorProp::kSplitterThreshold - splitter_.speed.getAsDouble());
+
+        EXPECT_DOUBLE_EQ( //
+            l_struct.left.lane[1].dist.getAsDouble(),
+            2 * ConveyorProp::kItemSpacing);
+
+
+        // Third item at swap threshold
+        // - 1 since there is extra logic update above
+        for (int i = 0; i < it_next_item - 1; ++i) {
+            SplitterLogicUpdate(world_);
+        }
+        EXPECT_EQ(l_struct.left.lane.size(), 2);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
+
+        // Third item not swapped
+        SplitterLogicUpdate(world_);
+        EXPECT_EQ(l_struct.left.lane.size(), 2);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
     }
 } // namespace jactorio::game

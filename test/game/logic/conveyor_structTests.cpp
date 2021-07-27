@@ -319,6 +319,22 @@ namespace jactorio::game
         EXPECT_FALSE(get_item());
     }
 
+    TEST_F(ConveyorStructTest, RemoveItem) {
+        segment_.AppendItem(false, 1, item_);
+        segment_.AppendItem(false, 0.25, item_);
+        segment_.AppendItem(false, 0.5, item_);
+
+        segment_.RemoveItem(false, 1);
+        ASSERT_EQ(segment_.right.lane.size(), 2);
+        EXPECT_DOUBLE_EQ(segment_.right.lane[1].dist.getAsDouble(), 0.75);
+        EXPECT_TRUE(segment_.left.lane.empty());
+
+        segment_.RemoveItem(false, 1);
+        ASSERT_EQ(segment_.right.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(segment_.right.lane[0].dist.getAsDouble(), 1);
+        EXPECT_TRUE(segment_.left.lane.empty());
+    }
+
     TEST_F(ConveyorStructTest, TryPopItem) {
         EXPECT_EQ(segment_.TryPopItem(true, 0.25), nullptr);
         EXPECT_EQ(segment_.TryPopItem(false, 0.25), nullptr);

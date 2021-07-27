@@ -10,6 +10,9 @@ namespace jactorio::proto
 {
     struct SplitterData final : ConveyorData
     {
+        /// Whether or not left and right items should be swapped to opposite side
+        bool swap = false;
+
         // Left lane is inherited
         // Right lane below:
         // TODO This is slightly wasteful as right also defines health which is unused,
@@ -18,7 +21,7 @@ namespace jactorio::proto
         ConveyorData right;
 
         CEREAL_SERIALIZE(archive) {
-            archive(right, cereal::base_class<ConveyorData>(this));
+            archive(swap, right, cereal::base_class<ConveyorData>(this));
         }
     };
 

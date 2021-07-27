@@ -22,6 +22,8 @@ namespace jactorio::proto
             transBelt_.sprite  = &sprite_;
             splitter_.sprite   = &sprite_;
             sprite_.texCoordId = 1234;
+
+            splitter_.SetWidth(2);
         }
 
         game::World world_;
@@ -43,11 +45,10 @@ namespace jactorio::proto
         auto& con_data_bl = TestSetupConveyor(world_, {0, 2}, Orientation::left, transBelt_);
         auto& con_data_br = TestSetupConveyor(world_, {1, 2}, Orientation::right, transBelt_);
 
-        splitter_.SetWidth(2);
-
         TestSetupMultiTile(world_, {0, 1}, game::TileLayer::entity, Orientation::down, splitter_);
 
         splitter_.OnBuild(world_, logic_, {0, 1}, Orientation::down);
+        EXPECT_EQ(world_.LogicGet(game::LogicGroup::splitter).size(), 1);
 
         auto* splitter_data = world_.GetTile({0, 1}, game::TileLayer::entity)->GetUniqueData<SplitterData>();
         ASSERT_NE(splitter_data, nullptr);
@@ -70,7 +71,6 @@ namespace jactorio::proto
         auto& con_data_rt = TestSetupConveyor(world_, {2, 0}, Orientation::left, transBelt_);
         auto& con_data_rb = TestSetupConveyor(world_, {2, 1}, Orientation::left, transBelt_);
 
-        splitter_.SetWidth(2);
         auto& splitter_data = TestSetupSplitter(world_, {1, 0}, Orientation::left, splitter_);
 
 

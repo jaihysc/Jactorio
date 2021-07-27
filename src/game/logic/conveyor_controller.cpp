@@ -8,16 +8,17 @@
 #include "game/logic/conveyor_utility.h"
 #include "game/world/world.h"
 #include "proto/abstract/conveyor.h"
+#include "proto/splitter.h"
 
 using namespace jactorio;
 
 /// Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of conveyor
 /// \return true if an item was decremented
-J_NODISCARD bool MoveNextItem(const proto::LineDistT& tiles_moved,
-                              std::deque<game::ConveyorItem>& line_side,
-                              uint16_t& index,
-                              const bool has_target_segment) {
+J_NODISCARD static bool MoveNextItem(const proto::LineDistT& tiles_moved,
+                                     std::deque<game::ConveyorItem>& line_side,
+                                     uint16_t& index,
+                                     const bool has_target_segment) {
     for (size_t i = SafeCast<size_t>(index) + 1; i < line_side.size(); ++i) {
         auto& i_item_offset = line_side[i].dist;
         if (i_item_offset > proto::LineDistT(game::ConveyorProp::kItemSpacing)) {
@@ -204,6 +205,93 @@ static void LogicUpdateTransitionItems(const proto::Conveyor& line_proto, proto:
         UpdateSide<false>(tiles_moved, line_segment);
 }
 
+static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::SplitterData& splitter_data) {
+    // 1. Find the candidates for swapping (both sides)
+    // 2. Swapping logic
+
+    struct SwapCandidate
+    {
+        /// Index in lane
+        std::size_t index;
+        proto::LineDistT distFromFront;
+        game::ConveyorItem cItem;
+    };
+
+    auto find_swap_candidates = [&splitter](game::ConveyorLane& lane,
+                                            const double lane_length) -> std::pair<bool, SwapCandidate> {
+        // Distance from front of item to front of splitter conveyor
+        proto::LineDistT dist_from_front;
+
+        for (std::size_t i = 0; i < lane.lane.size(); ++i) {
+            auto [dist, item] = lane.lane[i];
+            dist_from_front += dist;
+
+            const auto dist_from_rear = lane_length - dist_from_front.getAsDouble();
+
+            // Swapping is only allowed for a short region, otherwise it swaps items back and fourth
+            // * 1.5 for a margin, so items which was previously right at the threshold can also swap
+            if (dist_from_rear > game::ConveyorProp::kSplitterThreshold &&
+                dist_from_rear < game::ConveyorProp::kSplitterThreshold + 1.5 * splitter.speed.getAsDouble()) {
+                return {true, {i, dist_from_front, lane.lane[i]}};
+            }
+        }
+        return {false, {}};
+    };
+
+    // TODO length is not 1 for different termination types
+
+    // ll = Left side, left lane
+    const auto [ll_has, ll_candidate] = find_swap_candidates(splitter_data.structure->left, 1.);
+    const auto [lr_has, lr_candidate] = find_swap_candidates(splitter_data.structure->right, 1.);
+    const auto [rl_has, rl_candidate] = find_swap_candidates(splitter_data.right.structure->left, 1.);
+    const auto [rr_has, rr_candidate] = find_swap_candidates(splitter_data.right.structure->right, 1.);
+
+    const auto left_has  = ll_has || lr_has;
+    const auto right_has = rl_has || rr_has;
+
+    /// Swaps item from lane "from" to lane "to"
+    /// \param candidiate Candidate from lane "from" to swap
+    auto swap_to = [](game::ConveyorLane& from, game::ConveyorLane& to, const SwapCandidate& candidate) {
+        from.RemoveItem(candidate.index);
+        to.InsertItem(candidate.distFromFront.getAsDouble(), *candidate.cItem.item, 0);
+    };
+
+    // One of the sides has items
+    if (left_has != right_has) {
+        if (!splitter_data.swap) {
+            splitter_data.swap = true;
+            // Let the item pass through, don't swap this time
+            return;
+        }
+
+        if (left_has) {
+            // TODO what if both sides has items
+
+            if (ll_has) {
+                swap_to(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate);
+            }
+            // if (lr_has) {
+            // swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
+            // }
+        }
+        else {
+            // if (rl_has) {
+            // swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
+            // }
+            // if (rr_has) {
+            // swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
+            // }
+        }
+
+        splitter_data.swap = false;
+    }
+    else if (left_has && right_has) {
+        // Swap both
+        splitter_data.swap = false;
+    }
+}
+
+
 void game::ConveyorLogicUpdate(World& world) {
     // The logic update of conveyor items occur in 2 stages:
     // 		1. Move items on their conveyors
@@ -235,22 +323,27 @@ void game::SplitterLogicUpdate(World& world) {
     // 		1. Move items on their conveyors
     //		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-    // Each side of a splitter is registered for logic updates
-    // Therefore we cannot update both sides per iteration or it goes double speed
-
     for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::splitter)) {
-        auto [line_proto, con_data] = GetConveyorInfo(world, coord);
-        assert(line_proto != nullptr);
-        assert(con_data != nullptr);
+        auto* splitter_proto = SafeCast<const proto::Splitter*>(prototype.Get());
+        auto* splitter_data  = SafeCast<proto::SplitterData*>(unique_data.Get());
 
-        LogicUpdateMoveItems(*line_proto, *con_data);
+        assert(splitter_proto != nullptr);
+        assert(splitter_data != nullptr);
+
+        LogicUpdateMoveItems(*splitter_proto, *splitter_data);
+        LogicUpdateMoveItems(*splitter_proto, splitter_data->right);
     }
 
     for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::splitter)) {
-        auto [line_proto, con_data] = GetConveyorInfo(world, coord);
-        assert(line_proto != nullptr);
-        assert(con_data != nullptr);
+        auto* splitter_proto = SafeCast<const proto::Splitter*>(prototype.Get());
+        auto* splitter_data  = SafeCast<proto::SplitterData*>(unique_data.Get());
 
-        LogicUpdateTransitionItems(*line_proto, *con_data);
+        assert(splitter_proto != nullptr);
+        assert(splitter_data != nullptr);
+
+        LogicUpdateSplitterSwap(*splitter_proto, *splitter_data);
+
+        LogicUpdateTransitionItems(*splitter_proto, *splitter_data);
+        LogicUpdateTransitionItems(*splitter_proto, splitter_data->right);
     }
 }

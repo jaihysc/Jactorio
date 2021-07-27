@@ -29,10 +29,13 @@ void proto::Splitter::OnBuild(game::World& world,
         BuildConveyor(world, side_coord, *con_data, orientation, game::LogicGroup::splitter);
     };
 
+    /// Right side of splitter
+    const auto right_coord = GetNonTopLeftCoord(world, coord, game::TileLayer::entity);
     build_conveyor(coord);
-    build_conveyor(GetNonTopLeftCoord(world, coord, game::TileLayer::entity));
+    build_conveyor(right_coord);
 
-    // Only use the splitter LogicGroup to swap item sides
+    // Only the left needs to be registered
+    world.LogicRemove(game::LogicGroup::splitter, right_coord, game::TileLayer::entity);
 }
 
 void proto::Splitter::OnNeighborUpdate(game::World& world,

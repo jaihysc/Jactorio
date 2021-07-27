@@ -53,6 +53,7 @@ void game::ConveyorLane::AppendItem(FloatOffsetT offset, const proto::Item& item
 }
 
 void game::ConveyorLane::InsertItem(FloatOffsetT offset, const proto::Item& item, const IntOffsetT item_offset) {
+    // TODO Why have item offset if it is just added to offset
     offset += item_offset;
     assert(offset >= 0);
 
@@ -129,6 +130,16 @@ std::pair<size_t, game::ConveyorItem> game::ConveyorLane::GetItem(const FloatOff
     }
     // Failed to meet lower bounds
     return {0, {}};
+}
+
+void game::ConveyorLane::RemoveItem(const std::size_t index) {
+    assert(index < lane.size());
+
+    // Adjust distance if has item behind
+    if (lane.size() > index + 1) {
+        lane[index + 1].dist += lane[index].dist;
+    }
+    lane.erase(lane.begin() + index);
 }
 
 const proto::Item* game::ConveyorLane::TryPopItem(const FloatOffsetT offset, const FloatOffsetT epsilon) {
@@ -300,6 +311,10 @@ std::pair<size_t, game::ConveyorItem> game::ConveyorStruct::GetItem(const bool l
                                                                     const FloatOffsetT offset,
                                                                     const FloatOffsetT epsilon) const {
     return left_side ? left.GetItem(offset, epsilon) : right.GetItem(offset, epsilon);
+}
+
+void game::ConveyorStruct::RemoveItem(const bool left_side, const std::size_t index) {
+    left_side ? left.RemoveItem(index) : right.RemoveItem(index);
 }
 
 const proto::Item* game::ConveyorStruct::TryPopItem(const bool left_side,

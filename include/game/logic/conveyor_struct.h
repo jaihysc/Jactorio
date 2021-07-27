@@ -63,6 +63,9 @@ namespace jactorio::game
 
         J_NODISCARD std::pair<size_t, ConveyorItem> GetItem(FloatOffsetT offset,
                                                             FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2) const;
+
+        void RemoveItem(std::size_t index);
+
         const proto::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2);
 
         // ======================================================================
@@ -162,11 +165,13 @@ namespace jactorio::game
         void AppendItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         /// Inserts the item onto the specified belt side at the offset from the beginning of the conveyor
+        /// - Spacing of items behind is preserved
         /// \param offset Distance from beginning of conveyor
         void InsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         /// Attempts to insert the item onto the specified belt side at the offset from the beginning of the
         /// conveyor
+        /// - Spacing of items behind is preserved
         /// \param offset Distance from beginning of conveyor
         /// \return false if unsuccessful
         bool TryInsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
@@ -176,6 +181,10 @@ namespace jactorio::game
         J_NODISCARD std::pair<size_t, ConveyorItem> GetItem(bool left_side,
                                                             FloatOffsetT offset,
                                                             FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2) const;
+
+        /// Removes item at index in specified lane
+        /// - Spacing of items behind is preserved
+        void RemoveItem(bool left_side, std::size_t index);
 
         /// Finds and removes item at offset within epsilon inclusive
         /// \return nullptr if no items were found
