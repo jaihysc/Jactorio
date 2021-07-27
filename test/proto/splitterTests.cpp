@@ -6,6 +6,7 @@
 
 #include "jactorioTests.h"
 
+#include "game/logic/conveyor_utility.h"
 #include "game/world/world.h"
 #include "proto/transport_belt.h"
 
@@ -88,5 +89,41 @@ namespace jactorio::proto
 
         EXPECT_EQ(con_data_rb.structure->target, nullptr);
         EXPECT_EQ(con_data_rt.structure->target, nullptr);
+    }
+
+    /// Both sides of splitter finds its targets
+    TEST_F(SplitterTest, Serialize) {
+        //
+        // S >
+        // S >
+        data::PrototypeManager proto;
+        data::UniqueDataManager unique;
+
+        auto& belt     = proto.Make<TransportBelt>();
+        auto& splitter = proto.Make<Splitter>();
+        splitter.SetWidth(2);
+
+        TestSetupConveyor(world_, {2, 1}, Orientation::right, belt);
+        TestSetupConveyor(world_, {2, 2}, Orientation::right, belt);
+
+        TestSetupSplitter(world_, {1, 1}, Orientation::right, splitter);
+
+        data::active_prototype_manager   = &proto;
+        data::active_unique_data_manager = &unique;
+
+
+        //
+        proto.GenerateRelocationTable();
+        auto result = TestSerializeDeserialize(world_);
+        result.DeserializePostProcess();
+
+        auto [proto_splitter_top, data_splitter_top]       = game::GetConveyorInfo(result, {1, 1});
+        auto [proto_splitter_bottom, data_splitter_bottom] = game::GetConveyorInfo(result, {1, 2});
+
+        auto [proto_top, data_top] = game::GetConveyorInfo(result, {2, 1});
+        EXPECT_EQ(data_splitter_top->structure->target, data_top->structure.get());
+
+        auto [proto_bottom, data_bottom] = game::GetConveyorInfo(result, {2, 2});
+        EXPECT_EQ(data_splitter_bottom->structure->target, data_bottom->structure.get());
     }
 } // namespace jactorio::proto

@@ -9,18 +9,15 @@
 #include "proto/inserter.h"
 #include "proto/mining_drill.h"
 #include "proto/resource_entity.h"
+#include "proto/splitter.h"
 #include "proto/transport_belt.h"
 
 CEREAL_REGISTER_TYPE(jactorio::proto::ResourceEntityData);
-
 CEREAL_REGISTER_TYPE(jactorio::proto::ConveyorData);
-
 CEREAL_REGISTER_TYPE(jactorio::proto::ContainerEntityData);
-
 CEREAL_REGISTER_TYPE(jactorio::proto::AssemblyMachineData);
-
 CEREAL_REGISTER_TYPE(jactorio::proto::InserterData);
-
 CEREAL_REGISTER_TYPE(jactorio::proto::MiningDrillData);
+CEREAL_REGISTER_TYPE(jactorio::proto::SplitterData);
 
 #endif // JACTORIO_INCLUDE_DATA_CEREAL_REGISTER_TYPE_H
