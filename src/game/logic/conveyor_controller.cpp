@@ -228,6 +228,8 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
 
             const auto dist_from_rear = lane_length - dist_from_front.getAsDouble();
 
+            // TODO maybe raise to *1.9 to reduce change of clogging side of conveyor
+
             // Swapping is only allowed for a short region, otherwise it swaps items back and fourth
             // * 1.5 for a margin, so items which was previously right at the threshold can also swap
             if (dist_from_rear > game::ConveyorProp::kSplitterThreshold &&
@@ -264,29 +266,28 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
             return;
         }
 
+        // No need to check for space on other side, since other side has no items at swap threshold region
         if (left_has) {
-            // TODO what if both sides has items
-
             if (ll_has) {
                 swap_to(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate);
             }
-            // if (lr_has) {
-            // swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
-            // }
+            if (lr_has) {
+                swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
+            }
         }
         else {
-            // if (rl_has) {
-            // swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
-            // }
-            // if (rr_has) {
-            // swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
-            // }
+            if (rl_has) {
+                swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
+            }
+            if (rr_has) {
+                swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
+            }
         }
 
         splitter_data.swap = false;
     }
     else if (left_has && right_has) {
-        // Swap both
+        // TODO what if both sides has items
         splitter_data.swap = false;
     }
 }
