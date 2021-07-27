@@ -20,6 +20,7 @@
 #include "gui/colors.h"
 #include "gui/context.h"
 #include "gui/menus.h"
+#include "proto/container_entity.h"
 #include "proto/inserter.h"
 #include "proto/label.h"
 #include "proto/sprite.h"
@@ -169,8 +170,9 @@ void gui::DebugTimings() {
 }
 
 void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
-    static int give_amount  = 100;
-    static int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
+    static int give_amount         = 100;
+    static int new_inv_size        = game::Player::Inventory::kDefaultInventorySize;
+    static bool fill_hovered_chest = false;
 
     ImGuard guard;
     guard.Begin("Item spawner");
@@ -193,9 +195,28 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
         player.inventory.inventory.Resize(new_inv_size);
     }
 
-
+    // Containers
     ImGui::Separator();
 
+    auto do_fill_chest = [&player](const game::ItemStack stack) {
+        auto [tile, coord] = player.placement.GetActivatedTile();
+        if (tile != nullptr && tile->GetPrototype()->GetCategory() == proto::Category::container_entity) {
+            auto* data = tile->GetUniqueData<proto::ContainerEntityData>();
+            assert(data != nullptr);
+
+            for (auto& slot : data->inventory) {
+                slot = stack;
+            }
+        }
+    };
+
+    ImGui::Checkbox("Fill opened chest", &fill_hovered_chest);
+    if (ImGui::Button("Clear opened chest")) {
+        do_fill_chest({});
+    }
+
+    // Item listing
+    ImGui::Separator();
 
     auto game_items = proto.GetAll<proto::Item>();
     for (auto& item : game_items) {
@@ -203,7 +224,13 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
             game::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
-            player.inventory.inventory.Add(item_stack);
+
+            if (fill_hovered_chest) {
+                do_fill_chest(item_stack);
+            }
+            else {
+                player.inventory.inventory.Add(item_stack);
+            }
         }
         ImGui::PopID();
     }
