@@ -43,6 +43,9 @@ namespace jactorio::game
 
         /// Distance after entering splitter when items can be swapped
         /// When rendering items on splitters, prevents swapping while items still in view
+        ///
+        /// Depending on the choice of threshold and item spacing, it may be possible to clog items on splitters
+        /// as new items are blocked from entering the threshold, and existing items cannot leave
         static constexpr ValueT kSplitterThreshold = 0.25;
 
 

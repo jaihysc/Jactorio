@@ -4,6 +4,7 @@
 
 #include "game/logic/conveyor_controller.h"
 
+#include <limits>
 #include <memory>
 
 #include "jactorioTests.h"
@@ -47,16 +48,25 @@ namespace jactorio::game
             return splitter;
         }
 
-        /// Iterations for item at end of splitter conveyor terminating straight to reach swap threshold
+        /// Iterations for the nth item (starting at 0) **on a compressed belt**
+        /// to reach or be prior to the splitter swap threshold.
+        /// - Assumes the iterations from n-1 down already applied
+        /// - Assumes starting at distance: item to threshold of kSplitterThreshold initially
         /// The following update after _iteration_ updates will put the item past the threshold
-        auto IterationsToThreshold() const {
-            return LossyCast<int>(ConveyorProp::kSplitterThreshold / splitter_.speed.getAsDouble());
-        }
+        auto IterationsToThreshold(const int n) const {
+            assert(splitter_.speed.getAsDouble() > 0);
+            assert(n >= 0);
+            if (n == 0) {
+                return LossyCast<int>(ConveyorProp::kSplitterThreshold / splitter_.speed.getAsDouble());
+            }
 
-        /// Iterations for next item to reach the position of current item on compressed lane
-        /// The following update after _iteration_ updates will put the item past the position of current
-        auto IterationsToNextItem() const {
-            return LossyCast<int>(ConveyorProp::kItemSpacing / splitter_.speed.getAsDouble());
+            // Previous item distance to threshold
+            const auto prev_dist_to_threshold =
+                ConveyorProp::kSplitterThreshold - IterationsToThreshold(n - 1) * splitter_.speed.getAsDouble();
+            return LossyCast<int>( //
+                (prev_dist_to_threshold + ConveyorProp::kItemSpacing) / splitter_.speed.getAsDouble() +
+                std::numeric_limits<double>::epsilon());
+            // ^^^ Epsilon accounts for cases such as 4.999999 from floating point precision issues
         }
     };
 
@@ -882,7 +892,7 @@ namespace jactorio::game
         l_struct.AppendItem(true, 0.f, item_);
 
         // First item at swap threshold
-        for (int i = 0; i < IterationsToThreshold(); ++i) {
+        for (int i = 0; i < IterationsToThreshold(0); ++i) {
             SplitterLogicUpdate(world_);
         }
         EXPECT_EQ(l_struct.left.lane.size(), 3);
@@ -894,7 +904,7 @@ namespace jactorio::game
 
         // Second item at swap threshold
         // - 1 since there is extra logic update above
-        for (int i = 0; i < IterationsToNextItem() - 1; ++i) {
+        for (int i = 0; i < IterationsToThreshold(1) - 1; ++i) {
             SplitterLogicUpdate(world_);
         }
         EXPECT_EQ(l_struct.left.lane.size(), 3);
@@ -919,7 +929,7 @@ namespace jactorio::game
 
         // Third item at swap threshold
         // - 1 since there is extra logic update above
-        for (int i = 0; i < IterationsToNextItem() - 1; ++i) {
+        for (int i = 0; i < IterationsToThreshold(2) - 1; ++i) {
             SplitterLogicUpdate(world_);
         }
         EXPECT_EQ(l_struct.left.lane.size(), 2);
@@ -946,7 +956,7 @@ namespace jactorio::game
         r_struct.AppendItem(false, 0.f, item_);
 
         // First item at swap threshold
-        for (int i = 0; i < IterationsToThreshold(); ++i) {
+        for (int i = 0; i < IterationsToThreshold(0); ++i) {
             SplitterLogicUpdate(world_);
         }
         EXPECT_EQ(l_struct.left.lane.size(), 0);
@@ -956,7 +966,7 @@ namespace jactorio::game
 
 
         // Second item at swap threshold
-        for (int i = 0; i < IterationsToNextItem(); ++i) {
+        for (int i = 0; i < IterationsToThreshold(1); ++i) {
             SplitterLogicUpdate(world_);
         }
         EXPECT_EQ(l_struct.left.lane.size(), 0);
@@ -975,22 +985,22 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ( //
             l_struct.left.lane[0].dist.getAsDouble(),
             1. + ConveyorProp::kItemSpacing -
-                (IterationsToThreshold() + IterationsToNextItem() + 1) * splitter_.speed.getAsDouble());
-        // ^^^ Because conveyor speed does not divide evenly into threshold, we calculate distance differently
+                (IterationsToThreshold(0) + IterationsToThreshold(1) + 1) * splitter_.speed.getAsDouble());
+        // ^^^ Because conveyor speed does not divide evenly into threshold, calculate distance via # of logic updates
 
         EXPECT_DOUBLE_EQ( //
             l_struct.right.lane[0].dist.getAsDouble(),
             1. + ConveyorProp::kItemSpacing -
-                (IterationsToThreshold() + IterationsToNextItem() + 1) * splitter_.speed.getAsDouble());
+                (IterationsToThreshold(0) + IterationsToThreshold(1) + 1) * splitter_.speed.getAsDouble());
 
         // Right side
         EXPECT_DOUBLE_EQ( //
             r_struct.left.lane[0].dist.getAsDouble(),
-            1. - (IterationsToThreshold() + IterationsToNextItem() + 1) * splitter_.speed.getAsDouble());
+            1. - (IterationsToThreshold(0) + IterationsToThreshold(1) + 1) * splitter_.speed.getAsDouble());
 
         EXPECT_DOUBLE_EQ( //
             r_struct.right.lane[0].dist.getAsDouble(),
-            1. - (IterationsToThreshold() + IterationsToNextItem() + 1) * splitter_.speed.getAsDouble());
+            1. - (IterationsToThreshold(0) + IterationsToThreshold(1) + 1) * splitter_.speed.getAsDouble());
 
         EXPECT_DOUBLE_EQ( //
             r_struct.left.lane[1].dist.getAsDouble(),
@@ -999,5 +1009,131 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ( //
             r_struct.right.lane[1].dist.getAsDouble(),
             2 * ConveyorProp::kItemSpacing);
+    }
+
+    TEST_F(ConveyorControllerTest, Splitter2Side2Lane) {
+        splitter_.speed     = 0.10;
+        auto& splitter_data = CreateSplitter({0, 0}, Orientation::left);
+        splitter_data.swap  = true; // Will swap the next item(s) that passes threshold
+
+        auto& l_struct = *splitter_data.structure;
+        auto& r_struct = *splitter_data.right.structure;
+
+        l_struct.AppendItem(true, 1.f, item_);
+        l_struct.AppendItem(false, 1.f, item_);
+
+        proto::Item item_2;
+        r_struct.AppendItem(true, 1.001f, item_2);
+        r_struct.AppendItem(false, 1.002f, item_2);
+
+        for (int i = 0; i < IterationsToThreshold(0); ++i) {
+            SplitterLogicUpdate(world_);
+        }
+        EXPECT_EQ(l_struct.left.lane.size(), 1);
+        EXPECT_EQ(l_struct.right.lane.size(), 1);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
+        EXPECT_EQ(r_struct.right.lane.size(), 1);
+
+        // Items swapped
+        SplitterLogicUpdate(world_);
+        ASSERT_EQ(l_struct.left.lane.size(), 1);
+        ASSERT_EQ(l_struct.right.lane.size(), 1);
+        ASSERT_EQ(r_struct.left.lane.size(), 1);
+        ASSERT_EQ(r_struct.right.lane.size(), 1);
+
+        // Swapped items
+        EXPECT_EQ(l_struct.left.lane[0].item.Get(), &item_2);
+        EXPECT_EQ(l_struct.right.lane[0].item.Get(), &item_2);
+        EXPECT_EQ(r_struct.left.lane[0].item.Get(), &item_);
+        EXPECT_EQ(r_struct.right.lane[0].item.Get(), &item_);
+
+        // Left side
+        // Forgive small differences in spacing by just swapping the items around
+        EXPECT_DOUBLE_EQ( //
+            l_struct.left.lane[0].dist.getAsDouble(),
+            1. - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
+        // ^^^ Because conveyor speed does not divide evenly into threshold, calculate distance via # of logic updates
+
+        EXPECT_DOUBLE_EQ( //
+            l_struct.right.lane[0].dist.getAsDouble(),
+            1. - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
+
+        // Right side
+        EXPECT_DOUBLE_EQ( //
+            r_struct.left.lane[0].dist.getAsDouble(),
+            1.001 - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
+
+        EXPECT_DOUBLE_EQ( //
+            r_struct.right.lane[0].dist.getAsDouble(),
+            1.002 - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
+    }
+
+    TEST_F(ConveyorControllerTest, Splitter2Side1Lane) {
+        // Note: If the splitter speed causes the left item be right at the threshold
+        // The right item will swap one update early, since it is slightly less, invaliding this test
+        splitter_.speed     = 0.5;
+        auto& splitter_data = CreateSplitter({0, 0}, Orientation::down);
+        splitter_data.swap  = true;
+
+        auto& l_struct = *splitter_data.structure;
+        auto& r_struct = *splitter_data.right.structure;
+
+        l_struct.AppendItem(true, 1.f, item_);
+
+        proto::Item item_2;
+        r_struct.AppendItem(false, 0.998f, item_2);
+
+        for (int i = 0; i < IterationsToThreshold(0); ++i) {
+            SplitterLogicUpdate(world_);
+        }
+        EXPECT_EQ(l_struct.left.lane.size(), 1);
+        EXPECT_EQ(l_struct.right.lane.size(), 0);
+        EXPECT_EQ(r_struct.left.lane.size(), 0);
+        EXPECT_EQ(r_struct.right.lane.size(), 1);
+
+        // Items swapped
+        SplitterLogicUpdate(world_);
+        ASSERT_EQ(l_struct.left.lane.size(), 0);
+        ASSERT_EQ(l_struct.right.lane.size(), 1);
+        ASSERT_EQ(r_struct.left.lane.size(), 1);
+        ASSERT_EQ(r_struct.right.lane.size(), 0);
+
+        // Swapped items
+        EXPECT_EQ(l_struct.right.lane[0].item.Get(), &item_2);
+        EXPECT_EQ(r_struct.left.lane[0].item.Get(), &item_);
+
+        EXPECT_DOUBLE_EQ( //
+            l_struct.right.lane[0].dist.getAsDouble(),
+            0.998 - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
+
+        EXPECT_DOUBLE_EQ( //
+            r_struct.left.lane[0].dist.getAsDouble(),
+            1. - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
+    }
+
+    /// The spacing between items should not be under the minimum constant
+    TEST_F(ConveyorControllerTest, SplitterSwapPreserveMinItemSpacing) {
+        splitter_.speed     = 0.002;
+        auto& splitter_data = CreateSplitter({0, 0}, Orientation::down);
+        splitter_data.swap  = true;
+
+        auto& l_struct = *splitter_data.structure;
+        auto& r_struct = *splitter_data.right.structure;
+
+        proto::Item item_2;
+        // Next update only puts item on left side in threshold for swap
+        const auto dist = LossyCast<float>(1. - ConveyorProp::kSplitterThreshold + splitter_.speed.getAsDouble() / 2);
+        l_struct.AppendItem(true, dist, item_);
+        r_struct.AppendItem(true, dist + splitter_.speed.getAsDouble(), item_2);
+
+        // Do not swap, not enough distance between the items
+        SplitterLogicUpdate(world_);
+        EXPECT_EQ(l_struct.left.lane.size(), 1);
+        EXPECT_EQ(l_struct.right.lane.size(), 0);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
+        EXPECT_EQ(r_struct.right.lane.size(), 0);
+
+        EXPECT_EQ(l_struct.left.lane[0].item.Get(), &item_);
+        EXPECT_EQ(r_struct.left.lane[0].item.Get(), &item_2);
     }
 } // namespace jactorio::game
