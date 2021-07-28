@@ -86,8 +86,8 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
                 target_offset = proto::LineDistT(length - fabs(offset.getAsDouble()));
             }
 
-            game::ConveyorStruct::ApplyTerminationDeduction<IsLeft>(
-                segment.terminationType, target_segment.terminationType, target_offset);
+            target_offset -= game::ConveyorStruct::GetTerminationDeduction<IsLeft>(segment.terminationType,
+                                                                                   target_segment.terminationType);
 
             bool moved_item;
             // Decides how the items will be fed into the target segment (if at all)
@@ -240,13 +240,32 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
         return {false, {}};
     };
 
-    // TODO length is not 1 for different termination types
+    const auto l_tile_length = proto::LineDistT(splitter_data.structure->length);
+    const auto r_tile_length = proto::LineDistT(splitter_data.right.structure->length);
 
     // ll = Left side, left lane
-    const auto [ll_has, ll_candidate] = find_swap_candidates(splitter_data.structure->left, 1.);
-    const auto [lr_has, lr_candidate] = find_swap_candidates(splitter_data.structure->right, 1.);
-    const auto [rl_has, rl_candidate] = find_swap_candidates(splitter_data.right.structure->left, 1.);
-    const auto [rr_has, rr_candidate] = find_swap_candidates(splitter_data.right.structure->right, 1.);
+    // Do not need target term type here, only trying to calculate splitter lane length
+    const auto ll_length = l_tile_length -
+        game::ConveyorStruct::GetTerminationDeduction<true>(splitter_data.structure->terminationType,
+                                                            game::ConveyorStruct::TerminationType::straight);
+    const auto lr_length = l_tile_length -
+        game::ConveyorStruct::GetTerminationDeduction<false>(splitter_data.structure->terminationType,
+                                                             game::ConveyorStruct::TerminationType::straight);
+    const auto rl_length = r_tile_length -
+        game::ConveyorStruct::GetTerminationDeduction<true>(splitter_data.right.structure->terminationType,
+                                                            game::ConveyorStruct::TerminationType::straight);
+    const auto rr_length = r_tile_length -
+        game::ConveyorStruct::GetTerminationDeduction<false>(splitter_data.right.structure->terminationType,
+                                                             game::ConveyorStruct::TerminationType::straight);
+
+    const auto [ll_has, ll_candidate] = //
+        find_swap_candidates(splitter_data.structure->left, ll_length.getAsDouble());
+    const auto [lr_has, lr_candidate] = //
+        find_swap_candidates(splitter_data.structure->right, lr_length.getAsDouble());
+    const auto [rl_has, rl_candidate] =
+        find_swap_candidates(splitter_data.right.structure->left, rl_length.getAsDouble());
+    const auto [rr_has, rr_candidate] =
+        find_swap_candidates(splitter_data.right.structure->right, rr_length.getAsDouble());
 
     const auto left_has  = ll_has || lr_has;
     const auto right_has = rl_has || rr_has;

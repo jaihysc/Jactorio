@@ -1136,4 +1136,30 @@ namespace jactorio::game
         EXPECT_EQ(l_struct.left.lane[0].item.Get(), &item_);
         EXPECT_EQ(r_struct.left.lane[0].item.Get(), &item_2);
     }
+
+    /// Ensures the the variations in length as a result of different terminations is handled
+    TEST_F(ConveyorControllerTest, SplitterBendingTermination) {
+        splitter_.speed     = 0.02;
+        auto& splitter_data = CreateSplitter({0, 0}, Orientation::down);
+
+        splitter_data.structure->terminationType = ConveyorStruct::TerminationType::bend_left;
+        splitter_data.structure->length          = 2; // Always 1 longer when bending
+        splitter_data.swap                       = true;
+
+        auto& l_struct = *splitter_data.structure;
+        auto& r_struct = *splitter_data.right.structure;
+
+        // Item starts further back after entering splitter, since splitter terminates bending
+        l_struct.AppendItem(true, 2. - ConveyorProp::kBendLeftLReduction, item_);
+
+        for (int i = 0; i < IterationsToThreshold(0); ++i) {
+            SplitterLogicUpdate(world_);
+        }
+
+        SplitterLogicUpdate(world_);
+        EXPECT_EQ(l_struct.left.lane.size(), 0);
+        EXPECT_EQ(l_struct.right.lane.size(), 0);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
+        EXPECT_EQ(r_struct.right.lane.size(), 0);
+    }
 } // namespace jactorio::game

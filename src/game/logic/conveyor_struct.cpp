@@ -180,119 +180,98 @@ bool game::ConveyorStruct::IsActive(const bool left_side) const {
 //       Segment
 
 
-void ApplyTerminationDeductionL(const game::ConveyorStruct::TerminationType termination_type,
-                                proto::LineDistT& offset) {
+proto::LineDistT GetTerminationDeductionL(const game::ConveyorStruct::TerminationType termination_type) {
     switch (termination_type) {
         // Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
     case game::ConveyorStruct::TerminationType::left_only:
     case game::ConveyorStruct::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftLReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendLeftLReduction);
 
     case game::ConveyorStruct::TerminationType::right_only:
     case game::ConveyorStruct::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendRightLReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendRightLReduction);
 
-    case game::ConveyorStruct::TerminationType::straight:
-        break;
+    default:
+        return proto::LineDistT(0);
     }
 }
 
-void ApplyTargetTerminationDeductionL(const game::ConveyorStruct::TerminationType termination_type,
-                                      proto::LineDistT& offset) {
+proto::LineDistT GetTargetDeductionDeductionL(const game::ConveyorStruct::TerminationType termination_type) {
     switch (termination_type) {
     case game::ConveyorStruct::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftLReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendLeftLReduction);
 
     case game::ConveyorStruct::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendRightLReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendRightLReduction);
 
     case game::ConveyorStruct::TerminationType::left_only:
     case game::ConveyorStruct::TerminationType::right_only:
-        offset -= proto::LineDistT(game::ConveyorProp::kTargetSideOnlyReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kTargetSideOnlyReduction);
 
-    case game::ConveyorStruct::TerminationType::straight:
-        break;
+    default:
+        return proto::LineDistT(0);
     }
 }
 
 
-void ApplyTerminationDeductionR(const game::ConveyorStruct::TerminationType termination_type,
-                                proto::LineDistT& offset) {
+proto::LineDistT GetTerminationDeductionR(const game::ConveyorStruct::TerminationType termination_type) {
     switch (termination_type) {
     case game::ConveyorStruct::TerminationType::left_only:
     case game::ConveyorStruct::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftRReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendLeftRReduction);
 
     case game::ConveyorStruct::TerminationType::right_only:
     case game::ConveyorStruct::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendRightRReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendRightRReduction);
 
-    case game::ConveyorStruct::TerminationType::straight:
-        break;
+    default:
+        return proto::LineDistT(0);
     }
 }
 
-void ApplyTargetTerminationDeductionR(const game::ConveyorStruct::TerminationType termination_type,
-                                      proto::LineDistT& offset) {
+proto::LineDistT GetTargetDeductionDeductionR(const game::ConveyorStruct::TerminationType termination_type) {
     switch (termination_type) {
     case game::ConveyorStruct::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftRReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendLeftRReduction);
 
     case game::ConveyorStruct::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::ConveyorProp::kBendRightRReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kBendRightRReduction);
 
     case game::ConveyorStruct::TerminationType::left_only:
     case game::ConveyorStruct::TerminationType::right_only:
-        offset -= proto::LineDistT(game::ConveyorProp::kTargetSideOnlyReduction);
-        break;
+        return proto::LineDistT(game::ConveyorProp::kTargetSideOnlyReduction);
 
-    case game::ConveyorStruct::TerminationType::straight:
-        break;
+    default:
+        return proto::LineDistT(0);
     }
 }
 
-void game::ConveyorStruct::ApplyTerminationDeduction(const bool is_left,
-                                                     const TerminationType segment_ttype,
-                                                     const TerminationType target_segment_ttype,
-                                                     proto::LineDistT& offset) {
+proto::LineDistT game::ConveyorStruct::GetTerminationDeduction(const bool is_left,
+                                                               const TerminationType segment_ttype,
+                                                               const TerminationType target_segment_ttype) {
     if (is_left)
-        ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
-    else
-        ApplyRightTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+        return GetLeftTerminationDeduction(segment_ttype, target_segment_ttype);
+    return GetRightTerminationDeduction(segment_ttype, target_segment_ttype);
 }
 
-void game::ConveyorStruct::ApplyLeftTerminationDeduction(const TerminationType segment_ttype,
-                                                         const TerminationType target_segment_ttype,
-                                                         proto::LineDistT& offset) {
-    ApplyTerminationDeductionL(segment_ttype, offset);
+proto::LineDistT game::ConveyorStruct::GetLeftTerminationDeduction(const TerminationType segment_ttype,
+                                                                   const TerminationType target_segment_ttype) {
+    const auto deduction = GetTerminationDeductionL(segment_ttype);
 
     // Transition into right lane
     if (segment_ttype == TerminationType::right_only)
-        ApplyTargetTerminationDeductionR(target_segment_ttype, offset);
-    else
-        ApplyTargetTerminationDeductionL(target_segment_ttype, offset);
+        return deduction + GetTargetDeductionDeductionR(target_segment_ttype);
+    return deduction + GetTargetDeductionDeductionL(target_segment_ttype);
 }
 
-void game::ConveyorStruct::ApplyRightTerminationDeduction(const TerminationType segment_ttype,
-                                                          const TerminationType target_segment_ttype,
-                                                          proto::LineDistT& offset) {
-    ApplyTerminationDeductionR(segment_ttype, offset);
-
+proto::LineDistT game::ConveyorStruct::GetRightTerminationDeduction(const TerminationType segment_ttype,
+                                                                    const TerminationType target_segment_ttype) {
+    const auto deduction = GetTerminationDeductionR(segment_ttype);
 
     // Transition into left lane
     if (segment_ttype == TerminationType::left_only)
-        ApplyTargetTerminationDeductionL(target_segment_ttype, offset);
-    else
-        ApplyTargetTerminationDeductionR(target_segment_ttype, offset);
+        return deduction + GetTargetDeductionDeductionL(target_segment_ttype);
+    return deduction + GetTargetDeductionDeductionR(target_segment_ttype);
 }
 
 void game::ConveyorStruct::AppendItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {

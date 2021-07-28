@@ -136,26 +136,22 @@ namespace jactorio::game
         /// \return true if left size is not empty and has a valid index
         J_NODISCARD bool IsActive(bool left_side) const;
 
-        /// Deducts tile length offset to get offset based on lane length
+        /// \return Amount to subtract from tile length to get lane length
         /// \param target_segment_ttype If deducting termination of current segment's target is unnecessary, use
         /// straight
         /// Since the length of segments is the tile length, it must be deducted to get the lane length to accurately
         /// insert, remove and any other operation on segments
-        static void ApplyTerminationDeduction(bool is_left,
-                                              TerminationType segment_ttype,
-                                              TerminationType target_segment_ttype,
-                                              proto::LineDistT& offset);
+        J_NODISCARD static proto::LineDistT GetTerminationDeduction(bool is_left,
+                                                                    TerminationType segment_ttype,
+                                                                    TerminationType target_segment_ttype);
         template <bool IsLeftLane>
-        static void ApplyTerminationDeduction(TerminationType segment_ttype,
-                                              TerminationType target_segment_ttype,
-                                              proto::LineDistT& offset);
+        J_NODISCARD static proto::LineDistT GetTerminationDeduction(TerminationType segment_ttype,
+                                                                    TerminationType target_segment_ttype);
 
-        static void ApplyLeftTerminationDeduction(TerminationType segment_ttype,
-                                                  TerminationType target_segment_ttype,
-                                                  proto::LineDistT& offset);
-        static void ApplyRightTerminationDeduction(TerminationType segment_ttype,
-                                                   TerminationType target_segment_ttype,
-                                                   proto::LineDistT& offset);
+        J_NODISCARD static proto::LineDistT GetLeftTerminationDeduction(TerminationType segment_ttype,
+                                                                        TerminationType target_segment_ttype);
+        J_NODISCARD static proto::LineDistT GetRightTerminationDeduction(TerminationType segment_ttype,
+                                                                         TerminationType target_segment_ttype);
 
         // Item insertion
 
@@ -265,14 +261,13 @@ namespace jactorio::game
     };
 
     template <bool IsLeftLane>
-    void ConveyorStruct::ApplyTerminationDeduction(const TerminationType segment_ttype,
-                                                   const TerminationType target_segment_ttype,
-                                                   proto::LineDistT& offset) {
+    proto::LineDistT ConveyorStruct::GetTerminationDeduction(const TerminationType segment_ttype,
+                                                             const TerminationType target_segment_ttype) {
         if constexpr (IsLeftLane) {
-            ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+            return GetLeftTerminationDeduction(segment_ttype, target_segment_ttype);
         }
         else {
-            ApplyRightTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+            return GetRightTerminationDeduction(segment_ttype, target_segment_ttype);
         }
     }
 } // namespace jactorio::game
