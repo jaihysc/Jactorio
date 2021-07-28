@@ -215,6 +215,32 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, nullptr);
     }
 
+    /// Splitter built last
+    TEST_F(ConveyorUtilityTest, DoNotConnectSplitterSide2) {
+        // v
+        // S
+        // S
+
+        auto& con_struct = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
+        TestSetupSplitter(world_, {0, 1}, Orientation::right, splitter_);
+
+        ConveyorConnectUp(world_, {0, 1});
+        EXPECT_EQ(con_struct.target, nullptr);
+    }
+
+    TEST_F(ConveyorUtilityTest, SplitterDoNotConnectSplitterSide) {
+        //
+        // <S
+        // <S
+        //  S S
+        TestSetupSplitter(world_, {0, 0}, Orientation::left, splitter_);
+        auto& splitter_data = TestSetupSplitter(world_, {0, 2}, Orientation::up, splitter_);
+
+        ConveyorConnectUp(world_, {0, 2});
+        EXPECT_EQ(splitter_data.structure->target, nullptr);
+        EXPECT_EQ(splitter_data.right.structure->target, nullptr);
+    }
+
     //
     //
     //

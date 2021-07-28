@@ -139,20 +139,38 @@ static void DoConnect(game::World& world, const WorldCoord& coord) {
     assert(neigh_data != nullptr);
 
     // Older versions of clang does not implicitly capture structured bindings
-    auto can_connect = [&, current_data = current_data, neigh_proto = neigh_proto, neigh_data = neigh_data] {
-        if (neigh_proto->GetCategory() == proto::Category::splitter) {
+    /// If true, there is the possiblity of a connection being made, check orientations
+    /// If false, a connection cannot be formed
+    auto may_connect = [&,
+                        current_proto = current_proto,
+                        current_data  = current_data,
+                        neigh_proto   = neigh_proto,
+                        neigh_data    = neigh_data] {
+        if (current_proto->GetCategory() == proto::Category::splitter) {
             // Being connected to from a splitter is allowed when in front of splitter
-            if (neighbor_coord.Incremented(neigh_data->structure->direction) == coord) {
-                return true;
+            // Does not have to face same direction as splitter
+            if (coord.Incremented(current_data->structure->direction) == neighbor_coord) {
+                // Cannot immediately return true, check neighbor is/is not splitter
+                // if neighbor is splitter: Ensure not connecting to its side
             }
             // Cannot connect to the side of splitters
+            // Know is on side because not in same direction as splitter
+            else if (current_data->structure->direction != neigh_data->structure->direction) {
+                return false;
+            }
+        }
+        if (neigh_proto->GetCategory() == proto::Category::splitter) {
+            if (neighbor_coord.Incremented(neigh_data->structure->direction) == coord) {
+                // current_proto already checked
+                return true;
+            }
             if (current_data->structure->direction != neigh_data->structure->direction) {
                 return false;
             }
         }
         return true;
     };
-    if (!can_connect()) {
+    if (!may_connect()) {
         return;
     }
     CalculateTargets<OriginConnect, Orientation::Invert(OriginConnect)>(*current_data, *neigh_data);
