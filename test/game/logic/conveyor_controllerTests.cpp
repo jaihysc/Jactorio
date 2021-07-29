@@ -1205,8 +1205,11 @@ namespace jactorio::game
         ConveyorLogicUpdate(world_);
         EXPECT_EQ(l_struct.left.lane.size(), 0);
         EXPECT_EQ(l_struct.right.lane.size(), 0);
-        EXPECT_EQ(r_struct.left.lane.size(), 1);
+        ASSERT_EQ(r_struct.left.lane.size(), 1);
         EXPECT_EQ(r_struct.right.lane.size(), 0);
+
+        EXPECT_EQ(r_struct.left.lane[0].dist.getAsDouble(),
+                  1 - (IterationsToThreshold(0) + 1) * splitter_.speed.getAsDouble());
     }
 
     /// Was bug, transitioning into a splitter caused item to move extra distance

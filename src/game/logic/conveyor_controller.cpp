@@ -273,8 +273,15 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
 
     /// Swaps item from lane "from" to lane "to"
     /// \param candidiate Candidate from lane "from" to swap
-    auto swap_to = [](game::ConveyorLane& from, game::ConveyorLane& to, const SwapCandidate& candidate) {
-        if (to.TryInsertItem(candidate.distFromFront.getAsDouble(), *candidate.cItem.item, 0)) {
+    auto swap_to = [](const std::pair<game::ConveyorLane&, proto::LineDistT>& from_pair,
+                      const std::pair<game::ConveyorLane&, proto::LineDistT>& to_pair,
+                      const SwapCandidate& candidate) {
+        auto& [from, from_length] = from_pair;
+        auto& [to, to_length]     = to_pair;
+
+        // This accounts for the varying lengths of sides
+        const auto insert_offset = candidate.distFromFront - from_length + to_length;
+        if (to.TryInsertItem(insert_offset.getAsDouble(), *candidate.cItem.item, 0)) {
             from.RemoveItem(candidate.index);
         }
     };
@@ -316,13 +323,17 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
             if (!to_right_check()) {
                 return;
             }
-            swap_to(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate);
+            swap_to({splitter_data.structure->left, ll_length},
+                    {splitter_data.right.structure->left, rl_length},
+                    ll_candidate);
         }
         else {
             if (!to_left_check()) {
                 return;
             }
-            swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
+            swap_to({splitter_data.right.structure->left, rl_length},
+                    {splitter_data.structure->left, ll_length},
+                    rl_candidate);
         }
         swapped = true;
     }
@@ -341,13 +352,17 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
             if (!to_right_check()) {
                 return;
             }
-            swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
+            swap_to({splitter_data.structure->right, lr_length},
+                    {splitter_data.right.structure->right, rr_length},
+                    lr_candidate);
         }
         else {
             if (!to_left_check()) {
                 return;
             }
-            swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
+            swap_to({splitter_data.right.structure->right, rr_length},
+                    {splitter_data.structure->right, lr_length},
+                    rr_candidate);
         }
         swapped = true;
     }
