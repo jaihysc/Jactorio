@@ -892,6 +892,9 @@ namespace jactorio::game
         auto& l_struct = *splitter_data.structure;
         auto& r_struct = *splitter_data.right.structure;
 
+        // Set something as the target, if no target is set it immediately moves inputs to the other side
+        l_struct.target = reinterpret_cast<ConveyorStruct*>(0x01);
+
         l_struct.AppendItem(true, 1.f, item_);
         l_struct.AppendItem(true, 0.f, item_);
         l_struct.AppendItem(true, 0.f, item_);
@@ -954,6 +957,9 @@ namespace jactorio::game
 
         auto& l_struct = *splitter_data.structure;
         auto& r_struct = *splitter_data.right.structure;
+
+        // Set something as the target, if no target is set it immediately moves inputs to the other side
+        r_struct.target = reinterpret_cast<ConveyorStruct*>(0x01);
 
         r_struct.AppendItem(true, 1.f, item_);
         r_struct.AppendItem(true, 0.f, item_);
@@ -1140,6 +1146,41 @@ namespace jactorio::game
 
         EXPECT_EQ(l_struct.left.lane[0].item.Get(), &item_);
         EXPECT_EQ(r_struct.left.lane[0].item.Get(), &item_2);
+    }
+
+    /// Was bug, item spacing is incorrect if swapped onto other side with current side full
+    TEST_F(ConveyorControllerTest, Splitter1SideFilled) {
+        splitter_.speed     = 0.05;
+        auto& splitter_data = CreateSplitter({0, 0}, Orientation::down);
+
+        auto& l_struct = *splitter_data.structure;
+        auto& r_struct = *splitter_data.right.structure;
+
+        l_struct.AppendItem(true, 0.f, item_);
+        l_struct.AppendItem(true, 0.f, item_);
+        l_struct.AppendItem(true, 0.f, item_);
+        l_struct.AppendItem(true, 0.f, item_);
+        l_struct.AppendItem(true, 0.f, item_);
+
+        // Immediately swap
+        ConveyorLogicUpdate(world_);
+        EXPECT_EQ(l_struct.left.lane.size(), 4);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
+
+        const auto iterations = LossyCast<int>(ConveyorProp::kItemSpacing / splitter_.speed.getAsDouble());
+        for (int i = 0; i < iterations - 1; ++i) {
+            ConveyorLogicUpdate(world_);
+        }
+        EXPECT_EQ(l_struct.left.lane.size(), 4);
+        EXPECT_EQ(r_struct.left.lane.size(), 1);
+
+        // Bug was here, do not wait for swap to become true, swap immediately
+        // to maintain compression
+        ConveyorLogicUpdate(world_);
+        EXPECT_EQ(l_struct.left.lane.size(), 3);
+        ASSERT_EQ(r_struct.left.lane.size(), 2);
+
+        EXPECT_DOUBLE_EQ(r_struct.left.lane[1].dist.getAsDouble(), ConveyorProp::kItemSpacing);
     }
 
     /// Ensures the the variations in length as a result of different terminations is handled

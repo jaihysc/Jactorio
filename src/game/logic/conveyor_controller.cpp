@@ -244,8 +244,6 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
         return {false, {}};
     };
 
-    // BUG - Splitter sometimes stops swapping if one side if full
-
     const auto l_tile_length = proto::LineDistT(splitter_data.structure->length);
     const auto r_tile_length = proto::LineDistT(splitter_data.right.structure->length);
 
@@ -273,9 +271,6 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
     const auto [rr_has, rr_candidate] =
         find_swap_candidates(splitter_data.right.structure->right, rr_length.getAsDouble());
 
-    const auto left_has  = ll_has || lr_has;
-    const auto right_has = rl_has || rr_has;
-
     /// Swaps item from lane "from" to lane "to"
     /// \param candidiate Candidate from lane "from" to swap
     auto swap_to = [](game::ConveyorLane& from, game::ConveyorLane& to, const SwapCandidate& candidate) {
@@ -293,67 +288,80 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
         std::swap(from.lane[from_candidate.index].item, to.lane[to_candidate.index].item);
     };
 
-    // One of the sides has items
-    if (left_has != right_has) {
-        if (!splitter_data.swap) {
+    /// \return true if can swap from left side to right side which has no candidates
+    auto to_right_check = [&splitter_data]() {
+        // swap can be disregarded if this side has no target, meaning this leads nowhere
+        // maintains compression as no longer have to wait 1 update for swap to be true
+        if (splitter_data.structure->target != nullptr && !splitter_data.swap) {
             splitter_data.swap = true;
             // Let the item pass through, don't swap this time
-            return;
+            return false;
         }
+        return true;
+    };
 
-        // No need to check for space on other side, since other side has no items at swap threshold region
-        if (left_has) {
-            if (ll_has) {
-                swap_to(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate);
+    /// \return true if can swap from right side to left side which has no candidates
+    auto to_left_check = [&splitter_data]() {
+        if (splitter_data.right.structure->target != nullptr && !splitter_data.swap) {
+            splitter_data.swap = true;
+            return false;
+        }
+        return true;
+    };
+
+
+    bool swapped = false;
+    if (ll_has != rl_has) {
+        if (ll_has) {
+            if (!to_right_check()) {
+                return;
             }
-            if (lr_has) {
-                swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
-            }
+            swap_to(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate);
         }
         else {
-            if (rl_has) {
-                swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
+            if (!to_left_check()) {
+                return;
             }
-            if (rr_has) {
-                swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
-            }
+            swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
         }
-
-        splitter_data.swap = false;
+        swapped = true;
     }
-    else if (left_has && right_has) {
+    else if (ll_has && rl_has) {
         if (!splitter_data.swap) {
             splitter_data.swap = true;
             return;
         }
+        swap_both(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate, rl_candidate);
+        swapped = true;
+    }
 
-        // Swap left lanes
-        if (ll_has != rl_has) {
-            if (ll_has) {
-                swap_to(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate);
+    // The left and right lanes never mix
+    if (lr_has != rr_has) {
+        if (lr_has) {
+            if (!to_right_check()) {
+                return;
             }
-            else {
-                swap_to(splitter_data.right.structure->left, splitter_data.structure->left, rl_candidate);
+            swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
+        }
+        else {
+            if (!to_left_check()) {
+                return;
             }
+            swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
         }
-        else if (ll_has && rl_has) {
-            swap_both(splitter_data.structure->left, splitter_data.right.structure->left, ll_candidate, rl_candidate);
+        swapped = true;
+    }
+    else if (lr_has && rr_has) {
+        if (!splitter_data.swap) {
+            splitter_data.swap = true;
+            return;
         }
+        swap_both(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate, rr_candidate);
+        swapped = true;
+    }
 
-        // Swap right lanes
-        if (lr_has != rr_has) {
-            if (lr_has) {
-                swap_to(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate);
-            }
-            else {
-                swap_to(splitter_data.right.structure->right, splitter_data.structure->right, rr_candidate);
-            }
-        }
-        else if (lr_has && rr_has) {
-            swap_both(splitter_data.structure->right, splitter_data.right.structure->right, lr_candidate, rr_candidate);
-        }
-
-        splitter_data.swap = false;
+    if (swapped) {
+        splitter_data.swap = !swapped;
     }
 }
 

@@ -157,7 +157,7 @@ namespace jactorio::game
 
         /// Appends item onto the specified side of a belt behind the last item
         /// \param offset Number of tiles to offset from previous item or the end of the conveyor segment when
-        /// there are no items
+        /// there are no items (May be greater than what is specified to maintain min item spacing)
         void AppendItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         /// Inserts the item onto the specified belt side at the offset from the beginning of the conveyor
