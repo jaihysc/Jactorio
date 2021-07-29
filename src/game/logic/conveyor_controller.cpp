@@ -3,6 +3,7 @@
 #include "game/logic/conveyor_controller.h"
 
 #include <cmath>
+#include <limits>
 
 #include "game/logic/conveyor_struct.h"
 #include "game/logic/conveyor_utility.h"
@@ -150,14 +151,18 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
         */
     }
     else {
-        // ================================================
         // Items behind another item in conveyor
+        // Items following the first item will leave a gap of kItemSpacing
 
-        // Items following the first item will leave a gap of item_width
-        if (offset > proto::LineDistT(game::ConveyorProp::kItemSpacing))
+        // Sufficient spacing is maintained
+        // If >  Still has spacing to move current item
+        // If == Next update will move the next item (branch below this one)
+        if (offset >= proto::LineDistT(game::ConveyorProp::kItemSpacing)) {
             return;
+        }
 
-        // Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
+        // Spacing now less than minimum item spacing
+        // Set back to minimum item spacing, move the next item to account for adjusted spacing
         offset = game::ConveyorProp::kItemSpacing;
         if (MoveNextItem(tiles_moved, side.lane, index, segment.target != nullptr)) {
             back_item_distance -= tiles_moved;
@@ -228,17 +233,18 @@ static void LogicUpdateSplitterSwap(const proto::Splitter& splitter, proto::Spli
 
             const auto dist_from_rear = lane_length - dist_from_front.getAsDouble();
 
-            // TODO it is possible for items to be in the threshold for more than 1 update
-
             // Swapping is only allowed for a short region, otherwise it swaps items back and fourth
-            // * 1.5 for a margin, so items which was previously right at the threshold can also swap
+            // + epsilon for a small margin to account for floating point precision issues
             if (dist_from_rear > game::ConveyorProp::kSplitterThreshold &&
-                dist_from_rear < game::ConveyorProp::kSplitterThreshold + 1.5 * splitter.speed.getAsDouble()) {
+                dist_from_rear < game::ConveyorProp::kSplitterThreshold + splitter.speed.getAsDouble() +
+                        std::numeric_limits<double>::epsilon()) {
                 return {true, {i, dist_from_front, lane.lane[i]}};
             }
         }
         return {false, {}};
     };
+
+    // BUG - Splitter sometimes stops swapping if one side if full
 
     const auto l_tile_length = proto::LineDistT(splitter_data.structure->length);
     const auto r_tile_length = proto::LineDistT(splitter_data.right.structure->length);
@@ -366,23 +372,9 @@ void game::ConveyorLogicUpdate(World& world) {
 
         LogicUpdateMoveItems(*line_proto, *con_data);
     }
-
-    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::conveyor)) {
-        const auto* line_proto = SafeCast<const proto::Conveyor*>(prototype.Get());
-        auto* con_data         = SafeCast<proto::ConveyorData*>(unique_data.Get());
-
-        assert(line_proto != nullptr);
-        assert(con_data != nullptr);
-
-        LogicUpdateTransitionItems(*line_proto, *con_data);
-    }
-}
-
-void game::SplitterLogicUpdate(World& world) {
-    // Similar to conveyors
-    // 		1. Move items on their conveyors
-    //		2. Check if any items have reached the end of their lines, and need to be moved to another one
-
+    // Logic updates must all occur together
+    // Otherwise, if TransitionItems() is processed, item going from conveyor (belt) to splitter
+    // gets moved twice in 1 update!
     for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::splitter)) {
         auto* splitter_proto = SafeCast<const proto::Splitter*>(prototype.Get());
         auto* splitter_data  = SafeCast<proto::SplitterData*>(unique_data.Get());
@@ -394,6 +386,15 @@ void game::SplitterLogicUpdate(World& world) {
         LogicUpdateMoveItems(*splitter_proto, splitter_data->right);
     }
 
+    for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::conveyor)) {
+        const auto* line_proto = SafeCast<const proto::Conveyor*>(prototype.Get());
+        auto* con_data         = SafeCast<proto::ConveyorData*>(unique_data.Get());
+
+        assert(line_proto != nullptr);
+        assert(con_data != nullptr);
+
+        LogicUpdateTransitionItems(*line_proto, *con_data);
+    }
     for (auto [prototype, unique_data, coord] : world.LogicGet(LogicGroup::splitter)) {
         auto* splitter_proto = SafeCast<const proto::Splitter*>(prototype.Get());
         auto* splitter_data  = SafeCast<proto::SplitterData*>(unique_data.Get());
@@ -401,6 +402,16 @@ void game::SplitterLogicUpdate(World& world) {
         assert(splitter_proto != nullptr);
         assert(splitter_data != nullptr);
 
+        // Handle splitter swaps before TransitionItems()
+        // Otherwise, compression is lost - consider the following: one side has fully compressed lane
+        // 1. Move forward once
+        // 2. TransitionItems() undo move forward to preserve minimum spacing
+        // 3. Item is swapped
+        // The result is the swapped item now being one update behind
+        //
+        // Handle after moving items
+        // Otherwise, 1 update late as the item on the other side has not moved forward yet to
+        // make space for another item
         LogicUpdateSplitterSwap(*splitter_proto, *splitter_data);
 
         LogicUpdateTransitionItems(*splitter_proto, *splitter_data);
