@@ -51,9 +51,7 @@ void render::DisplayWindow::SetFullscreen(const bool desired_fullscreen) {
 
 
 render::DisplayWindow::~DisplayWindow() {
-    if (glContextActive_) {
-        Terminate();
-    }
+    Terminate();
 }
 
 int render::DisplayWindow::Init(const int width, const int height) {
@@ -64,7 +62,7 @@ int render::DisplayWindow::Init(const int width, const int height) {
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         LOG_MESSAGE(critical, "SDL initialization failed");
-        goto sdl_error;
+        goto init_error;
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -80,9 +78,8 @@ int render::DisplayWindow::Init(const int width, const int height) {
                                   SDL_WINDOW_OPENGL                                       // flags - see below
     );
     if (sdlWindow_ == nullptr) {
-        SDL_Quit();
         LOG_MESSAGE(critical, "Error initializing window");
-        goto sdl_error;
+        goto init_error;
     }
 
     SDL_SetWindowResizable(sdlWindow_, SDL_TRUE);
@@ -114,7 +111,7 @@ int render::DisplayWindow::Init(const int width, const int height) {
     sdlGlContext_ = SDL_GL_CreateContext(sdlWindow_);
     if (sdlGlContext_ == nullptr) {
         LOG_MESSAGE(critical, "Failed to create OpenGL Context");
-        goto sdl_error;
+        goto init_error;
     }
 
     // ======================================================================
@@ -122,7 +119,7 @@ int render::DisplayWindow::Init(const int width, const int height) {
 
     if (glewInit() != GLEW_OK) {
         LOG_MESSAGE(critical, "GLEW initialization failed");
-        goto gl_error;
+        goto init_error;
     }
 
     // ======================================================================
@@ -130,8 +127,8 @@ int render::DisplayWindow::Init(const int width, const int height) {
 
     // Always Vsync
     if (SDL_GL_SetSwapInterval(1) == -1) {
-        LOG_MESSAGE_F(critical, "Failed to set gl swap interval: %s", SDL_GetError());
-        goto gl_error;
+        LOG_MESSAGE(critical, "Failed to set gl swap interval");
+        goto init_error;
     }
 
     glContextActive_ = true;
@@ -139,24 +136,17 @@ int render::DisplayWindow::Init(const int width, const int height) {
     return 0;
 
 
-    // Error handling
-
-sdl_error:
-    if (sdlWindow_ != nullptr)
-        SDL_DestroyWindow(sdlWindow_);
-    SDL_Quit();
+init_error:
+    // DisplayWindow destructor cleans everything up
+    LOG_MESSAGE_F(critical, "SDL Error: %s", SDL_GetError());
     return 2;
-
-gl_error:
-    SDL_GL_DeleteContext(sdlGlContext_);
-    SDL_DestroyWindow(sdlWindow_);
-    SDL_Quit();
-    return 3;
 }
 
 int render::DisplayWindow::Terminate() {
-    SDL_GL_DeleteContext(sdlGlContext_);
-    SDL_DestroyWindow(sdlWindow_);
+    if (sdlGlContext_ != nullptr)
+        SDL_GL_DeleteContext(sdlGlContext_);
+    if (sdlWindow_ != nullptr)
+        SDL_DestroyWindow(sdlWindow_);
     SDL_Quit();
 
     glContextActive_ = false;

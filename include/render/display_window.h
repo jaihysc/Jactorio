@@ -31,7 +31,7 @@ namespace jactorio::render
         /// \return Non 0 if error occurred
         int Init(int width, int height);
 
-        /// Terminates openGL context and window
+        /// Terminates openGL context and window if it exists
         /// \return Non 0 if error occurred
         int Terminate();
 

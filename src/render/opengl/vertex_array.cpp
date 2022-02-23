@@ -10,7 +10,10 @@
 using namespace jactorio;
 
 render::VertexArray::~VertexArray() {
-    DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
+    // Opengl may not be setup when destructor called if exit early
+    // Thus only make gl call if id_ non zero (know gl context exists)
+    if (id_ != 0)
+        DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
 }
 
 render::VertexArray::VertexArray(VertexArray&& other) noexcept : id_{other.id_} {

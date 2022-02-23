@@ -8,7 +8,10 @@
 using namespace jactorio;
 
 render::VertexBuffer::~VertexBuffer() {
-    DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
+    // Opengl may not be setup when destructor called if exit early
+    // Thus only make gl call if id_ non zero (know gl context exists)
+    if (id_ != 0)
+        DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
 render::VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept : id_{other.id_} {

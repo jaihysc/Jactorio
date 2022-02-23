@@ -32,7 +32,10 @@ void render::Shader::Init(const std::vector<ShaderCreationInput>& inputs, const 
 }
 
 render::Shader::~Shader() {
-    DEBUG_OPENGL_CALL(glDeleteProgram(id_));
+    // Opengl may not be setup when destructor called if exit early
+    // Thus only make gl call if id_ non zero (know gl context exists)
+    if (id_ != 0)
+        DEBUG_OPENGL_CALL(glDeleteProgram(id_));
 }
 
 
