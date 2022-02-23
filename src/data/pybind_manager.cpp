@@ -84,17 +84,18 @@ void data::PyInterpreterInit() {
 }
 
 void data::PyInterpreterTerminate() {
-    // Redirect python sys.stdout
-    const auto sysm     = py::module::import("sys");
-    sysm.attr("stdout") = py_stdout;
-    sysm.attr("stderr") = py_stderr;
+    {
+        // Redirect python sys.stdout
+        const auto sysm     = py::module::import("sys");
+        sysm.attr("stdout") = py_stdout;
+        sysm.attr("stderr") = py_stderr;
 
-    py_stdout.release();
-    py_stderr.release();
-    py_stdout_buffer.release();
-    py_stderr_buffer.release();
+        py_stdout.release();
+        py_stderr.release();
+        py_stdout_buffer.release();
+        py_stderr_buffer.release();
+    } // Remove all py::objects before deleting the interpreter
 
-    // Remove all py::objects before deleting the interpreter
     py::finalize_interpreter();
 
     LOG_MESSAGE(info, "Python interpreter terminated");
