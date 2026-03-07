@@ -37,13 +37,13 @@ void proto::Conveyor::OnNeighborUpdate(game::World& world,
                                        Orientation /*emit_orientation*/) const {
     // Run stuff here that on_build and on_remove both calls
 
-    auto* line_data = GetConData(world, {receive_coord.x, receive_coord.y});
-    if (line_data == nullptr) // Conveyor does not exist here
+    auto [proto, con_data] = GetConveyorInfo(world, {receive_coord.x, receive_coord.y});
+    if (con_data == nullptr) // Conveyor does not exist here
         return;
 
     // Reset segment lane item index to 0, since the head items MAY now have somewhere to go
-    line_data->structure->left.index  = 0;
-    line_data->structure->right.index = 0;
+    con_data->structure->left.index  = 0;
+    con_data->structure->right.index = 0;
 
     ConveyorUpdateNeighborTermination(world, receive_coord);
 }

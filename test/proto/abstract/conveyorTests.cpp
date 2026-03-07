@@ -105,7 +105,9 @@ namespace jactorio::proto
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
-            return *GetConData(world_, coord);
+            auto [proto, con_data] = GetConveyorInfo(world_, coord);
+            assert(con_data != nullptr);
+            return *con_data;
         }
 
         auto GetStructIndex(const WorldCoord& coord) {

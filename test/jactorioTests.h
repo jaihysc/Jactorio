@@ -63,7 +63,7 @@ namespace jactorio
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
 
-    /// Sets up a multi tile with proto at coord on the provided specified tile
+    /// Sets up a multi tile with dimensions specified by proto, coord is top left, on the provided specified tile
     /// \return Top left tile
     inline game::ChunkTile& TestSetupMultiTile(game::World& world,
                                                const WorldCoord& coord,
@@ -195,7 +195,7 @@ namespace jactorio
         return tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
     }
 
-    /// Creates conveyor at tile its own conveyor structure
+    /// Creates conveyor at tile its own conveyor structure, dimensions specified by con_proto, coord is top left
     inline auto& TestSetupConveyor(
         game::World& world,
         const WorldCoord& coord,
@@ -215,7 +215,7 @@ namespace jactorio
                                         const Orientation orien,
                                         const proto::Splitter& splitter) {
         auto& top_left = TestSetupMultiTile(world, coord, game::TileLayer::entity, orien, splitter);
-        return top_left.MakeUniqueData<proto::SplitterData>(orien);
+        return top_left.MakeUniqueData<proto::SplitterData>();
     }
 
     /// Creates splitter data at tile with conveyor structures
@@ -226,7 +226,7 @@ namespace jactorio
 
         auto& splitter_data = TestSetupBlankSplitter(world, coord, orien, splitter);
 
-        splitter_data.left.structure =
+        splitter_data.structure =
             std::make_shared<game::ConveyorStruct>(orien, game::ConveyorStruct::TerminationType::straight, 1);
 
         splitter_data.right.structure =

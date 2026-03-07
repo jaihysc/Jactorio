@@ -5,7 +5,7 @@
 #pragma once
 
 #include <memory>
-#include <vector>
+#include <utility>
 
 #include "jactorio.h"
 
@@ -18,6 +18,7 @@ namespace jactorio
 {
     namespace proto
     {
+        class Conveyor;
         struct ConveyorData;
     } // namespace proto
 } // namespace jactorio
@@ -53,32 +54,39 @@ namespace jactorio::game
     void RemoveConveyor(World& world, const WorldCoord& coord, LogicGroup logic_group);
 
 
-    /// Fetches conveyor data at coord, nullptr if non existent
-    J_NODISCARD proto::ConveyorData* GetConData(World& world, const WorldCoord& coord);
-    J_NODISCARD const proto::ConveyorData* GetConData(const World& world, const WorldCoord& coord);
+    /// Fetches conveyor prototype + data at coord, nullptr if non existent
+    J_NODISCARD std::pair<const proto::Conveyor*, proto::ConveyorData*> GetConveyorInfo(World& world,
+                                                                                        const WorldCoord& coord);
+    J_NODISCARD std::pair<const proto::Conveyor*, const proto::ConveyorData*> GetConveyorInfo(const World& world,
+                                                                                              const WorldCoord& coord);
 
     /// Fetches conveyor data at tile, nullptr if non existent
-    J_NODISCARD proto::ConveyorData* GetConData(ChunkTile& tile);
-    J_NODISCARD const proto::ConveyorData* GetConData(const ChunkTile& tile);
+    J_NODISCARD std::pair<const proto::Conveyor*, proto::ConveyorData*> GetConveyorInfo(ChunkTile& tile);
+    J_NODISCARD std::pair<const proto::Conveyor*, const proto::ConveyorData*> GetConveyorInfo(const ChunkTile& tile);
 
     /// Calls ConveyorConnect up, right, down, left
     /// \param coord Current struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorNeighborConnect(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment above
+    /// Attempts to connect from coord to conveyor above
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectUp(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment to right
+    /// Attempts to connect from coord to conveyor to right
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectRight(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment below
+    /// Attempts to connect from coord to conveyor below
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectDown(World& world, const WorldCoord& coord);
 
-    /// Attempts to connect between a connectable conveyor segment to left
+    /// Attempts to connect from coord to conveyor to left
     /// \param coord Current conveyor struct's coordinate
+    /// \remark Expects conveyor at coord to exist
     void ConveyorConnectLeft(World& world, const WorldCoord& coord);
 
 
@@ -141,11 +149,18 @@ namespace jactorio::game
     J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const World& world,
                                                              const WorldCoord& coord,
                                                              Orientation direction);
+
+    /// Updates line orientation at coord at looking at 4 neighbors and category of self at coord
+    /// - Does nothing if no conveyor exists at coord
+    /// - Category of self: Splitter, transport belt
+    void ConveyorUpdateLineOrien(World& world, const WorldCoord& coord);
+
     /// Updates line orientation for 4 neighbors of coord
     /// See ConveyorCalcLineOrien
     void ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord);
 
     /// Updates the termination type for 4 neighbors of coord
+    /// \remark Expects conveyor at coord to exist
     void ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coord);
 
 } // namespace jactorio::game

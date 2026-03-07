@@ -8,26 +8,31 @@
 
 namespace jactorio::proto
 {
-    struct SplitterData final : HealthEntityData
+    struct SplitterData final : ConveyorData
     {
-        explicit SplitterData(const Orientation orien) : orientation(orien) {}
+        /// Whether or not left and right items should be swapped to opposite side
+        bool swap = false;
 
+        // Left lane is inherited
+        // Right lane below:
+        // TODO This is slightly wasteful as right also defines health which is unused,
+        // but the logic expects distinct conveyors
 
-        // HealthData of left and right will be unused
-        ConveyorData left;
         ConveyorData right;
 
-        /// Orientation of this splitter
-        Orientation orientation;
+        CEREAL_SERIALIZE(archive) {
+            archive(swap, right, cereal::base_class<ConveyorData>(this));
+        }
     };
 
-    class Splitter : public Conveyor
+    class Splitter final : public Conveyor
     {
     public:
         PROTOTYPE_CATEGORY(splitter);
 
-        // BUG because this inherits Conveyor, Conveyor overrides OnGetTexCoord, making this appear wrong
-        // In addition, the conveyor utility logic on build messes with the tex coord to make this wrong again
+        J_NODISCARD SpriteTexCoordIndexT OnGetTexCoordId(const game::World& world,
+                                                         const WorldCoord& coord,
+                                                         Orientation orientation) const override;
 
         void OnBuild(game::World& world,
                      game::Logic& logic,

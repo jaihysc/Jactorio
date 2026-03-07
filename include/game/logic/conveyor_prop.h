@@ -38,7 +38,15 @@ namespace jactorio::game
         static constexpr ValueT kItemWidth = 0.4;
 
         /// Distance left between each item when conveyor is fully compressed (in tiles)
+        /// front of item to front of item
         static constexpr ValueT kItemSpacing = 0.25;
+
+        /// Distance after entering splitter when items can be swapped
+        /// When rendering items on splitters, prevents swapping while items still in view
+        ///
+        /// Depending on the choice of threshold and item spacing, it may be possible to clog items on splitters
+        /// as new items are blocked from entering the threshold, and existing items cannot leave
+        static constexpr ValueT kSplitterThreshold = 0.25;
 
 
         // When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram

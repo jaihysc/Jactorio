@@ -63,6 +63,9 @@ namespace jactorio::game
 
         J_NODISCARD std::pair<size_t, ConveyorItem> GetItem(FloatOffsetT offset,
                                                             FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2) const;
+
+        void RemoveItem(std::size_t index);
+
         const proto::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2);
 
         // ======================================================================
@@ -133,40 +136,38 @@ namespace jactorio::game
         /// \return true if left size is not empty and has a valid index
         J_NODISCARD bool IsActive(bool left_side) const;
 
-        /// Deducts tile length offset to get offset based on lane length
+        /// \return Amount to subtract from tile length to get lane length
         /// \param target_segment_ttype If deducting termination of current segment's target is unnecessary, use
         /// straight
         /// Since the length of segments is the tile length, it must be deducted to get the lane length to accurately
         /// insert, remove and any other operation on segments
-        static void ApplyTerminationDeduction(bool is_left,
-                                              TerminationType segment_ttype,
-                                              TerminationType target_segment_ttype,
-                                              proto::LineDistT& offset);
+        J_NODISCARD static proto::LineDistT GetTerminationDeduction(bool is_left,
+                                                                    TerminationType segment_ttype,
+                                                                    TerminationType target_segment_ttype);
         template <bool IsLeftLane>
-        static void ApplyTerminationDeduction(TerminationType segment_ttype,
-                                              TerminationType target_segment_ttype,
-                                              proto::LineDistT& offset);
+        J_NODISCARD static proto::LineDistT GetTerminationDeduction(TerminationType segment_ttype,
+                                                                    TerminationType target_segment_ttype);
 
-        static void ApplyLeftTerminationDeduction(TerminationType segment_ttype,
-                                                  TerminationType target_segment_ttype,
-                                                  proto::LineDistT& offset);
-        static void ApplyRightTerminationDeduction(TerminationType segment_ttype,
-                                                   TerminationType target_segment_ttype,
-                                                   proto::LineDistT& offset);
+        J_NODISCARD static proto::LineDistT GetLeftTerminationDeduction(TerminationType segment_ttype,
+                                                                        TerminationType target_segment_ttype);
+        J_NODISCARD static proto::LineDistT GetRightTerminationDeduction(TerminationType segment_ttype,
+                                                                         TerminationType target_segment_ttype);
 
         // Item insertion
 
         /// Appends item onto the specified side of a belt behind the last item
         /// \param offset Number of tiles to offset from previous item or the end of the conveyor segment when
-        /// there are no items
+        /// there are no items (May be greater than what is specified to maintain min item spacing)
         void AppendItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         /// Inserts the item onto the specified belt side at the offset from the beginning of the conveyor
+        /// - Spacing of items behind is preserved
         /// \param offset Distance from beginning of conveyor
         void InsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         /// Attempts to insert the item onto the specified belt side at the offset from the beginning of the
         /// conveyor
+        /// - Spacing of items behind is preserved
         /// \param offset Distance from beginning of conveyor
         /// \return false if unsuccessful
         bool TryInsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
@@ -176,6 +177,10 @@ namespace jactorio::game
         J_NODISCARD std::pair<size_t, ConveyorItem> GetItem(bool left_side,
                                                             FloatOffsetT offset,
                                                             FloatOffsetT epsilon = ConveyorProp::kItemWidth / 2) const;
+
+        /// Removes item at index in specified lane
+        /// - Spacing of items behind is preserved
+        void RemoveItem(bool left_side, std::size_t index);
 
         /// Finds and removes item at offset within epsilon inclusive
         /// \return nullptr if no items were found
@@ -256,14 +261,13 @@ namespace jactorio::game
     };
 
     template <bool IsLeftLane>
-    void ConveyorStruct::ApplyTerminationDeduction(const TerminationType segment_ttype,
-                                                   const TerminationType target_segment_ttype,
-                                                   proto::LineDistT& offset) {
+    proto::LineDistT ConveyorStruct::GetTerminationDeduction(const TerminationType segment_ttype,
+                                                             const TerminationType target_segment_ttype) {
         if constexpr (IsLeftLane) {
-            ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+            return GetLeftTerminationDeduction(segment_ttype, target_segment_ttype);
         }
         else {
-            ApplyRightTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+            return GetRightTerminationDeduction(segment_ttype, target_segment_ttype);
         }
     }
 } // namespace jactorio::game

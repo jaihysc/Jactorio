@@ -10,23 +10,32 @@
 
 using namespace jactorio;
 
-static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitter;
+SpriteTexCoordIndexT proto::Splitter::OnGetTexCoordId(const game::World& world,
+                                                      const WorldCoord& coord,
+                                                      const Orientation orientation) const {
+    return FWorldObject::OnGetTexCoordId(world, coord, orientation);
+}
 
 void proto::Splitter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               const Orientation orientation) const {
-    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<SplitterData>(orientation);
+    world.GetTile(coord, game::TileLayer::entity)->MakeUniqueData<SplitterData>();
 
     auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
-        auto* con_data = GetConData(world, side_coord);
+        auto [proto, con_data] = GetConveyorInfo(world, side_coord);
         assert(con_data != nullptr);
 
-        BuildConveyor(world, side_coord, *con_data, orientation, kSplitterLogicGroup);
+        BuildConveyor(world, side_coord, *con_data, orientation, game::LogicGroup::splitter);
     };
 
+    /// Right side of splitter
+    const auto right_coord = GetNonTopLeftCoord(world, coord, game::TileLayer::entity);
     build_conveyor(coord);
-    build_conveyor(GetNonTopLeftCoord(world, coord, game::TileLayer::entity));
+    build_conveyor(right_coord);
+
+    // Only the left needs to be registered
+    world.LogicRemove(game::LogicGroup::splitter, right_coord, game::TileLayer::entity);
 }
 
 void proto::Splitter::OnNeighborUpdate(game::World& world,
@@ -39,8 +48,8 @@ void proto::Splitter::OnNeighborUpdate(game::World& world,
 
 void proto::Splitter::OnRemove(game::World& world, game::Logic& /*logic*/, const WorldCoord& coord) const {
 
-    RemoveConveyor(world, coord, kSplitterLogicGroup);
-    RemoveConveyor(world, GetNonTopLeftCoord(world, coord, game::TileLayer::entity), kSplitterLogicGroup);
+    RemoveConveyor(world, coord, game::LogicGroup::splitter);
+    RemoveConveyor(world, GetNonTopLeftCoord(world, coord, game::TileLayer::entity), game::LogicGroup::splitter);
 }
 
 
@@ -70,7 +79,7 @@ WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world,
 
     // Increment to the other side depending on splitter 's orientation
 
-    switch (tile->GetUniqueData<SplitterData>()->orientation) {
+    switch (tile->GetOrientation()) {
     case Orientation::up:
     case Orientation::down:
         return {tl_coord.x + 1, tl_coord.y};
