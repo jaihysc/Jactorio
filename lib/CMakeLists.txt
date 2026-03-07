@@ -27,7 +27,7 @@ validate_dependency(glm)		# HEADER
 validate_dependency(imgui)	# NC
 validate_dependency(pybind11)
 validate_dependency(libnoise)
-validate_dependency(SDL-mirror)
+validate_dependency(SDL)
 validate_dependency(decimal_for_cpp)
 validate_dependency(StackWalker)
 validate_dependency(backward-cpp)
@@ -51,7 +51,7 @@ set(glew-cmake_BUILD_SHARED OFF)
 add_subdirectory("glew-cmake")
 add_subdirectory("pybind11")
 add_subdirectory("libnoise")
-add_subdirectory("SDL-mirror")
+add_subdirectory("SDL")
 add_subdirectory("freetype")
 
 
@@ -120,7 +120,7 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 	${PROJECT_SOURCE_DIR}/lib/libnoise/include
-	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
+	${PROJECT_SOURCE_DIR}/lib/SDL/include
 	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
 	${PROJECT_SOURCE_DIR}/lib/StackWalker/Main
 	${PROJECT_SOURCE_DIR}/lib/backward-cpp

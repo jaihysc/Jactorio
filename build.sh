@@ -25,9 +25,9 @@ cd ./out/"$1" || exit 2
 
 # Build tests if --notest is not defined
 if [[ "$2" == "--notest" ]]; then
-    cmake ../.. -DCMAKE_BUILD_TYPE="$1" -DJACTORIO_BUILD_TESTS:BOOL="False" || exit 2
+    cmake ../.. -DCMAKE_BUILD_TYPE="$1" -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -DJACTORIO_BUILD_TESTS:BOOL="False" || exit 2
 elif [ -z "$2" ]; then
-    cmake ../.. -DCMAKE_BUILD_TYPE="$1" -DJACTORIO_BUILD_TESTS:BOOL="True" || exit 2
+    cmake ../.. -DCMAKE_BUILD_TYPE="$1" -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -DJACTORIO_BUILD_TESTS:BOOL="True" || exit 2
 else
     echo "Unknown parameter $2, see README.md"
     exit 1

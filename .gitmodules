@@ -13,9 +13,9 @@
 [submodule "lib/libnoise"]
 	path = lib/libnoise
 	url = https://github.com/jaihysc/libnoise.git
-[submodule "lib/SDL-mirror"]
-	path = lib/SDL-mirror
-	url = https://github.com/spurious/SDL-mirror.git
+[submodule "lib/SDL"]
+	path = lib/SDL
+	url = https://github.com/libsdl-org/SDL.git
 [submodule "lib/decimal_for_cpp"]
 	path = lib/decimal_for_cpp
 	url = https://github.com/vpiotr/decimal_for_cpp.git
