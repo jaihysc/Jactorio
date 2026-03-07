@@ -129,6 +129,11 @@ add_library(jactorioBase
 target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
 target_link_libraries(jactorioBase jactorioLib)
 
+# pybind_manager.cpp doesn't compile because it is too big on new MSVC versions
+if (MSVC)
+	target_compile_options(jactorioBase PRIVATE /bigobj)
+endif ()
+
 define_filename_for_sources(jactorioBase)
 
 

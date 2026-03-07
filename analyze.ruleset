@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Jactorio MSVC checks" Description="" ToolsVersion="10.0">
+  <Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native">
+    <Rule Id="C26460" Action="Warning" /> <!--Reference argument for function can be const-->
+    <Rule Id="C26461" Action="Warning" /> <!--Pointer argument for function can be const-->
+    <Rule Id="C26462" Action="Warning" /> <!--Mark pointer to variable const-->
+    <Rule Id="C26463" Action="Warning" /> <!--Const elements of pointer-->
+    <Rule Id="C26464" Action="Warning" /> <!--Const pointer to elements-->
+    <Rule Id="C26496" Action="Warning" /> <!--Assigned only once, mark const-->
+    <!--<Rule Id="C26497" Action="Warning" /> Make constexpr-->
+    <!--<Rule Id="C26498" Action="Warning" /> Use constexpr for function call-->
+    <!--<Rule Id="C26814" Action="Warning" /> Use constexpr for constants known at compile time-->
+  </Rules>
+</RuleSet>

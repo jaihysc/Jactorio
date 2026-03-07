@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ -z "$1" ]] || [[ "$1" != "Debug"  &&  "$1" != "Release" &&  "$1" != "RelWithDebInfo" ]]; then
     echo "Invalid build type"
