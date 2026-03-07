@@ -447,10 +447,6 @@ namespace jactorio
             return *this;
         }
 
-        friend void swap(DVector& lhs, DVector& rhs) noexcept(noexcept(lhs.swap(rhs))) {
-            lhs.swap(rhs);
-        }
-
         /// Replaces the contents with count copies of value value
         void assign(const size_type count, const T& value) {
             clear();
@@ -857,6 +853,11 @@ namespace jactorio
             swap(frontPtr_, other.frontPtr_);
             swap(backPtr_, other.backPtr_);
             swap(midpoint_, other.midpoint_);
+        }
+
+        // This needs to be declared last or some versions of GCC can't find .swap method
+        friend void swap(DVector& lhs, DVector& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+            lhs.swap(rhs);
         }
 
         CEREAL_SAVE(archive) {

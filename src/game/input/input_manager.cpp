@@ -3,6 +3,7 @@
 #include "game/input/input_manager.h"
 
 #include <SDL.h>
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
 
